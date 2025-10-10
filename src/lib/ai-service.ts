@@ -8,7 +8,7 @@
 import OpenAI from 'openai';
 
 // TODO: 将 API Key 移到环境变量
-const QWEN_API_KEY = process.env.QWEN_API_KEY || 'sk-45c78e3ac8d64976a8910389002e9ecf';
+const QWEN_API_KEY = process.env.QWEN_API_KEY || 'sk-a0bced967e594452a0593fcdbf3fec48';
 
 /**
  * AI 服务类
@@ -39,9 +39,9 @@ export class AIService {
     } = {}
   ): Promise<string> {
     const {
-      model = 'qwen-max',
-      temperature = 0.7,
-      maxTokens = 4000,
+      model = 'qwen-plus', // 使用 qwen-plus 节省成本
+      temperature = 0.2,   // 降低 temperature
+      maxTokens = 2000,    // 限制输出长度
       topP = 0.8,
     } = options;
 
