@@ -1,26 +1,22 @@
 /**
  * AI 服务 - 通用 AI 调用接口
- * 用于未来生成学习内容（Study Guide, Flashcards, Quiz 等）
- * 
- * 注意：当前版本不使用 AI 进行 PDF 解析，仅保留此文件供未来扩展使用
+ * 使用 Claude 3.5 Sonnet 生成学习内容
  */
 
-import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 
-// TODO: 将 API Key 移到环境变量
-const QWEN_API_KEY = process.env.QWEN_API_KEY || 'sk-a0bced967e594452a0593fcdbf3fec48';
+const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 
 /**
  * AI 服务类
  * 提供通用的 AI 调用功能
  */
 export class AIService {
-  private client: OpenAI;
+  private client: Anthropic;
 
   constructor(apiKey?: string) {
-    this.client = new OpenAI({
-      apiKey: apiKey || QWEN_API_KEY,
-      baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    this.client = new Anthropic({
+      apiKey: apiKey || CLAUDE_API_KEY,
     });
   }
 
@@ -35,26 +31,31 @@ export class AIService {
       model?: string;
       temperature?: number;
       maxTokens?: number;
-      topP?: number;
     } = {}
   ): Promise<string> {
     const {
-      model = 'qwen-plus', // 使用 qwen-plus 节省成本
-      temperature = 0.2,   // 降低 temperature
-      maxTokens = 2000,    // 限制输出长度
-      topP = 0.8,
+      model = 'claude-3-5-sonnet-20241022',
+      temperature = 0.2,
+      maxTokens = 2000,
     } = options;
 
     try {
-      const completion = await this.client.chat.completions.create({
+      // Claude 需要将 system 消息单独处理
+      const systemMessage = messages.find(m => m.role === 'system');
+      const userMessages = messages.filter(m => m.role !== 'system');
+
+      const response = await this.client.messages.create({
         model,
-        messages,
-        temperature,
         max_tokens: maxTokens,
-        top_p: topP,
+        temperature,
+        system: systemMessage?.content,
+        messages: userMessages.map(m => ({
+          role: m.role as 'user' | 'assistant',
+          content: m.content
+        }))
       });
 
-      const content = completion.choices[0]?.message?.content;
+      const content = response.content[0]?.type === 'text' ? response.content[0].text : '';
       if (!content) {
         throw new Error('AI 返回空响应');
       }

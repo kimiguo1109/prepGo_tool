@@ -285,8 +285,8 @@ export function CompleteCourseGenerator({
         <p>💡 <strong>提示：</strong>生成过程可能需要 5-10 分钟，取决于课程大小</p>
         <p>⚡ <strong>并发：</strong>使用 5 个并发 worker，自动重试失败的 Topics</p>
         <p>📊 <strong>内容：</strong>每个 Topic 包含 Study Guide、Flashcards、Quiz</p>
-        <p>💰 <strong>优化：</strong>使用 qwen-plus 模型 + 精简 prompt，节省约 60% token 费用</p>
-        <p>⚠️ <strong>注意：</strong>如遇 API 错误，请检查 Qwen API Key 是否有效</p>
+        <p>🤖 <strong>模型：</strong>使用 Claude 3.5 Sonnet 生成高质量内容</p>
+        <p>⚠️ <strong>注意：</strong>需要设置 ANTHROPIC_API_KEY 环境变量</p>
       </div>
     </div>
   );

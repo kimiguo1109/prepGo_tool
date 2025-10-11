@@ -1,10 +1,11 @@
-import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import type { APCourse } from '@/types/course';
 
-const QWEN_API_KEY = 'sk-a0bced967e594452a0593fcdbf3fec48';
+const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 
 /**
  * PrepGo 课程生成器 - 完整的工作流
+ * 使用 Claude 3.5 Sonnet 进行内容生成
  * 
  * 工作流程：
  * 1. 学习时长计算
@@ -13,12 +14,11 @@ const QWEN_API_KEY = 'sk-a0bced967e594452a0593fcdbf3fec48';
  * 4. 课程完整输出
  */
 export class CourseGenerator {
-  private client: OpenAI;
+  private client: Anthropic;
 
   constructor() {
-    this.client = new OpenAI({
-      apiKey: QWEN_API_KEY,
-      baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    this.client = new Anthropic({
+      apiKey: CLAUDE_API_KEY,
     });
   }
 
@@ -303,17 +303,16 @@ export class CourseGenerator {
 
   /**
    * 生成单个 Topic 的学习内容
-   * 优化版：减少 token 使用，提高性价比
+   * 使用 Claude 3.5 Sonnet
    */
   private async generateSingleTopicContent(topic: any): Promise<any> {
-    // 提取关键信息，避免发送完整 JSON
+    // 提取关键信息
     const loSummaries = topic.learning_objectives.map((lo: any) => lo.summary).join('; ');
     const ekSummaries = topic.essential_knowledge.map((ek: any) => ek.summary).join('; ');
     const flashcardCount = (topic as any).review?.flashcards_count || 3;
     const quizCount = (topic as any).practice?.quiz_count || 8;
     const wordCount = (topic as any).learn?.study_guide_words || 100;
 
-    // 优化后的 prompt - 更简洁，减少 token
     const prompt = `Create AP course content for: ${topic.topic_title}
 
 Learning Objectives: ${loSummaries}
@@ -328,23 +327,19 @@ Generate JSON:
 
 Rules: English only, exact counts, concise but comprehensive.`;
 
-    const completion = await this.client.chat.completions.create({
-      model: 'qwen-plus', // 使用 qwen-plus 代替 qwen-max（更便宜，质量仍然不错）
+    const message = await this.client.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 2000,
+      temperature: 0.2,
       messages: [
-        {
-          role: 'system',
-          content: 'AP content generator. Output JSON only.'
-        },
         {
           role: 'user',
           content: prompt
         }
-      ],
-      temperature: 0.2, // 降低 temperature 使输出更确定、更简洁
-      max_tokens: 2000, // 限制输出长度，节省 token
+      ]
     });
 
-    const text = completion.choices[0]?.message?.content;
+    const text = message.content[0]?.type === 'text' ? message.content[0].text : '';
     if (!text) {
       throw new Error('API 返回空响应');
     }
