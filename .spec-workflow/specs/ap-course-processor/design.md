@@ -104,6 +104,43 @@ export interface APTopic {
   topic_title: string;
   learning_objectives: LearningObjective[];
   essential_knowledge: EssentialKnowledge[];
+  // AI 生成的学习内容
+  topic_estimated_minutes?: number;
+  learn?: {
+    minutes: number;
+    study_guide_words: number;
+  };
+  review?: {
+    minutes: number;
+    flashcards_count: number;
+  };
+  practice?: {
+    minutes: number;
+    quiz_count: number;
+  };
+  study_guide?: string;
+  flashcards?: Flashcard[];
+  quiz?: QuizQuestion[];
+}
+
+/**
+ * 闪卡数据
+ */
+export interface Flashcard {
+  front: string;
+  back: string;
+  requires_image: boolean; // 是否需要配图
+}
+
+/**
+ * 测验题目数据
+ */
+export interface QuizQuestion {
+  question: string;
+  options: string[];          // 格式: ["A. ...", "B. ...", "C. ...", "D. ..."]
+  correct_answer: string;     // 格式: "A", "B", "C", or "D"
+  explanation: string;
+  requires_image: boolean;    // 是否需要配图
 }
 
 /**
@@ -186,9 +223,87 @@ export const APCourseSchema = z.object({
 });
 ```
 
-## 3. 数据处理流程（4步骤）
+## 3. AI 内容生成逻辑
 
-### 3.1 处理流程概述
+### 3.1 图像标记规则（Image Flagging）
+
+AI 生成器在创建 flashcards 和 quiz questions 时，必须为每个项目添加 `requires_image` 标志。
+
+#### 3.1.1 Quiz Questions 图像判断规则
+
+将 `requires_image` 设置为 `true` 的情况：
+- 问题要求用户解读图表、图形、地图或数据表
+- 问题引用特定的图示、艺术作品、结构或视觉模型
+  - 例如："Based on the diagram of the cell..."
+  - 例如:"Which artist painted the work shown..."
+- 问题基于刺激材料（stimulus-based），需要原始文档、漫画或照片才能理解
+- 问题涉及空间推理，图像可以帮助理解（如分子几何、物理力图）
+
+#### 3.1.2 Flashcards 图像判断规则
+
+将 `requires_image` 设置为 `true` 的情况：
+- 正面是视觉概念的术语（如"Doric Column"、"Mitochondrion"、"Tectonic Plates Map"）
+  - 图像应放在背面与定义一起
+- 正面是定义，背面是视觉对象的名称
+
+#### 3.1.3 示例数据
+
+```json
+{
+  "flashcards": [
+    {
+      "front": "Cohesion",
+      "back": "The property of water molecules sticking to each other due to hydrogen bonds.",
+      "requires_image": false
+    },
+    {
+      "front": "Mitochondrion",
+      "back": "The powerhouse of the cell, responsible for ATP production.",
+      "requires_image": true
+    }
+  ],
+  "quiz": [
+    {
+      "question": "Which property of water is most directly responsible for the transport of water from roots to leaves?",
+      "options": ["A. Polarity", "B. Cohesion", "C. High specific heat", "D. Expansion upon freezing"],
+      "correct_answer": "B",
+      "explanation": "Cohesion allows water molecules to stick together, creating a continuous column for transport.",
+      "requires_image": false
+    },
+    {
+      "question": "Based on the provided Lewis diagram, what is the molecular geometry of the species?",
+      "options": ["A. Tetrahedral", "B. Linear", "C. Bent", "D. Trigonal planar"],
+      "correct_answer": "A",
+      "explanation": "The molecule has four bonding regions and no lone pairs, resulting in tetrahedral geometry.",
+      "requires_image": true
+    }
+  ]
+}
+```
+
+### 3.2 内容生成工作流
+
+```
+Phase 1: 时长计算
+  └─ 基于 LO/EK 数量计算学习时间
+
+Phase 2: 模块分配
+  ├─ Learn 模块 (50%): Study Guide
+  ├─ Review 模块 (25%): Flashcards
+  └─ Practice 模块 (25%): Quiz
+
+Phase 3: AI 内容生成
+  ├─ 生成 Study Guide
+  ├─ 生成 Flashcards（含 requires_image 判断）
+  └─ 生成 Quiz Questions（含 requires_image 判断）
+
+Phase 4: 输出结果
+  └─ 完整课程数据（含所有生成内容）
+```
+
+## 4. 数据处理流程（4步骤）
+
+### 4.1 处理流程概述
 
 ```
 步骤1: 读取输入数据
