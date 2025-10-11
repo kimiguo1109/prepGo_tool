@@ -2,10 +2,7 @@
   "framework": "nextjs",
   "regions": ["hkg1"],
   "functions": {
-    "api/generate-course.ts": {
-      "maxDuration": 60
-    },
-    "api/generate-content.ts": {
+    "api/**": {
       "maxDuration": 60
     }
   }
