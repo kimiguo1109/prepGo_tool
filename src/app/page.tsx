@@ -75,33 +75,14 @@ export default function HomePage() {
     });
   };
 
-  // 处理完整课程生成完成
-  const handleCompleteCourseGenerated = (completeCourse: APCourse) => {
-    console.log('✅ 完整课程生成完成');
-    setEnrichedData(prev => {
-      if (!prev) return prev;
-      
-      // 合并生成的学习内容到现有数据
-      const mergedUnits = prev.units.map(unit => {
-        const generatedUnit = completeCourse.units.find(u => u.unit_number === unit.unit_number);
-        if (!generatedUnit) return unit;
-
-        return {
-          ...unit,
-          topics: unit.topics.map(topic => {
-            const generatedTopic = generatedUnit.topics.find(t => t.topic_number === topic.topic_number);
-            if (!generatedTopic) return topic;
-
-            return {
-              ...topic,
-              ...(generatedTopic as any), // 包含 study_guide, flashcards, quiz 等
-            };
-          }),
-        };
-      });
-
-      return { ...prev, units: mergedUnits };
-    });
+  // 处理完整课程生成完成（v11.0 - 双 JSON 输出）
+  const handleCompleteCourseGenerated = (dualJSON: any) => {
+    console.log('✅ 完整课程生成完成（双 JSON 格式）');
+    console.log('📦 Separated Content JSON:', dualJSON.separated_content_json);
+    console.log('📦 Combined Complete JSON:', dualJSON.combined_complete_json);
+    
+    // v11.0: 双 JSON 格式已在 CompleteCourseGenerator 组件内处理下载
+    // 不需要合并回原始数据结构
   };
 
   // 处理重置
