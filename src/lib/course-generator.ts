@@ -369,7 +369,6 @@ Generate the following content in strict JSON format:
       "front": "Clear question or concept",
       "back": "Concise answer or explanation"
     }
-    // Generate EXACTLY ${flashcardCount} flashcards
   ],
   "quiz": [
     {
@@ -378,19 +377,23 @@ Generate the following content in strict JSON format:
       "correct_answer": "A",
       "explanation": "Detailed explanation of the correct answer"
     }
-    // Generate EXACTLY ${quizCount} quiz questions
   ]
 }
 
 CRITICAL REQUIREMENTS:
 1. ALL content MUST be in ENGLISH only
-2. Generate EXACTLY ${flashcardCount} flashcards
-3. Generate EXACTLY ${quizCount} quiz questions
+2. Generate EXACTLY ${flashcardCount} flashcards (not more, not less)
+3. Generate EXACTLY ${quizCount} quiz questions (not more, not less)
 4. Study guide should be approximately ${wordCount} words
 5. Use academic but clear language suitable for AP students
-6. Return ONLY pure JSON - NO comments (no // or /* */), NO markdown, NO explanations
+6. Return ONLY valid JSON - NO comments, NO markdown backticks, NO extra text before or after
 7. Do NOT use Chinese or any other non-English languages
-8. Ensure valid JSON syntax - proper commas, no trailing commas`;
+8. Ensure valid JSON syntax:
+   - All strings must be properly escaped (use \\" for quotes, \\n for newlines)
+   - Use proper commas between items
+   - NO trailing commas after the last item in arrays or objects
+   - NO line breaks within string values (use \\n instead)
+9. Start your response immediately with { and end with } - nothing else`;
 
     // 调用 Gemini API
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
@@ -430,41 +433,120 @@ CRITICAL REQUIREMENTS:
         quiz: content.quiz || []
       };
     } catch (parseError: any) {
-      // 如果 JSON 解析失败，记录详细信息
-      console.error(`❌ Topic ${topic.topic_number} JSON 解析失败:`, parseError.message);
-      console.error(`   原始响应前 500 字符:`, text.substring(0, 500));
-      console.error(`   原始响应后 500 字符:`, text.substring(Math.max(0, text.length - 500)));
-      throw new Error(`JSON 解析失败: ${parseError.message}`);
+      // 尝试修复常见的 JSON 格式错误
+      console.warn(`⚠️  Topic ${topic.topic_number} 初次解析失败，尝试修复...`);
+      
+      try {
+        let fixedJson = this.extractJSON(text);
+        
+        // 修复未转义的换行符（在字符串中）
+        fixedJson = fixedJson.replace(/"([^"]*?)[\r\n]+([^"]*?)"/g, (match, before, after) => {
+          return `"${before}\\n${after}"`;
+        });
+        
+        // 修复连续的多个换行符
+        fixedJson = fixedJson.replace(/\\n\\n+/g, '\\n');
+        
+        // 尝试再次解析
+        const content = JSON.parse(fixedJson);
+        console.log(`    ✅ Topic ${topic.topic_number} JSON 修复成功`);
+        
+        return {
+          study_guide: content.study_guide || '',
+          flashcards: content.flashcards || [],
+          quiz: content.quiz || []
+        };
+      } catch (fixError) {
+        // 修复也失败，记录详细信息
+        console.error(`❌ Topic ${topic.topic_number} JSON 解析失败:`, parseError.message);
+        console.error(`   原始响应前 500 字符:`, text.substring(0, 500));
+        console.error(`   原始响应后 500 字符:`, text.substring(Math.max(0, text.length - 500)));
+        throw new Error(`JSON 解析失败: ${parseError.message}`);
+      }
     }
   }
 
   /**
    * 辅助函数：从文本中提取并清理 JSON
+   * 使用括号计数法精确定位 JSON 对象边界
    */
   private extractJSON(text: string): string {
     let jsonText = text.trim();
     
     // 移除 markdown 代码块标记
     if (jsonText.startsWith('```json')) {
-      jsonText = jsonText.replace(/```json\n?/, '').replace(/```$/, '').trim();
+      jsonText = jsonText.substring(7).trim(); // 移除 '```json'
     } else if (jsonText.startsWith('```')) {
-      jsonText = jsonText.replace(/```\n?/, '').replace(/```$/, '').trim();
+      jsonText = jsonText.substring(3).trim(); // 移除 '```'
+    }
+    
+    // 移除末尾的 markdown 标记
+    if (jsonText.endsWith('```')) {
+      jsonText = jsonText.substring(0, jsonText.length - 3).trim();
     }
 
-    // 提取 JSON 对象
-    const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('无法从响应中提取 JSON 数据');
+    // 找到第一个 '{' 的位置
+    const startIdx = jsonText.indexOf('{');
+    if (startIdx === -1) {
+      throw new Error('无法从响应中找到 JSON 起始位置');
     }
 
-    let cleanJson = jsonMatch[0];
+    // 使用括号计数法找到匹配的 '}' 位置
+    let braceCount = 0;
+    let inString = false;
+    let escapeNext = false;
+    let endIdx = -1;
+
+    for (let i = startIdx; i < jsonText.length; i++) {
+      const char = jsonText[i];
+      
+      // 处理转义字符
+      if (escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+      
+      if (char === '\\') {
+        escapeNext = true;
+        continue;
+      }
+      
+      // 处理字符串边界
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+      
+      // 只在非字符串内部计数括号
+      if (!inString) {
+        if (char === '{') {
+          braceCount++;
+        } else if (char === '}') {
+          braceCount--;
+          if (braceCount === 0) {
+            endIdx = i + 1;
+            break;
+          }
+        }
+      }
+    }
+
+    if (endIdx === -1) {
+      throw new Error('无法从响应中找到 JSON 结束位置');
+    }
+
+    let cleanJson = jsonText.substring(startIdx, endIdx);
     
     // 移除 JSON 中的注释（Gemini 有时会添加注释）
-    // 移除 // 单行注释
-    cleanJson = cleanJson.replace(/\/\/[^\n]*/g, '');
+    // 移除 // 单行注释（但要小心字符串中的 //）
+    cleanJson = cleanJson.replace(/"[^"\\]*(?:\\.[^"\\]*)*"|\/\/[^\n]*/g, (match) => {
+      return match.startsWith('"') ? match : '';
+    });
     
-    // 移除 /* */ 多行注释
-    cleanJson = cleanJson.replace(/\/\*[\s\S]*?\*\//g, '');
+    // 移除 /* */ 多行注释（但要小心字符串中的 /* */）
+    cleanJson = cleanJson.replace(/"[^"\\]*(?:\\.[^"\\]*)*"|\/\*[\s\S]*?\*\//g, (match) => {
+      return match.startsWith('"') ? match : '';
+    });
     
     // 移除可能的尾部逗号（在数组或对象的最后一个元素后）
     cleanJson = cleanJson.replace(/,(\s*[}\]])/g, '$1');
