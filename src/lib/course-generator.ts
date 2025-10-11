@@ -407,7 +407,7 @@ CRITICAL REQUIREMENTS:
       ],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 6000,  // 增加到 6000，支持完整内容生成
+        maxOutputTokens: 8000,  // 增加到 8000，确保完整内容生成
       }
     }, {
       headers: {
@@ -426,6 +426,15 @@ CRITICAL REQUIREMENTS:
     try {
       const jsonText = this.extractJSON(text);
       const content = JSON.parse(jsonText);
+      
+      // 验证内容数量是否符合要求（允许 ±2 的误差）
+      const actualFlashcards = content.flashcards?.length || 0;
+      const actualQuiz = content.quiz?.length || 0;
+      
+      if (actualFlashcards < flashcardCount - 2 || actualQuiz < quizCount - 2) {
+        console.warn(`   ⚠️  内容数量不足: flashcards ${actualFlashcards}/${flashcardCount}, quiz ${actualQuiz}/${quizCount}`);
+        throw new Error(`内容被截断（flashcards: ${actualFlashcards}/${flashcardCount}, quiz: ${actualQuiz}/${quizCount}）`);
+      }
       
       return {
         study_guide: content.study_guide || '',
@@ -449,6 +458,16 @@ CRITICAL REQUIREMENTS:
         
         // 尝试再次解析
         const content = JSON.parse(fixedJson);
+        
+        // 再次验证数量
+        const actualFlashcards = content.flashcards?.length || 0;
+        const actualQuiz = content.quiz?.length || 0;
+        
+        if (actualFlashcards < flashcardCount - 2 || actualQuiz < quizCount - 2) {
+          console.warn(`   ⚠️  修复后内容数量仍不足: flashcards ${actualFlashcards}/${flashcardCount}, quiz ${actualQuiz}/${quizCount}`);
+          throw new Error(`内容被截断（flashcards: ${actualFlashcards}/${flashcardCount}, quiz: ${actualQuiz}/${quizCount}）`);
+        }
+        
         console.log(`    ✅ Topic ${topic.topic_number} JSON 修复成功`);
         
         return {
@@ -456,7 +475,7 @@ CRITICAL REQUIREMENTS:
           flashcards: content.flashcards || [],
           quiz: content.quiz || []
         };
-      } catch (fixError) {
+      } catch {
         // 修复也失败，记录详细信息
         console.error(`❌ Topic ${topic.topic_number} JSON 解析失败:`, parseError.message);
         console.error(`   原始响应前 500 字符:`, text.substring(0, 500));
@@ -532,7 +551,40 @@ CRITICAL REQUIREMENTS:
     }
 
     if (endIdx === -1) {
-      throw new Error('无法从响应中找到 JSON 结束位置');
+      // JSON 被截断，尝试修复
+      console.warn('   ⚠️  检测到 JSON 被截断，尝试修复...');
+      
+      // 检查是否在 quiz 或 flashcards 数组中被截断
+      const lastBraceIdx = jsonText.lastIndexOf('}');
+      if (lastBraceIdx > startIdx) {
+        // 尝试在最后一个完整对象后截断
+        let testJson = jsonText.substring(startIdx, lastBraceIdx + 1);
+        
+        // 添加必要的闭合符号
+        // 检查是否在数组中
+        const openArrays = (testJson.match(/\[/g) || []).length - (testJson.match(/\]/g) || []).length;
+        const openBraces = (testJson.match(/\{/g) || []).length - (testJson.match(/\}/g) || []).length;
+        
+        // 闭合数组和对象
+        for (let i = 0; i < openArrays; i++) {
+          testJson += ']';
+        }
+        for (let i = 0; i < openBraces; i++) {
+          testJson += '}';
+        }
+        
+        // 尝试解析修复后的 JSON
+        try {
+          JSON.parse(testJson);
+          console.log('   ✅ JSON 截断修复成功');
+          endIdx = testJson.length;
+          jsonText = testJson;
+        } catch {
+          throw new Error('无法从响应中找到 JSON 结束位置（响应可能被截断）');
+        }
+      } else {
+        throw new Error('无法从响应中找到 JSON 结束位置（响应可能被截断）');
+      }
     }
 
     let cleanJson = jsonText.substring(startIdx, endIdx);
