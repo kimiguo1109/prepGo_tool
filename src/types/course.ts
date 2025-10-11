@@ -233,23 +233,11 @@ export interface SeparatedContentJSON {
 }
 
 /**
- * Combined Complete JSON - 完整课程包（Phase 1 + 2 + 3）
- */
-export interface CombinedCompleteJSON {
-  courses: Course[];
-  units: Unit[];
-  topics: Topic[];
-  study_guides: StudyGuide[];
-  topic_flashcards: TopicFlashcard[];
-  quizzes: Quiz[];
-  unit_tests: UnitTest[];
-  unit_assessment_questions: UnitAssessmentQuestion[];
-}
-
-/**
  * 双 JSON 输出结果（v11.0 最终输出）
+ * - separated_content_json: 扁平化的新内容（用于数据库导入）
+ * - combined_complete_json: 嵌套的完整课程结构（保持原始 APCourse 格式）
  */
 export interface DualJSONOutput {
   separated_content_json: SeparatedContentJSON;
-  combined_complete_json: CombinedCompleteJSON;
+  combined_complete_json: APCourse;
 }

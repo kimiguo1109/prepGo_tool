@@ -58,8 +58,11 @@ export async function POST(request: NextRequest) {
           console.log(`✅ 课程生成完成，耗时: ${(generationTime / 1000).toFixed(1)}s`);
 
           // 计算统计信息
+          const totalTopics = dualJSON.combined_complete_json.units.reduce(
+            (sum, unit) => sum + unit.topics.length, 0
+          );
           const statistics = {
-            total_topics: dualJSON.combined_complete_json.topics.length,
+            total_topics: totalTopics,
             total_flashcards: dualJSON.separated_content_json.topic_flashcards.length,
             total_quiz_questions: dualJSON.separated_content_json.quizzes.length,
             total_unit_tests: dualJSON.separated_content_json.unit_tests.length,

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import type { 
   APCourse,
@@ -7,15 +8,15 @@ import type {
   TopicFlashcard,
   Quiz,
   UnitTest,
-  UnitAssessmentQuestion,
-  Course,
-  Unit,
-  Topic
+  UnitAssessmentQuestion
 } from '@/types/course';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 const PROXY_URL = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || 'http://127.0.0.1:7890';
+
+// 创建代理 agent
+const httpsAgent = new HttpsProxyAgent(PROXY_URL);
 
 /**
  * PrepGo 课程生成器 - 完整的工作流
@@ -211,8 +212,8 @@ export class CourseGenerator {
         onProgress?.(`📄 处理 Topic ${topic.topic_number} [${progress}]`, 45 + Math.round((taskIndex / totalTopics) * 45));
         
         try {
-          // 带重试的内容生成
-          const content = await this.generateTopicContentWithRetry(topic, 3, onProgress, totalTopics);
+          // 带重试的内容生成（5次重试）
+          const content = await this.generateTopicContentWithRetry(topic, 5, onProgress, totalTopics);
           
           // 更新原始数据
           Object.assign(enhancedData.units[unitIndex].topics[topicIndex], content);
@@ -327,71 +328,95 @@ export class CourseGenerator {
     const quizCount = (topic as any).practice?.quiz_count || 8;
     const wordCount = (topic as any).learn?.study_guide_words || 100;
 
-    const prompt = `Create AP course content for: ${topic.topic_title}
+    const prompt = `You are an AP course content generator. Create high-quality educational content for the following topic.
 
-Learning Objectives: ${loSummaries}
-Essential Knowledge: ${ekSummaries}
+TOPIC: ${topic.topic_title}
 
-Generate JSON:
+LEARNING OBJECTIVES: ${loSummaries}
+
+ESSENTIAL KNOWLEDGE: ${ekSummaries}
+
+Generate the following content in strict JSON format:
+
 {
-  "study_guide": "${wordCount} words max, academic English",
-  "flashcards": [${flashcardCount} items: {"front":"Q","back":"A"}],
-  "quiz": [${quizCount} items: {"question":"","options":["A.","B.","C.","D."],"correct_answer":"A","explanation":""}]
+  "study_guide": "Write a comprehensive study guide in academic English (approximately ${wordCount} words). Cover all learning objectives and essential knowledge. Use clear explanations suitable for AP students.",
+  "flashcards": [
+    {
+      "front": "Clear question or concept",
+      "back": "Concise answer or explanation"
+    }
+    // Generate EXACTLY ${flashcardCount} flashcards
+  ],
+  "quiz": [
+    {
+      "question": "Multiple choice question",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct_answer": "A",
+      "explanation": "Detailed explanation of the correct answer"
+    }
+    // Generate EXACTLY ${quizCount} quiz questions
+  ]
 }
 
-Rules: English only, exact counts, concise but comprehensive.`;
+CRITICAL REQUIREMENTS:
+1. ALL content MUST be in ENGLISH only
+2. Generate EXACTLY ${flashcardCount} flashcards
+3. Generate EXACTLY ${quizCount} quiz questions
+4. Study guide should be approximately ${wordCount} words
+5. Use academic but clear language suitable for AP students
+6. Return ONLY pure JSON - NO comments (no // or /* */), NO markdown, NO explanations
+7. Do NOT use Chinese or any other non-English languages
+8. Ensure valid JSON syntax - proper commas, no trailing commas`;
 
     // 调用 Gemini API
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
     
-    // 配置代理（仅在 Node.js 环境中）
-    const proxyAgent = typeof window === 'undefined' ? new HttpsProxyAgent(PROXY_URL) : undefined;
-    
-    const response = await fetch(url, {
-      method: 'POST',
+    const response = await axios.post(url, {
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }]
+        }
+      ],
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens: 2000,
+      }
+    }, {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: prompt }]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 2000,
-        }
-      }),
-      // @ts-expect-error - agent is valid in Node.js fetch
-      agent: proxyAgent
+      httpsAgent: httpsAgent,
+      proxy: false,
+      timeout: 60000
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Gemini API 错误 ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     
     if (!text) {
       throw new Error('API 返回空响应');
     }
 
-    const jsonText = this.extractJSON(text);
-    const content = JSON.parse(jsonText);
-    
-    return {
-      study_guide: content.study_guide || '',
-      flashcards: content.flashcards || [],
-      quiz: content.quiz || []
-    };
+    try {
+      const jsonText = this.extractJSON(text);
+      const content = JSON.parse(jsonText);
+      
+      return {
+        study_guide: content.study_guide || '',
+        flashcards: content.flashcards || [],
+        quiz: content.quiz || []
+      };
+    } catch (parseError: any) {
+      // 如果 JSON 解析失败，记录详细信息
+      console.error(`❌ Topic ${topic.topic_number} JSON 解析失败:`, parseError.message);
+      console.error(`   原始响应前 500 字符:`, text.substring(0, 500));
+      console.error(`   原始响应后 500 字符:`, text.substring(Math.max(0, text.length - 500)));
+      throw new Error(`JSON 解析失败: ${parseError.message}`);
+    }
   }
 
   /**
-   * 辅助函数：从文本中提取 JSON
+   * 辅助函数：从文本中提取并清理 JSON
    */
   private extractJSON(text: string): string {
     let jsonText = text.trim();
@@ -409,7 +434,19 @@ Rules: English only, exact counts, concise but comprehensive.`;
       throw new Error('无法从响应中提取 JSON 数据');
     }
 
-    return jsonMatch[0];
+    let cleanJson = jsonMatch[0];
+    
+    // 移除 JSON 中的注释（Gemini 有时会添加注释）
+    // 移除 // 单行注释
+    cleanJson = cleanJson.replace(/\/\/[^\n]*/g, '');
+    
+    // 移除 /* */ 多行注释
+    cleanJson = cleanJson.replace(/\/\*[\s\S]*?\*\//g, '');
+    
+    // 移除可能的尾部逗号（在数组或对象的最后一个元素后）
+    cleanJson = cleanJson.replace(/,(\s*[}\]])/g, '$1');
+    
+    return cleanJson;
   }
 
   /**
@@ -451,50 +488,36 @@ Rules: English only, exact counts, concise but comprehensive.`;
 
   /**
    * v11.0: 转换为双 JSON 输出格式
-   * 将嵌套的 APCourse 转换为扁平化的双 JSON 结构
+   * - separated_content_json: 扁平化的新内容（用于数据库导入）
+   * - combined_complete_json: 嵌套的完整课程结构（保持原始格式）
    */
   convertToDualJSON(courseData: APCourse): DualJSONOutput {
     const courseName = courseData.course_name;
     const courseId = this.generateId(courseName);
     
-    // Phase 1: 规划数据
-    const courses: Course[] = [];
-    const units: Unit[] = [];
-    const topics: Topic[] = [];
-    
-    // Phase 2 & 3: 生成内容
+    // Phase 2 & 3: 生成扁平化内容（用于 separated_content_json）
     const topicOverviews: TopicOverview[] = [];
     const studyGuides: StudyGuide[] = [];
     const topicFlashcards: TopicFlashcard[] = [];
     const quizzes: Quiz[] = [];
     const unitTests: UnitTest[] = [];
     const unitAssessmentQuestions: UnitAssessmentQuestion[] = [];
-    
-    let totalCourseMinutes = 0;
 
-    // 处理 Course
+    // 处理所有 units 和 topics，生成扁平化数据
     courseData.units.forEach((unit) => {
       const unitId = `${courseId}_unit_${unit.unit_number}`;
-      let unitTotalMinutes = 0;
 
       // 处理 Topics
       unit.topics.forEach((topic) => {
         const topicId = `${courseId}_${topic.topic_number.replace('.', '_')}`;
-        const topicMinutes = (topic as any).topic_estimated_minutes || 0;
-        const learnMinutes = (topic.learn?.minutes) || 0;
-        const reviewMinutes = (topic.review?.minutes) || 0;
-        const practiceMinutes = (topic.practice?.minutes) || 0;
-        
-        unitTotalMinutes += topicMinutes;
 
-        // Topic Overview (Phase 2)
-        const overviewText = `Explore ${topic.topic_title}`;
+        // Topic Overview
         topicOverviews.push({
           topic_id: topicId,
-          overview_text: overviewText
+          overview_text: `Explore ${topic.topic_title}`
         });
 
-        // Study Guide (Phase 2)
+        // Study Guide
         if (topic.study_guide) {
           studyGuides.push({
             study_guide_id: `${topicId}_sg`,
@@ -503,7 +526,7 @@ Rules: English only, exact counts, concise but comprehensive.`;
           });
         }
 
-        // Flashcards (Phase 2)
+        // Flashcards
         if (topic.flashcards && topic.flashcards.length > 0) {
           topic.flashcards.forEach((card, cardIdx) => {
             topicFlashcards.push({
@@ -516,7 +539,7 @@ Rules: English only, exact counts, concise but comprehensive.`;
           });
         }
 
-        // Quiz Questions (Phase 2)
+        // Quiz Questions
         if (topic.quiz && topic.quiz.length > 0) {
           topic.quiz.forEach((q, qIdx) => {
             quizzes.push({
@@ -533,35 +556,6 @@ Rules: English only, exact counts, concise but comprehensive.`;
             });
           });
         }
-
-        // Topic 数据 (Phase 1)
-        topics.push({
-          topic_id: topicId,
-          unit_id: unitId,
-          topic_number: topic.topic_number,
-          ced_topic_title: topic.topic_title,
-          topic_overview: overviewText,
-          estimated_minutes: topicMinutes,
-          learn_minutes: learnMinutes,
-          review_minutes: reviewMinutes,
-          practice_minutes: practiceMinutes,
-          target_sg_words: topic.learn?.study_guide_words || 0,
-          target_flashcards: topic.review?.flashcards_count || 0,
-          target_mcq: topic.practice?.quiz_count || 0
-        });
-      });
-
-      totalCourseMinutes += unitTotalMinutes;
-
-      // Unit 数据 (Phase 1)
-      units.push({
-        unit_id: unitId,
-        course_id: courseId,
-        unit_number: unit.unit_number,
-        unit_title: unit.unit_title,
-        estimated_minutes: unitTotalMinutes,
-        ced_period: unit.ced_class_periods,
-        exam_weight: unit.exam_weight
       });
 
       // Unit Test (Phase 3) - 从 Topic Quiz 中选择
@@ -604,17 +598,9 @@ Rules: English only, exact counts, concise but comprehensive.`;
       }
     });
 
-    // Course 数据 (Phase 1)
-    courses.push({
-      course_id: courseId,
-      course_name: courseName,
-      difficulty_level: 4, // 默认难度
-      class_to_app_factor: 0.50,
-      estimated_minutes: totalCourseMinutes
-    });
-
     // 返回双 JSON 输出
     return {
+      // separated: 扁平化的新内容（用于数据库导入）
       separated_content_json: {
         topic_overviews: topicOverviews,
         study_guides: studyGuides,
@@ -623,16 +609,8 @@ Rules: English only, exact counts, concise but comprehensive.`;
         unit_tests: unitTests,
         unit_assessment_questions: unitAssessmentQuestions
       },
-      combined_complete_json: {
-        courses: courses,
-        units: units,
-        topics: topics,
-        study_guides: studyGuides,
-        topic_flashcards: topicFlashcards,
-        quizzes: quizzes,
-        unit_tests: unitTests,
-        unit_assessment_questions: unitAssessmentQuestions
-      }
+      // complete: 嵌套的完整课程结构（保持原始格式）
+      combined_complete_json: courseData
     };
   }
 

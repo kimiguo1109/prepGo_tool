@@ -3,11 +3,15 @@
  * 使用 Google Gemini 2.5 Flash Lite 生成学习内容
  */
 
+import axios from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 const PROXY_URL = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || 'http://127.0.0.1:7890';
+
+// 创建代理 agent
+const httpsAgent = new HttpsProxyAgent(PROXY_URL);
 
 /**
  * AI 服务类
@@ -68,32 +72,22 @@ export class AIService {
       // 调用 Gemini API
       const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
       
-      // 配置代理（仅在 Node.js 环境中）
-      const proxyAgent = typeof window === 'undefined' ? new HttpsProxyAgent(PROXY_URL) : undefined;
-      
-      const response = await fetch(url, {
-        method: 'POST',
+      const response = await axios.post(url, {
+        contents: geminiMessages,
+        generationConfig: {
+          temperature: temperature,
+          maxOutputTokens: maxTokens,
+        }
+      }, {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          contents: geminiMessages,
-          generationConfig: {
-            temperature: temperature,
-            maxOutputTokens: maxTokens,
-          }
-        }),
-        // @ts-expect-error - agent is valid in Node.js fetch
-        agent: proxyAgent
+        httpsAgent: httpsAgent,
+        proxy: false,
+        timeout: 30000
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Gemini API 错误 ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
-      const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const content = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
       
       if (!content) {
         throw new Error('AI 返回空响应');
@@ -110,44 +104,45 @@ export class AIService {
    * 生成 Study Guide
    */
   async generateStudyGuide(courseData: any): Promise<any> {
-    const systemPrompt = `你是一个专业的AP课程学习指南生成专家。你的任务是为学生创建全面、清晰、实用的学习指南。
+    const systemPrompt = `You are a professional AP course study guide generator. Your task is to create comprehensive, clear, and practical study guides for students.
 
-要求：
-1. 总结每个单元的核心内容
-2. 提炼关键概念和学习目标
-3. 给出考试技巧和学习建议
-4. 使用简洁明了的语言
-5. 输出必须是有效的 JSON 格式`;
+Requirements:
+1. Summarize core content of each unit
+2. Extract key concepts and learning objectives
+3. Provide exam tips and study recommendations
+4. Use clear and concise language
+5. Output must be valid JSON format
+6. ALL CONTENT MUST BE IN ENGLISH`;
 
-    const userPrompt = `基于以下AP课程数据，生成一份完整的学习指南：
+    const userPrompt = `Based on the following AP course data, generate a complete study guide:
 
-课程名称: ${courseData.course_name}
-单元数量: ${courseData.units.length}
+Course Name: ${courseData.course_name}
+Number of Units: ${courseData.units.length}
 
-每个单元包含：
+Each unit contains:
 ${courseData.units.slice(0, 3).map((u: any) => `
 - Unit ${u.unit_number}: ${u.unit_title}
-  主题数: ${u.topics.length}
-  学习目标数: ${u.topics.reduce((sum: number, t: any) => sum + t.learning_objectives.length, 0)}
-  考试权重: ${u.exam_weight}
+  Topics: ${u.topics.length}
+  Learning Objectives: ${u.topics.reduce((sum: number, t: any) => sum + t.learning_objectives.length, 0)}
+  Exam Weight: ${u.exam_weight}
 `).join('')}
 
-请生成 JSON 格式的学习指南，包含：
+Generate a JSON study guide with the following structure:
 {
-  "overview": "课程总览",
+  "overview": "Course overview in English",
   "units": [
     {
       "unitNumber": 1,
-      "unitTitle": "单元标题",
-      "summary": "单元摘要（200字内）",
-      "keyPoints": ["要点1", "要点2", "要点3"],
-      "examTips": ["考试技巧1", "考试技巧2"]
+      "unitTitle": "Unit title",
+      "summary": "Unit summary in English (max 200 words)",
+      "keyPoints": ["Key point 1", "Key point 2", "Key point 3"],
+      "examTips": ["Exam tip 1", "Exam tip 2"]
     }
   ],
-  "studyTips": ["整体学习建议1", "学习建议2", "学习建议3"]
+  "studyTips": ["Overall study tip 1", "Study tip 2", "Study tip 3"]
 }
 
-只返回 JSON，不要任何其他文字。`;
+IMPORTANT: Generate ALL content in ENGLISH only. Return only JSON, no other text.`;
 
     const response = await this.chatCompletion([
       { role: 'system', content: systemPrompt },
@@ -169,33 +164,34 @@ ${courseData.units.slice(0, 3).map((u: any) => `
       ? courseData.units.filter((u: any) => u.unit_number === unitNumber)
       : courseData.units.slice(0, 2); // 默认生成前2个单元
 
-    const systemPrompt = `你是一个专业的学习闪卡生成专家。生成的闪卡应该：
-1. 正面是清晰的问题或概念
-2. 背面是简洁的答案或解释
-3. 难度分级准确
-4. 覆盖重要知识点
-5. 输出必须是有效的 JSON 数组格式`;
+    const systemPrompt = `You are a professional learning flashcard generator. The flashcards should:
+1. Front: Clear question or concept
+2. Back: Concise answer or explanation
+3. Accurate difficulty grading
+4. Cover important knowledge points
+5. Output must be valid JSON array format
+6. ALL CONTENT MUST BE IN ENGLISH`;
 
-    const userPrompt = `为以下AP课程单元生成学习闪卡：
+    const userPrompt = `Generate learning flashcards for the following AP course units:
 
 ${targetUnits.map((unit: any) => `
 Unit ${unit.unit_number}: ${unit.unit_title}
-主题：
+Topics:
 ${unit.topics.slice(0, 3).map((t: any) => `  - ${t.topic_title}`).join('\n')}
 `).join('\n')}
 
-请生成至少20张闪卡，JSON格式：
+Generate at least 20 flashcards in JSON format:
 [
   {
-    "front": "问题或概念",
-    "back": "答案或解释",
+    "front": "Question or concept in English",
+    "back": "Answer or explanation in English",
     "unit": 1,
-    "topic": "主题名称",
+    "topic": "Topic name",
     "difficulty": "easy|medium|hard"
   }
 ]
 
-只返回 JSON 数组，不要任何其他文字。`;
+IMPORTANT: Generate ALL content in ENGLISH only. Return only JSON array, no other text.`;
 
     const response = await this.chatCompletion([
       { role: 'system', content: systemPrompt },
@@ -216,38 +212,39 @@ ${unit.topics.slice(0, 3).map((t: any) => `  - ${t.topic_title}`).join('\n')}
       ? courseData.units.filter((u: any) => u.unit_number === unitNumber)
       : courseData.units.slice(0, 1); // 默认生成第一个单元
 
-    const systemPrompt = `你是一个专业的AP课程测验生成专家。生成的测验应该：
-1. 包含多种题型（选择题、判断题）
-2. 难度分级合理
-3. 覆盖重要知识点
-4. 提供详细解释
-5. 输出必须是有效的 JSON 格式`;
+    const systemPrompt = `You are a professional AP course quiz generator. The quiz should:
+1. Include multiple question types (multiple choice, true/false)
+2. Appropriate difficulty grading
+3. Cover important knowledge points
+4. Provide detailed explanations
+5. Output must be valid JSON format
+6. ALL CONTENT MUST BE IN ENGLISH`;
 
-    const userPrompt = `为以下AP课程单元生成测验：
+    const userPrompt = `Generate a quiz for the following AP course units:
 
 ${targetUnits.map((unit: any) => `
 Unit ${unit.unit_number}: ${unit.unit_title}
-学习目标：
+Learning Objectives:
 ${unit.topics.flatMap((t: any) => t.learning_objectives).slice(0, 5).map((lo: any) => `  - ${lo.summary}`).join('\n')}
 `).join('\n')}
 
-请生成10-15道测验题，JSON格式：
+Generate 10-15 quiz questions in JSON format:
 {
   "title": "Unit X Quiz",
   "questions": [
     {
       "type": "multiple_choice",
-      "question": "问题",
-      "options": ["选项A", "选项B", "选项C", "选项D"],
-      "correctAnswer": "选项A",
-      "explanation": "解释",
+      "question": "Question in English",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": "Option A",
+      "explanation": "Explanation in English",
       "difficulty": "medium",
       "points": 1
     }
   ]
 }
 
-只返回 JSON，不要任何其他文字。`;
+IMPORTANT: Generate ALL content in ENGLISH only. Return only JSON, no other text.`;
 
     const response = await this.chatCompletion([
       { role: 'system', content: systemPrompt },
