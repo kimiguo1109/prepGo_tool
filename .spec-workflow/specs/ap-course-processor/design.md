@@ -73,6 +73,8 @@ export interface APCourse {
   course_name: string;
   units: APUnit[];
   metadata?: CourseMetadata;
+  // Phase 4: 最终统计数据
+  image_statistics?: ImageStatistics;
 }
 
 /**
@@ -94,6 +96,19 @@ export interface APUnit {
   ced_class_periods: string; // 格式: "~8 Class Periods"
   exam_weight: string; // 格式: "4-6%"
   topics: APTopic[];
+  // AI 生成的单元测试（从 Topic Quiz 编译而成）
+  unit_test?: UnitTest;
+}
+
+/**
+ * 单元测试数据（Phase 3 生成）
+ */
+export interface UnitTest {
+  unit_number: number;
+  test_title: string;         // 格式: "Unit 1 Test"
+  questions: QuizQuestion[];  // 15-20 题，从 Topic Quiz 中选取
+  total_questions: number;
+  estimated_minutes: number;  // 建议测试时长
 }
 
 /**
@@ -157,6 +172,31 @@ export interface LearningObjective {
 export interface EssentialKnowledge {
   id: string; // 格式: "KC-1.1" 或 "KC-1.1.I.A"
   summary: string;
+}
+
+/**
+ * 图像需求统计（Phase 4 生成）
+ */
+export interface ImageStatistics {
+  // Flashcards
+  total_flashcards: number;
+  flashcards_requiring_images: number;
+  flashcards_image_percentage: number;
+  
+  // Topic Quiz
+  total_topic_quiz_questions: number;
+  topic_quiz_requiring_images: number;
+  topic_quiz_image_percentage: number;
+  
+  // Unit Tests
+  total_unit_test_questions: number;
+  unit_test_requiring_images: number;
+  unit_test_image_percentage: number;
+  
+  // 总计
+  total_items: number;
+  total_requiring_images: number;
+  overall_image_percentage: number;
 }
 
 /**
@@ -227,6 +267,10 @@ export const APCourseSchema = z.object({
 
 ### 3.1 图像标记规则（Image Flagging）
 
+> **适用范围**：Phase 2 和 Phase 3
+> - Phase 2: 为新生成的 flashcards 和 quiz questions 添加 requires_image
+> - Phase 3: 编译 unit test 时保留原题的 requires_image 标记
+
 AI 生成器在创建 flashcards 和 quiz questions 时，必须为每个项目添加 `requires_image` 标志。
 
 #### 3.1.1 Quiz Questions 图像判断规则
@@ -284,21 +328,275 @@ AI 生成器在创建 flashcards 和 quiz questions 时，必须为每个项目�
 ### 3.2 内容生成工作流
 
 ```
-Phase 1: 时长计算
-  └─ 基于 LO/EK 数量计算学习时间
+Phase 1: Quantitative Planning (使用 JSON)
+  ├─ 分析课程类型（A/B/C）
+  ├─ 分配参数（学习速度、每日时长）
+  ├─ 计算内容数量（target_mcq, target_flashcards, target_sg_words）
+  └─ 计算每个 Topic 的学习时长
 
-Phase 2: 模块分配
-  ├─ Learn 模块 (50%): Study Guide
-  ├─ Review 模块 (25%): Flashcards
-  └─ Practice 模块 (25%): Quiz
+Phase 2: Iterative Content Generation (使用 JSON 和 PDF)
+  ├─ 为每个 Topic 生成 Study Guide
+  ├─ 生成 Flashcards（含 requires_image 标记）
+  ├─ 生成 Quiz Questions（含 requires_image 标记）
+  └─ 注意：requires_image 遵循 3.1 节定义的判断规则
 
-Phase 3: AI 内容生成
-  ├─ 生成 Study Guide
-  ├─ 生成 Flashcards（含 requires_image 判断）
-  └─ 生成 Quiz Questions（含 requires_image 判断）
+Phase 3: Unit Test Compilation (使用已生成的 Topic Quiz)
+  ├─ 从所有 Topic Quiz 中随机选取题目
+  ├─ 编译成 Unit-level 综合测试
+  ├─ 保留原题的 requires_image 标记
+  └─ 每个 Unit Test 包含 15-20 道题
 
-Phase 4: 输出结果
-  └─ 完整课程数据（含所有生成内容）
+Phase 4: Final Assembly
+  ├─ 组装完整课程数据
+  ├─ 验证所有 flashcards 和 quiz questions 都有 requires_image 字段
+  ├─ 统计图像需求（需要配图的题目数量）
+  └─ 输出完整 JSON（含所有生成内容和图像标记）
+```
+
+### 3.3 Unit Test 编译规则（Phase 3）
+
+#### 3.3.1 编译流程
+
+```typescript
+/**
+ * 从 Topic Quiz 编译 Unit Test
+ */
+function compileUnitTest(unit: APUnit): UnitTest {
+  // 1. 收集所有 Topic Quiz 中的题目
+  const allQuestions: QuizQuestion[] = [];
+  for (const topic of unit.topics) {
+    if (topic.quiz && topic.quiz.length > 0) {
+      allQuestions.push(...topic.quiz);
+    }
+  }
+
+  // 2. 随机选择 15-20 题（根据题目总数）
+  const targetCount = Math.min(20, Math.max(15, allQuestions.length));
+  const selectedQuestions = shuffleAndSelect(allQuestions, targetCount);
+
+  // 3. 保留原题的所有字段（包括 requires_image）
+  return {
+    unit_number: unit.unit_number,
+    test_title: `Unit ${unit.unit_number} Test`,
+    questions: selectedQuestions, // 完整保留 requires_image
+    total_questions: selectedQuestions.length,
+    estimated_minutes: selectedQuestions.length * 1.5 // 每题 1.5 分钟
+  };
+}
+```
+
+#### 3.3.2 题目选择策略
+
+- **数量**：15-20 题（根据 unit 包含的 topics 数量调整）
+- **分布**：尽量从不同 topics 中选取（保证覆盖面）
+- **随机性**：使用加权随机（优先选择重要 topics 的题目）
+- **保留原始数据**：
+  - `question`
+  - `options`
+  - `correct_answer`
+  - `explanation`
+  - **`requires_image`**（关键：必须保留）
+
+#### 3.3.3 示例 Unit Test 数据
+
+```json
+{
+  "unit_number": 1,
+  "unit_title": "The Chemical Basis of Life",
+  "unit_test": {
+    "unit_number": 1,
+    "test_title": "Unit 1 Test",
+    "questions": [
+      {
+        "question": "Which property of water is most directly responsible for the transport of water from roots to leaves?",
+        "options": [
+          "A. Polarity",
+          "B. Cohesion",
+          "C. High specific heat",
+          "D. Expansion upon freezing"
+        ],
+        "correct_answer": "B",
+        "explanation": "Cohesion allows water molecules to stick together, creating a continuous column for transport.",
+        "requires_image": false
+      },
+      {
+        "question": "Based on the provided Lewis diagram, what is the molecular geometry of the species?",
+        "options": [
+          "A. Tetrahedral",
+          "B. Linear",
+          "C. Bent",
+          "D. Trigonal planar"
+        ],
+        "correct_answer": "A",
+        "explanation": "The molecule has four bonding regions and no lone pairs, resulting in tetrahedral geometry.",
+        "requires_image": true
+      }
+    ],
+    "total_questions": 18,
+    "estimated_minutes": 27
+  },
+  "topics": [...]
+}
+```
+
+### 3.4 最终验证与统计（Phase 4）
+
+#### 3.4.1 数据验证清单
+
+在最终输出前，必须验证以下内容：
+
+1. **Flashcards 验证**
+   ```typescript
+   function validateFlashcards(course: APCourse): ValidationResult {
+     for (const unit of course.units) {
+       for (const topic of unit.topics) {
+         if (topic.flashcards) {
+           for (const card of topic.flashcards) {
+             // 检查 requires_image 字段是否存在
+             if (card.requires_image === undefined) {
+               return { valid: false, error: `Missing requires_image in flashcard: ${card.front}` };
+             }
+           }
+         }
+       }
+     }
+     return { valid: true };
+   }
+   ```
+
+2. **Quiz Questions 验证**
+   ```typescript
+   function validateQuizQuestions(course: APCourse): ValidationResult {
+     for (const unit of course.units) {
+       // 验证 Topic Quiz
+       for (const topic of unit.topics) {
+         if (topic.quiz) {
+           for (const q of topic.quiz) {
+             if (q.requires_image === undefined) {
+               return { valid: false, error: `Missing requires_image in topic quiz: ${q.question}` };
+             }
+           }
+         }
+       }
+       
+       // 验证 Unit Test
+       if (unit.unit_test?.questions) {
+         for (const q of unit.unit_test.questions) {
+           if (q.requires_image === undefined) {
+             return { valid: false, error: `Missing requires_image in unit test: ${q.question}` };
+           }
+         }
+       }
+     }
+     return { valid: true };
+   }
+   ```
+
+#### 3.4.2 图像需求统计
+
+```typescript
+interface ImageStatistics {
+  // Flashcards
+  total_flashcards: number;
+  flashcards_requiring_images: number;
+  flashcards_image_percentage: number;
+  
+  // Topic Quiz
+  total_topic_quiz_questions: number;
+  topic_quiz_requiring_images: number;
+  topic_quiz_image_percentage: number;
+  
+  // Unit Tests
+  total_unit_test_questions: number;
+  unit_test_requiring_images: number;
+  unit_test_image_percentage: number;
+  
+  // 总计
+  total_items: number;
+  total_requiring_images: number;
+  overall_image_percentage: number;
+}
+
+function calculateImageStatistics(course: APCourse): ImageStatistics {
+  let totalFlashcards = 0;
+  let flashcardsRequiringImages = 0;
+  let totalTopicQuiz = 0;
+  let topicQuizRequiringImages = 0;
+  let totalUnitTest = 0;
+  let unitTestRequiringImages = 0;
+
+  for (const unit of course.units) {
+    for (const topic of unit.topics) {
+      // 统计 Flashcards
+      if (topic.flashcards) {
+        totalFlashcards += topic.flashcards.length;
+        flashcardsRequiringImages += topic.flashcards.filter(c => c.requires_image).length;
+      }
+      
+      // 统计 Topic Quiz
+      if (topic.quiz) {
+        totalTopicQuiz += topic.quiz.length;
+        topicQuizRequiringImages += topic.quiz.filter(q => q.requires_image).length;
+      }
+    }
+    
+    // 统计 Unit Test
+    if (unit.unit_test?.questions) {
+      totalUnitTest += unit.unit_test.questions.length;
+      unitTestRequiringImages += unit.unit_test.questions.filter(q => q.requires_image).length;
+    }
+  }
+
+  const totalItems = totalFlashcards + totalTopicQuiz + totalUnitTest;
+  const totalRequiringImages = flashcardsRequiringImages + topicQuizRequiringImages + unitTestRequiringImages;
+
+  return {
+    total_flashcards: totalFlashcards,
+    flashcards_requiring_images: flashcardsRequiringImages,
+    flashcards_image_percentage: totalFlashcards > 0 ? (flashcardsRequiringImages / totalFlashcards) * 100 : 0,
+    
+    total_topic_quiz_questions: totalTopicQuiz,
+    topic_quiz_requiring_images: topicQuizRequiringImages,
+    topic_quiz_image_percentage: totalTopicQuiz > 0 ? (topicQuizRequiringImages / totalTopicQuiz) * 100 : 0,
+    
+    total_unit_test_questions: totalUnitTest,
+    unit_test_requiring_images: unitTestRequiringImages,
+    unit_test_image_percentage: totalUnitTest > 0 ? (unitTestRequiringImages / totalUnitTest) * 100 : 0,
+    
+    total_items: totalItems,
+    total_requiring_images: totalRequiringImages,
+    overall_image_percentage: totalItems > 0 ? (totalRequiringImages / totalItems) * 100 : 0
+  };
+}
+```
+
+#### 3.4.3 最终输出结构
+
+```json
+{
+  "course_name": "AP Biology",
+  "units": [...],
+  "metadata": {
+    "extracted_at": "2025-10-07T15:15:52Z",
+    "pdf_file_name": "ap-biology-ced.pdf",
+    "pdf_page_count": 200,
+    "version": "2024"
+  },
+  "image_statistics": {
+    "total_flashcards": 300,
+    "flashcards_requiring_images": 45,
+    "flashcards_image_percentage": 15,
+    "total_topic_quiz_questions": 500,
+    "topic_quiz_requiring_images": 80,
+    "topic_quiz_image_percentage": 16,
+    "total_unit_test_questions": 160,
+    "unit_test_requiring_images": 28,
+    "unit_test_image_percentage": 17.5,
+    "total_items": 960,
+    "total_requiring_images": 153,
+    "overall_image_percentage": 15.9
+  }
+}
 ```
 
 ## 4. 数据处理流程（4步骤）
