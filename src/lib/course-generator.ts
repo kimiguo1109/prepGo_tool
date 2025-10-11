@@ -1,5 +1,19 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { APCourse } from '@/types/course';
+import type { 
+  APCourse,
+  DualJSONOutput,
+  SeparatedContentJSON,
+  CombinedCompleteJSON,
+  TopicOverview,
+  StudyGuide,
+  TopicFlashcard,
+  Quiz,
+  UnitTest,
+  UnitAssessmentQuestion,
+  Course,
+  Unit,
+  Topic
+} from '@/types/course';
 
 const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 
@@ -411,6 +425,229 @@ Rules: English only, exact counts, concise but comprehensive.`;
       console.error('❌ 课程生成失败:', error);
       throw error;
     }
+  }
+
+  /**
+   * v11.0: 转换为双 JSON 输出格式
+   * 将嵌套的 APCourse 转换为扁平化的双 JSON 结构
+   */
+  convertToDualJSON(courseData: APCourse): DualJSONOutput {
+    const courseName = courseData.course_name;
+    const courseId = this.generateId(courseName);
+    
+    // Phase 1: 规划数据
+    const courses: Course[] = [];
+    const units: Unit[] = [];
+    const topics: Topic[] = [];
+    
+    // Phase 2 & 3: 生成内容
+    const topicOverviews: TopicOverview[] = [];
+    const studyGuides: StudyGuide[] = [];
+    const topicFlashcards: TopicFlashcard[] = [];
+    const quizzes: Quiz[] = [];
+    const unitTests: UnitTest[] = [];
+    const unitAssessmentQuestions: UnitAssessmentQuestion[] = [];
+    
+    let totalCourseMinutes = 0;
+
+    // 处理 Course
+    courseData.units.forEach((unit, unitIdx) => {
+      const unitId = `${courseId}_unit_${unit.unit_number}`;
+      let unitTotalMinutes = 0;
+
+      // 处理 Topics
+      unit.topics.forEach((topic, topicIdx) => {
+        const topicId = `${courseId}_${topic.topic_number.replace('.', '_')}`;
+        const topicMinutes = (topic as any).topic_estimated_minutes || 0;
+        const learnMinutes = (topic.learn?.minutes) || 0;
+        const reviewMinutes = (topic.review?.minutes) || 0;
+        const practiceMinutes = (topic.practice?.minutes) || 0;
+        
+        unitTotalMinutes += topicMinutes;
+
+        // Topic Overview (Phase 2)
+        const overviewText = `Explore ${topic.topic_title}`;
+        topicOverviews.push({
+          topic_id: topicId,
+          overview_text: overviewText
+        });
+
+        // Study Guide (Phase 2)
+        if (topic.study_guide) {
+          studyGuides.push({
+            study_guide_id: `${topicId}_sg`,
+            topic_id: topicId,
+            content_markdown: topic.study_guide
+          });
+        }
+
+        // Flashcards (Phase 2)
+        if (topic.flashcards && topic.flashcards.length > 0) {
+          topic.flashcards.forEach((card, cardIdx) => {
+            topicFlashcards.push({
+              card_id: `${topicId}_fc_${String(cardIdx + 1).padStart(3, '0')}`,
+              topic_id: topicId,
+              front_content: card.front,
+              back_content: card.back,
+              requires_image: this.checkRequiresImage('flashcard', card.front, card.back)
+            });
+          });
+        }
+
+        // Quiz Questions (Phase 2)
+        if (topic.quiz && topic.quiz.length > 0) {
+          topic.quiz.forEach((q, qIdx) => {
+            quizzes.push({
+              quiz_id: `${topicId}_q_${String(qIdx + 1).padStart(3, '0')}`,
+              topic_id: topicId,
+              question_text: q.question,
+              option_a: q.options[0] || '',
+              option_b: q.options[1] || '',
+              option_c: q.options[2] || '',
+              option_d: q.options[3] || '',
+              correct_answer: q.correct_answer,
+              explanation: q.explanation,
+              requires_image: this.checkRequiresImage('quiz', q.question, q.explanation)
+            });
+          });
+        }
+
+        // Topic 数据 (Phase 1)
+        topics.push({
+          topic_id: topicId,
+          unit_id: unitId,
+          topic_number: topic.topic_number,
+          ced_topic_title: topic.topic_title,
+          topic_overview: overviewText,
+          estimated_minutes: topicMinutes,
+          learn_minutes: learnMinutes,
+          review_minutes: reviewMinutes,
+          practice_minutes: practiceMinutes,
+          target_sg_words: topic.learn?.study_guide_words || 0,
+          target_flashcards: topic.review?.flashcards_count || 0,
+          target_mcq: topic.practice?.quiz_count || 0
+        });
+      });
+
+      totalCourseMinutes += unitTotalMinutes;
+
+      // Unit 数据 (Phase 1)
+      units.push({
+        unit_id: unitId,
+        course_id: courseId,
+        unit_number: unit.unit_number,
+        unit_title: unit.unit_title,
+        estimated_minutes: unitTotalMinutes,
+        ced_period: unit.ced_class_periods,
+        exam_weight: unit.exam_weight
+      });
+
+      // Unit Test (Phase 3) - 从 Topic Quiz 中选择
+      const unitQuizzes = unit.topics.flatMap(topic => 
+        (topic.quiz || []).map((q, qIdx) => ({
+          quiz: q,
+          topicId: `${courseId}_${topic.topic_number.replace('.', '_')}`,
+          qIdx
+        }))
+      );
+
+      if (unitQuizzes.length > 0) {
+        const testId = `${unitId}_test`;
+        const selectedCount = Math.min(20, Math.max(15, unitQuizzes.length));
+        const selectedQuizzes = this.selectRandomQuizzes(unitQuizzes, selectedCount);
+
+        unitTests.push({
+          test_id: testId,
+          unit_id: unitId,
+          test_title: `Unit ${unit.unit_number} Test`,
+          total_questions: selectedQuizzes.length,
+          estimated_minutes: Math.round(selectedQuizzes.length * 1.5)
+        });
+
+        selectedQuizzes.forEach((item, idx) => {
+          const q = item.quiz;
+          unitAssessmentQuestions.push({
+            question_id: `${testId}_q_${String(idx + 1).padStart(3, '0')}`,
+            test_id: testId,
+            question_text: q.question,
+            option_a: q.options[0] || '',
+            option_b: q.options[1] || '',
+            option_c: q.options[2] || '',
+            option_d: q.options[3] || '',
+            correct_answer: q.correct_answer,
+            explanation: q.explanation,
+            requires_image: this.checkRequiresImage('quiz', q.question, q.explanation)
+          });
+        });
+      }
+    });
+
+    // Course 数据 (Phase 1)
+    courses.push({
+      course_id: courseId,
+      course_name: courseName,
+      difficulty_level: 4, // 默认难度
+      class_to_app_factor: 0.50,
+      estimated_minutes: totalCourseMinutes
+    });
+
+    // 返回双 JSON 输出
+    return {
+      separated_content_json: {
+        topic_overviews: topicOverviews,
+        study_guides: studyGuides,
+        topic_flashcards: topicFlashcards,
+        quizzes: quizzes,
+        unit_tests: unitTests,
+        unit_assessment_questions: unitAssessmentQuestions
+      },
+      combined_complete_json: {
+        courses: courses,
+        units: units,
+        topics: topics,
+        study_guides: studyGuides,
+        topic_flashcards: topicFlashcards,
+        quizzes: quizzes,
+        unit_tests: unitTests,
+        unit_assessment_questions: unitAssessmentQuestions
+      }
+    };
+  }
+
+  /**
+   * 辅助函数：生成 ID
+   */
+  private generateId(name: string): string {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+  }
+
+  /**
+   * 辅助函数：检查是否需要图片
+   */
+  private checkRequiresImage(type: 'flashcard' | 'quiz', front: string, back: string): boolean {
+    const text = `${front} ${back}`.toLowerCase();
+    
+    // 关键词判断
+    const imageKeywords = [
+      'diagram', 'chart', 'graph', 'map', 'table', 'figure',
+      'image', 'picture', 'photo', 'illustration',
+      'structure', 'model', 'Lewis', 'molecular',
+      'shown', 'depicted', 'based on the',
+      'mitochondrion', 'cell', 'organelle', 'anatomy'
+    ];
+    
+    return imageKeywords.some(keyword => text.includes(keyword));
+  }
+
+  /**
+   * 辅助函数：随机选择 Quiz 题目
+   */
+  private selectRandomQuizzes(quizzes: any[], count: number): any[] {
+    const shuffled = [...quizzes].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
   }
 }
 

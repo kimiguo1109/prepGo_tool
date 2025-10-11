@@ -50,14 +50,29 @@ export async function POST(request: NextRequest) {
             onProgress
           );
 
+          // v11.0: 转换为双 JSON 输出格式
+          onProgress?.('转换为双 JSON 格式...', 98);
+          const dualJSON = generator.convertToDualJSON(enhancedCourse);
+
           const generationTime = Date.now() - startTime;
           console.log(`✅ 课程生成完成，耗时: ${(generationTime / 1000).toFixed(1)}s`);
+
+          // 计算统计信息
+          const statistics = {
+            total_topics: dualJSON.combined_complete_json.topics.length,
+            total_flashcards: dualJSON.separated_content_json.topic_flashcards.length,
+            total_quiz_questions: dualJSON.separated_content_json.quizzes.length,
+            total_unit_tests: dualJSON.separated_content_json.unit_tests.length,
+            flashcards_requiring_images: dualJSON.separated_content_json.topic_flashcards.filter(f => f.requires_image).length,
+            quiz_questions_requiring_images: dualJSON.separated_content_json.quizzes.filter(q => q.requires_image).length,
+          };
 
           // 发送完成消息
           const completeData = JSON.stringify({
             type: 'complete',
             success: true,
-            data: enhancedCourse,
+            data: dualJSON,
+            statistics,
             generationTime,
             timestamp: Date.now()
           }) + '\n';

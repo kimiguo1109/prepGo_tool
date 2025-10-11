@@ -1,19 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Loader2, CheckCircle, AlertCircle, Download } from 'lucide-react';
-import type { APCourse } from '@/types/course';
+import { Sparkles, Loader2, CheckCircle, AlertCircle, Download, FileJson } from 'lucide-react';
+import type { APCourse, DualJSONOutput } from '@/types/course';
 import { downloadJSON, generateFilename } from '@/lib/utils';
 
 interface CompleteCourseGeneratorProps {
   courseData: APCourse;
-  onComplete?: (enhancedCourse: APCourse) => void;
+  onComplete?: (dualJSON: DualJSONOutput) => void;
 }
 
 interface ProgressMessage {
   message: string;
   percent: number;
   timestamp: number;
+}
+
+interface GenerationStatistics {
+  total_topics: number;
+  total_flashcards: number;
+  total_quiz_questions: number;
+  total_unit_tests: number;
+  flashcards_requiring_images: number;
+  quiz_questions_requiring_images: number;
 }
 
 export function CompleteCourseGenerator({ 
@@ -23,7 +32,8 @@ export function CompleteCourseGenerator({
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState<ProgressMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [generatedCourse, setGeneratedCourse] = useState<APCourse | null>(null);
+  const [generatedCourse, setGeneratedCourse] = useState<DualJSONOutput | null>(null);
+  const [statistics, setStatistics] = useState<GenerationStatistics | null>(null);
 
   const totalTopics = courseData.units.reduce((sum, unit) => sum + unit.topics.length, 0);
 
@@ -82,6 +92,7 @@ export function CompleteCourseGenerator({
             } else if (data.type === 'complete') {
               console.log('✅ 课程生成完成');
               setGeneratedCourse(data.data);
+              setStatistics(data.statistics);
               onComplete?.(data.data);
             } else if (data.type === 'error') {
               throw new Error(data.error || '生成失败');
@@ -100,10 +111,16 @@ export function CompleteCourseGenerator({
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadSeparated = () => {
     if (!generatedCourse) return;
-    const filename = generateFilename(generatedCourse.course_name, 'complete-with-ai-content');
-    downloadJSON(generatedCourse, filename);
+    const filename = generateFilename(courseData.course_name, 'separated');
+    downloadJSON(generatedCourse.separated_content_json, filename);
+  };
+
+  const handleDownloadCombined = () => {
+    if (!generatedCourse) return;
+    const filename = generateFilename(courseData.course_name, 'complete');
+    downloadJSON(generatedCourse.combined_complete_json, filename);
   };
 
   const currentProgress = progress.length > 0 ? progress[progress.length - 1] : null;
@@ -236,47 +253,85 @@ export function CompleteCourseGenerator({
             </div>
           </div>
 
-          {/* 下载和重新生成按钮 */}
-          <div className="flex gap-3">
-            <button
-              onClick={handleDownload}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-            >
-              <Download className="w-4 h-4" />
-              下载完整 JSON
-            </button>
+          {/* 下载按钮 - v11.0 双 JSON */}
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={handleDownloadSeparated}
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors font-medium"
+              >
+                <FileJson className="w-4 h-4" />
+                新内容 JSON
+              </button>
+              <button
+                onClick={handleDownloadCombined}
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+              >
+                <Download className="w-4 h-4" />
+                完整 JSON
+              </button>
+            </div>
             <button
               onClick={handleGenerate}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
             >
               <Sparkles className="w-4 h-4" />
               重新生成
             </button>
           </div>
 
-          {/* 统计信息 */}
-          <div className="grid grid-cols-3 gap-3 p-4 bg-white rounded-lg border border-gray-200">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
-                {generatedCourse.units.length}
+          {/* 统计信息 - v11.0 */}
+          {statistics && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-4 gap-3 p-4 bg-white rounded-lg border border-gray-200">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {statistics.total_topics}
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">Topics</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {statistics.total_flashcards}
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">Flashcards</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {statistics.total_quiz_questions}
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">Quiz 题目</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {statistics.total_unit_tests}
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">Unit Tests</div>
+                </div>
               </div>
-              <div className="text-xs text-gray-600 mt-1">Units</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {totalTopics}
+              
+              {/* 图片需求统计 */}
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="text-xs font-semibold text-yellow-800 mb-2">📸 图片需求统计</div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Flashcards 需配图:</span>
+                    <span className="font-medium text-yellow-700">
+                      {statistics.flashcards_requiring_images}/{statistics.total_flashcards}
+                      ({Math.round(statistics.flashcards_requiring_images / statistics.total_flashcards * 100)}%)
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Quiz 需配图:</span>
+                    <span className="font-medium text-yellow-700">
+                      {statistics.quiz_questions_requiring_images}/{statistics.total_quiz_questions}
+                      ({Math.round(statistics.quiz_questions_requiring_images / statistics.total_quiz_questions * 100)}%)
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="text-xs text-gray-600 mt-1">Topics</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {generatedCourse.units.reduce((sum, u) => 
-                  sum + u.topics.filter(t => (t as any).study_guide).length, 0
-                )}
-              </div>
-              <div className="text-xs text-gray-600 mt-1">已生成</div>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
