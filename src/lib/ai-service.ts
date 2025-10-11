@@ -8,10 +8,11 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
-const PROXY_URL = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || 'http://127.0.0.1:7890';
+const PROXY_URL = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || '';
 
-// 创建代理 agent
-const httpsAgent = new HttpsProxyAgent(PROXY_URL);
+// 创建代理 agent（仅在本地开发且配置了代理时使用）
+const IS_VERCEL = process.env.VERCEL === '1';
+const httpsAgent = !IS_VERCEL && PROXY_URL ? new HttpsProxyAgent(PROXY_URL) : undefined;
 
 /**
  * AI 服务类
@@ -82,8 +83,7 @@ export class AIService {
         headers: {
           'Content-Type': 'application/json',
         },
-        httpsAgent: httpsAgent,
-        proxy: false,
+        ...(httpsAgent ? { httpsAgent, proxy: false } : {}),
         timeout: 30000
       });
 
