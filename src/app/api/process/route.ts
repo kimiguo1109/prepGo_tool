@@ -10,6 +10,10 @@ import { processAPCourseData } from '@/lib/data-processor';
 import { validatePdfJsonConsistency } from '@/lib/validation';
 import { APCourseSchema } from '@/lib/validators';
 
+// Vercel 配置：增加请求体大小限制和超时时间
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -39,14 +43,25 @@ export async function POST(request: NextRequest) {
     }
 
     // 读取JSON内容
+    console.log('📄 开始读取 JSON 文件:', jsonFile.name, 'Size:', jsonFile.size);
     const jsonText = await jsonFile.text();
+    console.log('📄 JSON 文件内容长度:', jsonText.length);
+    console.log('📄 JSON 文件前 100 字符:', jsonText.substring(0, 100));
+    
     let courseData;
     
     try {
       courseData = JSON.parse(jsonText);
-    } catch {
+      console.log('✅ JSON 解析成功');
+    } catch (parseError) {
+      console.error('❌ JSON 解析失败:', parseError);
+      console.error('   JSON 内容前 500 字符:', jsonText.substring(0, 500));
       return NextResponse.json(
-        { success: false, error: 'JSON文件格式无效，无法解析' },
+        { 
+          success: false, 
+          error: 'JSON文件格式无效，无法解析',
+          details: parseError instanceof Error ? parseError.message : '未知错误'
+        },
         { status: 400 }
       );
     }
