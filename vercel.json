@@ -1,10 +1,5 @@
 {
   "framework": "nextjs",
-  "regions": ["hkg1"],
-  "functions": {
-    "api/**": {
-      "maxDuration": 60
-    }
-  }
+  "regions": ["hkg1"]
 }
 
