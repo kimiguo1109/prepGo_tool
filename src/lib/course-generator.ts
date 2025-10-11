@@ -783,20 +783,53 @@ CRITICAL REQUIREMENTS:
 
   /**
    * 辅助函数：检查是否需要图片
+   * 针对 AP 课程优化（特别是心理学、生物学）
    */
   private checkRequiresImage(type: 'flashcard' | 'quiz', front: string, back: string): boolean {
     const text = `${front} ${back}`.toLowerCase();
     
-    // 关键词判断
-    const imageKeywords = [
+    // 通用视觉关键词
+    const generalKeywords = [
       'diagram', 'chart', 'graph', 'map', 'table', 'figure',
-      'image', 'picture', 'photo', 'illustration',
-      'structure', 'model', 'Lewis', 'molecular',
-      'shown', 'depicted', 'based on the',
-      'mitochondrion', 'cell', 'organelle', 'anatomy'
+      'image', 'picture', 'photo', 'illustration', 'drawing',
+      'shown', 'depicted', 'displayed', 'visualize', 'visual',
+      'based on the', 'refer to the', 'look at', 'see the'
     ];
     
-    return imageKeywords.some(keyword => text.includes(keyword));
+    // 心理学特定关键词
+    const psychologyKeywords = [
+      // 大脑结构
+      'brain', 'cerebellum', 'cerebral', 'cortex', 'lobe', 
+      'frontal', 'parietal', 'temporal', 'occipital',
+      'broca', 'wernicke', 'hippocampus', 'amygdala', 'thalamus',
+      'hypothalamus', 'pituitary', 'brainstem', 'corpus callosum',
+      
+      // 神经系统
+      'neuron', 'synapse', 'dendrite', 'axon', 'myelin',
+      'neurotransmitter', 'neural pathway', 'nervous system',
+      
+      // 感觉系统
+      'eye', 'retina', 'cornea', 'pupil', 'lens', 'fovea', 'blind spot',
+      'ear', 'cochlea', 'eardrum', 'auditory', 'vestibular',
+      
+      // 知觉原理
+      'gestalt', 'closure', 'proximity', 'similarity', 'continuity',
+      'perspective', 'depth cue', 'binocular', 'monocular',
+      'convergence', 'disparity', 'parallax'
+    ];
+    
+    // 生物学特定关键词
+    const biologyKeywords = [
+      'cell', 'organelle', 'mitochondria', 'chloroplast', 'nucleus',
+      'membrane', 'molecule', 'molecular', 'DNA', 'RNA',
+      'structure', 'anatomy', 'organ', 'tissue', 'system',
+      'lewis', 'bond', 'compound', 'reaction'
+    ];
+    
+    // 合并所有关键词
+    const allKeywords = [...generalKeywords, ...psychologyKeywords, ...biologyKeywords];
+    
+    return allKeywords.some(keyword => text.includes(keyword));
   }
 
   /**
