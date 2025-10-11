@@ -54,21 +54,27 @@ PrepGo AP 课程处理工具（AP Course Processor）
 - **并且** 显示处理进度
 - **并且** 处理完成后合并原始数据和计算数据
 
-### FR-3: JSON 数据预览
+### FR-3: 双 JSON 数据预览（v11.0）
 **作为** 课程开发人员  
-**我想要** 在界面上预览生成的 JSON 数据  
-**以便** 验证数据的正确性
+**我想要** 在界面上预览生成的两个 JSON 数据  
+**以便** 验证数据的正确性和完整性
 
 **验收标准**：
-- **给定** 数据已成功处理
+- **给定** 课程内容已成功生成
 - **当** 用户查看预览界面
 - **那么** 应该显示：
+  - **两个独立的 JSON 视图**：
+    - `separated_content_json`：仅包含新生成的内容（study guides、flashcards、quizzes、unit tests）
+    - `combined_complete_json`：完整的课程包（包含规划数据和生成内容）
   - 格式化的 JSON 数据（带语法高亮）
   - 可折叠的树形结构视图
-  - 数据统计信息（Units 数量、Topics 数量、统计数据等）
-  - 原始数据和计算数据的完整视图
-- **并且** 支持复制 JSON 内容到剪贴板
+  - 数据统计信息：
+    - Topics 总数、Flashcards 总数、Quiz Questions 总数
+    - Unit Tests 总数、需要配图的项目数量和百分比
+  - 切换按钮在两个 JSON 视图之间切换
+- **并且** 支持分别复制两个 JSON 内容到剪贴板
 - **并且** 支持展开/折叠所有节点
+- **并且** 显示每个 JSON 的大小和生成时间
 
 ### FR-4: PDF 与 JSON 对照视图
 **作为** 课程开发人员  
@@ -102,20 +108,31 @@ PrepGo AP 课程处理工具（AP Course Processor）
 - **并且** 支持撤销/重做操作
 - **并且** 保存前进行数据验证
 
-### FR-6: JSON 数据导出
+### FR-6: 双 JSON 数据导出（v11.0）
 **作为** 课程开发人员  
-**我想要** 导出处理后的 JSON 数据  
-**以便** 用于后续的课程开发工作
+**我想要** 导出生成的两个 JSON 数据  
+**以便** 用于数据库导入和课程备份
 
 **验收标准**：
-- **给定** JSON 数据已生成或编辑完成
+- **给定** 课程内容已成功生成
 - **当** 用户点击导出按钮
 - **那么** 应该提供以下导出选项：
-  - 下载为 .json 文件
-  - 复制到剪贴板
-  - 下载为"原始数据 JSON"（仅包含 CED 原始内容）
-- **并且** 文件名应包含课程名称和时间戳
-- **并且** 导出前进行最终验证
+  - **分离导出**：
+    - 下载 `separated_content_json`（仅包含新生成内容，用于数据库导入）
+    - 下载 `combined_complete_json`（完整课程包，用于备份）
+  - **打包导出**：
+    - 下载包含两个 JSON 文件的 ZIP 压缩包
+  - **单独复制**：
+    - 复制 `separated_content_json` 到剪贴板
+    - 复制 `combined_complete_json` 到剪贴板
+- **并且** 文件名应包含课程名称、类型和时间戳：
+  - `{course_name}_separated_{timestamp}.json`
+  - `{course_name}_complete_{timestamp}.json`
+  - `{course_name}_all_{timestamp}.zip`
+- **并且** 导出前进行最终验证：
+  - 验证所有 flashcards 和 quiz questions 都有 `requires_image` 字段
+  - 验证外键关系完整性（topic_id, unit_id, test_id）
+- **并且** 显示导出统计信息（文件大小、项目数量）
 
 ### FR-7: 错误处理与验证
 **作为** 系统  
@@ -189,7 +206,9 @@ PrepGo AP 课程处理工具（AP Course Processor）
 
 ## 4. 数据结构规范
 
-### 4.1 原始数据 JSON 结构
+### 4.1 输入数据结构
+
+#### (1) Structured Curriculum JSON（输入）
 ```json
 {
   "course_name": "AP U.S. History",
@@ -223,6 +242,125 @@ PrepGo AP 课程处理工具（AP Course Processor）
 ```
 
 **注意**：此结构严格遵循 College Board CED 文档格式和 Gemini 提取的实际数据结构。
+
+### 4.2 输出数据结构（v11.0 双 JSON 格式）
+
+#### (1) separated_content_json（仅新生成的内容）
+```json
+{
+  "topic_overviews": [
+    {
+      "topic_id": "ap_ush_1_1",
+      "overview_text": "Explore the rich tapestry of pre-Columbian Americas..."
+    }
+  ],
+  "study_guides": [
+    {
+      "study_guide_id": "ap_ush_1_1_sg",
+      "topic_id": "ap_ush_1_1",
+      "content_markdown": "# Contextualizing Period 1\n\n## Introduction\n..."
+    }
+  ],
+  "topic_flashcards": [
+    {
+      "card_id": "ap_ush_1_1_fc_001",
+      "topic_id": "ap_ush_1_1",
+      "front_content": "Pre-Columbian Americas",
+      "back_content": "Diverse societies that developed before 1492...",
+      "requires_image": true
+    }
+  ],
+  "quizzes": [
+    {
+      "quiz_id": "ap_ush_1_1_q_001",
+      "topic_id": "ap_ush_1_1",
+      "question_text": "Which of the following best describes...",
+      "option_a": "Option A text",
+      "option_b": "Option B text",
+      "option_c": "Option C text",
+      "option_d": "Option D text",
+      "correct_answer": "A",
+      "explanation": "Detailed explanation here...",
+      "requires_image": false
+    }
+  ],
+  "unit_tests": [
+    {
+      "test_id": "ap_ush_u1_test",
+      "unit_id": "ap_ush_unit_1",
+      "test_title": "Unit 1 Test",
+      "total_questions": 20,
+      "estimated_minutes": 30
+    }
+  ],
+  "unit_assessment_questions": [
+    {
+      "question_id": "ap_ush_u1_q_001",
+      "test_id": "ap_ush_u1_test",
+      "question_text": "Test question...",
+      "option_a": "...",
+      "option_b": "...",
+      "option_c": "...",
+      "option_d": "...",
+      "correct_answer": "B",
+      "explanation": "...",
+      "requires_image": false
+    }
+  ]
+}
+```
+
+#### (2) combined_complete_json（完整课程包）
+```json
+{
+  "courses": [
+    {
+      "course_id": "ap_ush",
+      "course_name": "AP U.S. History",
+      "difficulty_level": 4,
+      "class_to_app_factor": 0.50,
+      "estimated_minutes": 3240
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "ap_ush_unit_1",
+      "course_id": "ap_ush",
+      "unit_number": 1,
+      "unit_title": "Period 1: 1491-1607",
+      "estimated_minutes": 186,
+      "ced_period": "~8 Class Periods",
+      "exam_weight": "4-6%"
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": "ap_ush_1_1",
+      "unit_id": "ap_ush_unit_1",
+      "topic_number": "1.1",
+      "ced_topic_title": "Contextualizing Period 1",
+      "topic_overview": "Explore the rich tapestry...",
+      "estimated_minutes": 31,
+      "learn_minutes": 10,
+      "review_minutes": 5,
+      "practice_minutes": 16,
+      "target_sg_words": 1450,
+      "target_flashcards": 10,
+      "target_mcq": 11
+    }
+  ],
+  "study_guides": [...],
+  "topic_flashcards": [...],
+  "quizzes": [...],
+  "unit_tests": [...],
+  "unit_assessment_questions": [...]
+}
+```
+
+**说明**：
+- `separated_content_json`: 用于数据库导入，只包含 AI 生成的新内容
+- `combined_complete_json`: 用于完整备份，包含规划数据和生成内容
+- 所有表均为扁平化结构，便于直接导入关系型数据库
 
 ## 5. 技术约束
 

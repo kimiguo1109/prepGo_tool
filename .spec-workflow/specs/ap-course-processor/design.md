@@ -439,7 +439,22 @@ function compileUnitTest(unit: APUnit): UnitTest {
 }
 ```
 
-### 3.4 最终验证与统计（Phase 4）
+### 3.4 双输出格式设计（Phase 4）
+
+#### 3.4.0 输出架构概述
+
+根据 v11.0 Prompt 要求，最终输出包含两个独立的 JSON 对象：
+
+1. **`separated_content_json`**: 仅包含新生成的内容（用于数据库导入）
+   - 扁平化的表结构
+   - 只包含 Phase 2 和 Phase 3 生成的数据
+   - 每个表包含明确的外键关系（topic_id, unit_id, test_id）
+
+2. **`combined_complete_json`**: 完整的课程包（用于备份和完整数据查看）
+   - 包含原始结构数据
+   - 包含 Phase 1 的规划数据
+   - 包含 Phase 2 和 Phase 3 的生成内容
+   - 扁平化的表结构，便于数据库导入
 
 #### 3.4.1 数据验证清单
 
@@ -570,31 +585,247 @@ function calculateImageStatistics(course: APCourse): ImageStatistics {
 }
 ```
 
-#### 3.4.3 最终输出结构
+#### 3.4.3 数据表结构定义
+
+##### (1) separated_content_json 表结构
+
+```typescript
+/**
+ * 仅包含新生成的内容（Phase 2 & 3）
+ */
+interface SeparatedContentJSON {
+  topic_overviews: TopicOverview[];
+  study_guides: StudyGuide[];
+  topic_flashcards: TopicFlashcard[];
+  quizzes: Quiz[];
+  unit_tests: UnitTest[];
+  unit_assessment_questions: UnitAssessmentQuestion[];
+}
+
+interface TopicOverview {
+  topic_id: string;             // 如: "ap_bio_1_1"
+  overview_text: string;         // 引人入胜的主题介绍
+}
+
+interface StudyGuide {
+  study_guide_id: string;        // 如: "ap_bio_1_1_sg"
+  topic_id: string;              // 外键
+  content_markdown: string;      // Markdown 格式的学习指南
+}
+
+interface TopicFlashcard {
+  card_id: string;               // 如: "ap_bio_1_1_fc_001"
+  topic_id: string;              // 外键
+  front_content: string;
+  back_content: string;
+  requires_image: boolean;
+}
+
+interface Quiz {
+  quiz_id: string;               // 如: "ap_bio_1_1_q_001"
+  topic_id: string;              // 外键
+  question_text: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  correct_answer: string;        // "A", "B", "C", or "D"
+  explanation: string;
+  requires_image: boolean;
+}
+
+interface UnitTest {
+  test_id: string;               // 如: "ap_bio_u1_test"
+  unit_id: string;               // 外键
+  test_title: string;            // 如: "Unit 1 Test"
+  total_questions: number;
+  estimated_minutes: number;
+}
+
+interface UnitAssessmentQuestion {
+  question_id: string;           // 如: "ap_bio_u1_q_001"
+  test_id: string;               // 外键
+  question_text: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  correct_answer: string;
+  explanation: string;
+  requires_image: boolean;
+}
+```
+
+##### (2) combined_complete_json 表结构
+
+```typescript
+/**
+ * 完整的课程包（Phase 1 规划 + Phase 2&3 内容）
+ */
+interface CombinedCompleteJSON {
+  courses: Course[];
+  units: Unit[];
+  topics: Topic[];
+  study_guides: StudyGuide[];
+  topic_flashcards: TopicFlashcard[];
+  quizzes: Quiz[];
+  unit_tests: UnitTest[];
+  unit_assessment_questions: UnitAssessmentQuestion[];
+}
+
+interface Course {
+  course_id: string;             // 如: "ap_biology"
+  course_name: string;           // 如: "AP Biology"
+  course_code?: string;          // 如: "AP-BIO"
+  difficulty_level: number;      // 3-5
+  class_to_app_factor: number;   // 0.45-0.55
+  estimated_minutes: number;     // 课程总时长
+  ced_period?: string;           // 如: "~140 Class Periods"
+}
+
+interface Unit {
+  unit_id: string;               // 如: "ap_bio_unit_1"
+  course_id: string;             // 外键
+  unit_number: number;
+  unit_title: string;
+  estimated_minutes: number;     // 单元总时长
+  ced_period: string;            // 如: "8-10 Class Periods"
+  exam_weight: string;           // 如: "10-14%"
+}
+
+interface Topic {
+  topic_id: string;              // 如: "ap_bio_1_1"
+  unit_id: string;               // 外键
+  topic_number: string;          // 如: "1.1"
+  ced_topic_title: string;       // CED 原始标题
+  topic_overview: string;        // 引人入胜的介绍（Phase 2 生成）
+  
+  // Phase 1 规划数据
+  estimated_minutes: number;
+  learn_minutes: number;
+  review_minutes: number;
+  practice_minutes: number;
+  target_sg_words: number;
+  target_flashcards: number;
+  target_mcq: number;
+}
+```
+
+#### 3.4.4 最终输出结构示例
 
 ```json
 {
-  "course_name": "AP Biology",
-  "units": [...],
-  "metadata": {
-    "extracted_at": "2025-10-07T15:15:52Z",
-    "pdf_file_name": "ap-biology-ced.pdf",
-    "pdf_page_count": 200,
-    "version": "2024"
+  "separated_content_json": {
+    "topic_overviews": [
+      {
+        "topic_id": "ap_bio_1_1",
+        "overview_text": "Water is the foundation of life! In this topic, you'll discover..."
+      }
+    ],
+    "study_guides": [
+      {
+        "study_guide_id": "ap_bio_1_1_sg",
+        "topic_id": "ap_bio_1_1",
+        "content_markdown": "# Water and Hydrogen Bonding\n\n## Introduction\n..."
+      }
+    ],
+    "topic_flashcards": [
+      {
+        "card_id": "ap_bio_1_1_fc_001",
+        "topic_id": "ap_bio_1_1",
+        "front_content": "Cohesion",
+        "back_content": "The property of water molecules sticking to each other due to hydrogen bonds.",
+        "requires_image": false
+      },
+      {
+        "card_id": "ap_bio_1_1_fc_002",
+        "topic_id": "ap_bio_1_1",
+        "front_content": "Mitochondrion",
+        "back_content": "The powerhouse of the cell, responsible for ATP production.",
+        "requires_image": true
+      }
+    ],
+    "quizzes": [
+      {
+        "quiz_id": "ap_bio_1_1_q_001",
+        "topic_id": "ap_bio_1_1",
+        "question_text": "Which property of water is most directly responsible for the transport of water from roots to leaves?",
+        "option_a": "Polarity",
+        "option_b": "Cohesion",
+        "option_c": "High specific heat",
+        "option_d": "Expansion upon freezing",
+        "correct_answer": "B",
+        "explanation": "Cohesion allows water molecules to stick together, creating a continuous column for transport.",
+        "requires_image": false
+      }
+    ],
+    "unit_tests": [
+      {
+        "test_id": "ap_bio_u1_test",
+        "unit_id": "ap_bio_unit_1",
+        "test_title": "Unit 1 Test",
+        "total_questions": 18,
+        "estimated_minutes": 27
+      }
+    ],
+    "unit_assessment_questions": [
+      {
+        "question_id": "ap_bio_u1_q_001",
+        "test_id": "ap_bio_u1_test",
+        "question_text": "Which property of water...",
+        "option_a": "...",
+        "option_b": "...",
+        "option_c": "...",
+        "option_d": "...",
+        "correct_answer": "B",
+        "explanation": "...",
+        "requires_image": false
+      }
+    ]
   },
-  "image_statistics": {
-    "total_flashcards": 300,
-    "flashcards_requiring_images": 45,
-    "flashcards_image_percentage": 15,
-    "total_topic_quiz_questions": 500,
-    "topic_quiz_requiring_images": 80,
-    "topic_quiz_image_percentage": 16,
-    "total_unit_test_questions": 160,
-    "unit_test_requiring_images": 28,
-    "unit_test_image_percentage": 17.5,
-    "total_items": 960,
-    "total_requiring_images": 153,
-    "overall_image_percentage": 15.9
+  "combined_complete_json": {
+    "courses": [
+      {
+        "course_id": "ap_biology",
+        "course_name": "AP Biology",
+        "difficulty_level": 4,
+        "class_to_app_factor": 0.50,
+        "estimated_minutes": 2670,
+        "ced_period": "~140 Class Periods"
+      }
+    ],
+    "units": [
+      {
+        "unit_id": "ap_bio_unit_1",
+        "course_id": "ap_biology",
+        "unit_number": 1,
+        "unit_title": "Chemistry of Life",
+        "estimated_minutes": 248,
+        "ced_period": "8-10 Class Periods",
+        "exam_weight": "10-14%"
+      }
+    ],
+    "topics": [
+      {
+        "topic_id": "ap_bio_1_1",
+        "unit_id": "ap_bio_unit_1",
+        "topic_number": "1.1",
+        "ced_topic_title": "Structure of Water and Hydrogen Bonding",
+        "topic_overview": "Water is the foundation of life!...",
+        "estimated_minutes": 29,
+        "learn_minutes": 8,
+        "review_minutes": 5,
+        "practice_minutes": 16,
+        "target_sg_words": 1130,
+        "target_flashcards": 10,
+        "target_mcq": 11
+      }
+    ],
+    "study_guides": [...],
+    "topic_flashcards": [...],
+    "quizzes": [...],
+    "unit_tests": [...],
+    "unit_assessment_questions": [...]
   }
 }
 ```
@@ -622,15 +853,15 @@ function calculateImageStatistics(course: APCourse): ImageStatistics {
 
 ### 3.2 API 路由规划
 
-#### POST /api/process
-处理课程数据（核心API）
+#### POST /api/generate-complete-course
+生成完整课程（核心API - v11.0）
 
 **请求**：
 ```typescript
 // Content-Type: multipart/form-data
 {
-  pdfFile: File;      // PDF文件（用于对照展示）
-  jsonFile: File;     // JSON文件（原始课程数据）
+  pdfFile: File;      // PDF文件（CED原始文档，用于Phase 2内容生成）
+  jsonFile: File;     // JSON文件（Structured Curriculum，用于Phase 1规划）
 }
 ```
 
@@ -638,10 +869,21 @@ function calculateImageStatistics(course: APCourse): ImageStatistics {
 ```typescript
 {
   success: boolean;
-  data?: EnrichedAPCourse;  // 完整数据（原始+计算）
+  data?: {
+    separated_content_json: SeparatedContentJSON;   // 仅新生成的内容
+    combined_complete_json: CombinedCompleteJSON;   // 完整课程包
+  };
   error?: string;
   warnings?: string[];
   processingTime: number;
+  statistics?: {
+    total_topics: number;
+    total_flashcards: number;
+    total_quiz_questions: number;
+    total_unit_tests: number;
+    flashcards_requiring_images: number;
+    quiz_questions_requiring_images: number;
+  };
 }
 ```
 
