@@ -116,29 +116,52 @@ export class CourseGenerator {
 
   /**
    * 步骤 2：分配模块时长与任务
-   * 为每个 Topic 分配 Learn、Review、Practice 模块
-   * 直接计算，不调用 AI（避免 JSON 过大导致解析失败）
+   * 使用"内容驱动时间"模型：根据 LO/EK 数量计算内容量，再反推时间
    */
   async assignModuleTasks(courseData: APCourse, onProgress?: (message: string, percent?: number) => void): Promise<APCourse> {
-    console.log('📦 步骤 2/3: 分配模块时长与任务...');
-    onProgress?.('分配模块任务...', 30);
+    console.log('📦 步骤 2/3: 分配模块时长与任务（内容驱动模型）...');
+    onProgress?.('分配模块任务（内容驱动模型）...', 30);
 
     const enhancedData = JSON.parse(JSON.stringify(courseData)) as APCourse;
 
-    // 遍历所有 Units 和 Topics，直接计算模块分配
+    // 遍历所有 Units 和 Topics
     for (const unit of enhancedData.units) {
       for (const topic of unit.topics) {
-        const totalMinutes = (topic as any).topic_estimated_minutes || 30;
+        // 获取 LO 和 EK 数量
+        const loCount = Math.max(1, topic.learning_objectives?.length || 1);
+        const ekCount = Math.max(1, topic.essential_knowledge?.length || 1);
 
-        // 按比例分配：Learn 50%, Review 25%, Practice 25%
-        const learnMinutes = Math.round(totalMinutes * 0.5);
-        const reviewMinutes = Math.round(totalMinutes * 0.25);
-        const practiceMinutes = totalMinutes - learnMinutes - reviewMinutes;
+        // ===== STEP 1: 根据 LO/EK 计算内容量 =====
+        
+        // Flashcards: 基于 EK 数量
+        // 公式: max(10, min(36, 6 + (ekCount - 2) * 2.5))
+        const rawFlashcards = 6 + (ekCount - 2) * 2.5;
+        const flashcardsCount = Math.max(10, Math.min(36, Math.round(rawFlashcards)));
 
-        // 计算任务量
-        const studyGuideWords = learnMinutes * 5; // 5 字/分钟
-        const flashcardsCount = Math.max(1, Math.round(reviewMinutes / 3)); // 3 分钟/张
-        const quizCount = Math.min(15, Math.max(6, Math.round(practiceMinutes * 1.5))); // 6-15 题
+        // Quiz: 基于 LO 和 EK
+        // 公式: max(6, min(16, 6 + (loCount - 1) * 4 + min(ekCount, 8) * 1.25))
+        const rawQuiz = 6 + (loCount - 1) * 4 + Math.min(ekCount, 8) * 1.25;
+        const quizCount = Math.max(6, Math.min(16, Math.round(rawQuiz)));
+
+        // Study Guide 词数: 基于 LO 和 EK
+        // 公式: max(600, min(1500, 700 + loCount * 150 + ekCount * 80))
+        const rawWords = 700 + loCount * 150 + ekCount * 80;
+        const studyGuideWords = Math.max(600, Math.min(1500, Math.round(rawWords)));
+
+        // ===== STEP 2: 根据内容量反推时间 =====
+        
+        // Learn: 150词/分钟阅读速度
+        const learnMinutes = Math.round(studyGuideWords / 150);
+
+        // Review: 0.5分钟/张卡
+        const reviewMinutes = Math.round(flashcardsCount * 0.5);
+
+        // Practice: 1.5分钟/题
+        const practiceMinutes = Math.round(quizCount * 1.5);
+
+        // Topic 总时间
+        const topicEstimatedMinutes = learnMinutes + reviewMinutes + practiceMinutes;
+        (topic as any).topic_estimated_minutes = topicEstimatedMinutes;
 
         // 添加模块数据
         (topic as any).learn = {
@@ -158,7 +181,7 @@ export class CourseGenerator {
       }
     }
 
-    console.log(`✅ 模块分配完成（已为所有 Topics 计算 Learn/Review/Practice）`);
+    console.log(`✅ 模块分配完成（内容驱动模型：LO/EK → 内容量 → 时间）`);
     onProgress?.('✅ 模块任务分配完成', 40);
 
     return enhancedData;
@@ -381,7 +404,7 @@ CRITICAL REQUIREMENTS:
       ],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 2000,
+        maxOutputTokens: 6000,  // 增加到 6000，支持完整内容生成
       }
     }, {
       headers: {
