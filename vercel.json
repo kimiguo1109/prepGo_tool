@@ -1,5 +1,13 @@
 {
   "framework": "nextjs",
-  "regions": ["hkg1"]
+  "regions": ["hkg1"],
+  "functions": {
+    "api/generate-course.ts": {
+      "maxDuration": 60
+    },
+    "api/generate-content.ts": {
+      "maxDuration": 60
+    }
+  }
 }
 

@@ -81,8 +81,11 @@ export default function HomePage() {
     console.log('📦 Separated Content JSON:', dualJSON.separated_content_json);
     console.log('📦 Combined Complete JSON:', dualJSON.combined_complete_json);
     
-    // v11.0: 双 JSON 格式已在 CompleteCourseGenerator 组件内处理下载
-    // 不需要合并回原始数据结构
+    // 更新 enrichedData 以显示生成的内容
+    if (dualJSON.combined_complete_json) {
+      setEnrichedData(dualJSON.combined_complete_json);
+      console.log('✅ JSON Viewer 数据已更新');
+    }
   };
 
   // 处理重置
