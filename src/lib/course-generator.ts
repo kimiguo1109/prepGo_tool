@@ -1,9 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import type { 
   APCourse,
   DualJSONOutput,
-  SeparatedContentJSON,
-  CombinedCompleteJSON,
   TopicOverview,
   StudyGuide,
   TopicFlashcard,
@@ -15,11 +13,13 @@ import type {
   Topic
 } from '@/types/course';
 
-const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+const PROXY_URL = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || 'http://127.0.0.1:7890';
 
 /**
  * PrepGo 课程生成器 - 完整的工作流
- * 使用 Claude 3.5 Sonnet 进行内容生成
+ * 使用 Google Gemini 2.5 Flash Lite 进行内容生成
  * 
  * 工作流程：
  * 1. 学习时长计算
@@ -28,12 +28,12 @@ const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || '';
  * 4. 课程完整输出
  */
 export class CourseGenerator {
-  private client: Anthropic;
+  private apiKey: string;
+  private model: string;
 
   constructor() {
-    this.client = new Anthropic({
-      apiKey: CLAUDE_API_KEY,
-    });
+    this.apiKey = GEMINI_API_KEY;
+    this.model = GEMINI_MODEL;
   }
 
   /**
@@ -270,7 +270,7 @@ export class CourseGenerator {
     topic: any, 
     maxRetries: number = 5,
     onProgress?: (message: string, percent?: number) => void,
-    totalTopics?: number
+    _totalTopics?: number
   ): Promise<any> {
     let lastError: any;
 
@@ -317,7 +317,7 @@ export class CourseGenerator {
 
   /**
    * 生成单个 Topic 的学习内容
-   * 使用 Claude 3.5 Sonnet
+   * 使用 Google Gemini 2.5 Flash Lite
    */
   private async generateSingleTopicContent(topic: any): Promise<any> {
     // 提取关键信息
@@ -341,19 +341,41 @@ Generate JSON:
 
 Rules: English only, exact counts, concise but comprehensive.`;
 
-    const message = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 2000,
-      temperature: 0.2,
-      messages: [
-        {
-          role: 'user',
-          content: prompt
+    // 调用 Gemini API
+    const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
+    
+    // 配置代理（仅在 Node.js 环境中）
+    const proxyAgent = typeof window === 'undefined' ? new HttpsProxyAgent(PROXY_URL) : undefined;
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: prompt }]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 2000,
         }
-      ]
+      }),
+      // @ts-expect-error - agent is valid in Node.js fetch
+      agent: proxyAgent
     });
 
-    const text = message.content[0]?.type === 'text' ? message.content[0].text : '';
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gemini API 错误 ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
     if (!text) {
       throw new Error('API 返回空响应');
     }
@@ -451,12 +473,12 @@ Rules: English only, exact counts, concise but comprehensive.`;
     let totalCourseMinutes = 0;
 
     // 处理 Course
-    courseData.units.forEach((unit, unitIdx) => {
+    courseData.units.forEach((unit) => {
       const unitId = `${courseId}_unit_${unit.unit_number}`;
       let unitTotalMinutes = 0;
 
       // 处理 Topics
-      unit.topics.forEach((topic, topicIdx) => {
+      unit.topics.forEach((topic) => {
         const topicId = `${courseId}_${topic.topic_number.replace('.', '_')}`;
         const topicMinutes = (topic as any).topic_estimated_minutes || 0;
         const learnMinutes = (topic.learn?.minutes) || 0;

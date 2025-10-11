@@ -52,7 +52,8 @@
 
 - Node.js 18+
 - pnpm (推荐) 或 npm
-- **Anthropic API Key**（用于 Claude 3.5 Sonnet AI 内容生成）
+- **Google Gemini API Key**（用于 Gemini 2.5 Flash Lite AI 内容生成）
+- **VPN/代理**（用于访问 Google API）
 
 ### 安装
 
@@ -64,7 +65,9 @@ cd prepGo
 pnpm install
 
 # 配置环境变量
-echo "ANTHROPIC_API_KEY=your-api-key-here" > .env.local
+echo "GEMINI_API_KEY=your-api-key-here" > .env.local
+echo "HTTP_PROXY=http://127.0.0.1:7890" >> .env.local
+echo "HTTPS_PROXY=http://127.0.0.1:7890" >> .env.local
 
 # 启动开发服务器
 pnpm dev
@@ -72,15 +75,17 @@ pnpm dev
 
 访问 [http://localhost:3000](http://localhost:3000) 查看应用。
 
-### 获取 Anthropic API Key
+### 获取 Google Gemini API Key
 
-1. 访问 [Anthropic Console](https://console.anthropic.com/)
-2. 注册并登录账户
-3. 进入 **API Keys** 页面
-4. 点击 **Create Key** 创建新的 API Key
-5. 复制 API Key 并保存到 `.env.local` 文件
+1. 访问 [Google AI Studio](https://aistudio.google.com/)
+2. 注册并登录 Google 账户
+3. 点击 **Get API Key** 创建新的 API Key
+4. 复制 API Key 并保存到 `.env.local` 文件
 
-**注意**：`.env.local` 文件不会被提交到 Git（已在 `.gitignore` 中）。
+**注意事项**：
+- `.env.local` 文件不会被提交到 Git（已在 `.gitignore` 中）
+- **需要 VPN/代理**：确保你的代理配置正确（默认 `127.0.0.1:7890`）
+- 如果使用不同的代理端口，请修改 `.env.local` 中的 `HTTP_PROXY` 和 `HTTPS_PROXY`
 
 ## 🛠️ 技术栈
 
@@ -89,8 +94,8 @@ pnpm dev
 | Next.js | 15+ | React 框架 |
 | TypeScript | 5+ | 类型安全 |
 | Tailwind CSS | 3+ | 样式框架 |
-| **Claude 3.5 Sonnet** | Latest | AI 内容生成 |
-| @anthropic-ai/sdk | Latest | Anthropic API 客户端 |
+| **Gemini 2.5 Flash Lite** | Latest | AI 内容生成 |
+| https-proxy-agent | Latest | HTTPS 代理支持 |
 | react-pdf | 10+ | PDF 渲染 |
 | pdf-parse | Latest | PDF 解析 |
 | Zustand | 4+ | 状态管理 |

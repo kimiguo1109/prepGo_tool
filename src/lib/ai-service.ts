@@ -1,23 +1,25 @@
 /**
  * AI 服务 - 通用 AI 调用接口
- * 使用 Claude 3.5 Sonnet 生成学习内容
+ * 使用 Google Gemini 2.5 Flash Lite 生成学习内容
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
-const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+const PROXY_URL = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || 'http://127.0.0.1:7890';
 
 /**
  * AI 服务类
  * 提供通用的 AI 调用功能
  */
 export class AIService {
-  private client: Anthropic;
+  private apiKey: string;
+  private model: string;
 
-  constructor(apiKey?: string) {
-    this.client = new Anthropic({
-      apiKey: apiKey || CLAUDE_API_KEY,
-    });
+  constructor(apiKey?: string, model?: string) {
+    this.apiKey = apiKey || GEMINI_API_KEY;
+    this.model = model || GEMINI_MODEL;
   }
 
   /**
@@ -34,28 +36,65 @@ export class AIService {
     } = {}
   ): Promise<string> {
     const {
-      model = 'claude-3-5-sonnet-20241022',
       temperature = 0.2,
       maxTokens = 2000,
     } = options;
 
     try {
-      // Claude 需要将 system 消息单独处理
+      // 转换消息格式为 Gemini 格式
       const systemMessage = messages.find(m => m.role === 'system');
       const userMessages = messages.filter(m => m.role !== 'system');
 
-      const response = await this.client.messages.create({
-        model,
-        max_tokens: maxTokens,
-        temperature,
-        system: systemMessage?.content,
-        messages: userMessages.map(m => ({
-          role: m.role as 'user' | 'assistant',
-          content: m.content
+      // 合并 system 消息到第一个 user 消息
+      let firstUserContent = '';
+      if (systemMessage) {
+        firstUserContent = `${systemMessage.content}\n\n`;
+      }
+      if (userMessages.length > 0) {
+        firstUserContent += userMessages[0].content;
+      }
+
+      const geminiMessages = [
+        {
+          role: 'user',
+          parts: [{ text: firstUserContent }]
+        },
+        ...userMessages.slice(1).map(msg => ({
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: msg.content }]
         }))
+      ];
+
+      // 调用 Gemini API
+      const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
+      
+      // 配置代理（仅在 Node.js 环境中）
+      const proxyAgent = typeof window === 'undefined' ? new HttpsProxyAgent(PROXY_URL) : undefined;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: geminiMessages,
+          generationConfig: {
+            temperature: temperature,
+            maxOutputTokens: maxTokens,
+          }
+        }),
+        // @ts-expect-error - agent is valid in Node.js fetch
+        agent: proxyAgent
       });
 
-      const content = response.content[0]?.type === 'text' ? response.content[0].text : '';
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Gemini API 错误 ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+      const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      
       if (!content) {
         throw new Error('AI 返回空响应');
       }
