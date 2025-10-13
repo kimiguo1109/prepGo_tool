@@ -443,15 +443,16 @@ EXAMPLE of CORRECT format for Chemistry:
         throw new Error(`内容被截断（flashcards: ${actualFlashcards}/${flashcardCount}, quiz: ${actualQuiz}/${quizCount}）`);
       }
       
-      // v12.5: 使用 checkRequiresImage 覆盖 AI 的 requires_image 判断
+      // v12.6: 结合 AI 判断和 checkRequiresImage 规则（取并集）
+      // 逻辑：AI认为需要 OR 代码规则认为需要 → 标记为true
       const flashcards = (content.flashcards || []).map((card: any) => ({
         ...card,
-        requires_image: this.checkRequiresImage('flashcard', card.front, card.back)
+        requires_image: card.requires_image || this.checkRequiresImage('flashcard', card.front, card.back)
       }));
       
       const quiz = (content.quiz || []).map((q: any) => ({
         ...q,
-        requires_image: this.checkRequiresImage('quiz', q.question, q.explanation)
+        requires_image: q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation)
       }));
       
       return {
@@ -523,10 +524,21 @@ EXAMPLE of CORRECT format for Chemistry:
         
         console.log(`    ✅ Topic ${topic.topic_number} JSON 修复成功`);
         
+        // v12.6: 结合 AI 判断和 checkRequiresImage 规则（取并集）
+        const flashcards = (content.flashcards || []).map((card: any) => ({
+          ...card,
+          requires_image: card.requires_image || this.checkRequiresImage('flashcard', card.front, card.back)
+        }));
+        
+        const quiz = (content.quiz || []).map((q: any) => ({
+          ...q,
+          requires_image: q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation)
+        }));
+        
         return {
           study_guide: content.study_guide || '',
-          flashcards: content.flashcards || [],
-          quiz: content.quiz || []
+          flashcards,
+          quiz
         };
       } catch (secondError: any) {
         // 修复也失败，记录详细信息
