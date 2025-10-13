@@ -33,7 +33,9 @@ export function parseCedClassPeriods(cedPeriods: string): number {
  */
 export function calculateTotalPeriods(units: APUnit[]): number {
   return units.reduce((total, unit) => {
-    return total + parseCedClassPeriods(unit.ced_class_periods);
+    // v12.8: 支持unit_overview嵌套结构
+    const cedClassPeriods = unit.unit_overview?.ced_class_periods || unit.ced_class_periods || '';
+    return total + parseCedClassPeriods(cedClassPeriods);
   }, 0);
 }
 

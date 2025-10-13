@@ -135,6 +135,15 @@ export class CourseGenerator {
       }
       
       (unit as any).unit_estimated_minutes = unitTotalMinutes;
+      
+      // v12.8: 添加unit_overview结构
+      (unit as any).unit_overview = {
+        summary: '',  // 暂时留空，等待AI生成或从input提取
+        ced_class_periods: unit.ced_class_periods || '',
+        exam_weight: unit.exam_weight || '',
+        prepgo_estimated_minutes: unitTotalMinutes
+      };
+      
       courseTotalMinutes += unitTotalMinutes;
     }
     
@@ -158,7 +167,7 @@ export class CourseGenerator {
     // 统计总 Topic 数量
     const totalTopics = courseData.units.reduce((sum, unit) => sum + unit.topics.length, 0);
     console.log(`   📊 总共需要处理 ${courseData.units.length} 个 Units，${totalTopics} 个 Topics`);
-    console.log(`   🚀 使用 5 个并发 worker（完成后立即处理下一个）`);
+    console.log(`   🚀 使用 8 个并发 worker（完成后立即处理下一个）`);
     
     onProgress?.(`开始生成学习内容（${totalTopics} 个 Topics）...`, 45);
     
@@ -179,7 +188,7 @@ export class CourseGenerator {
     }
 
     // 工作池模式：worker完成后立即取下一个任务
-    const CONCURRENCY = 8; // 5 个并发 worker
+    const CONCURRENCY = 8; // 8 个并发 worker
     let processedCount = 0;
     let failedCount = 0;
     let currentIndex = 0;
@@ -525,15 +534,40 @@ EXAMPLE of CORRECT format for Chemistry:
         console.log(`    ✅ Topic ${topic.topic_number} JSON 修复成功`);
         
         // v12.6: 结合 AI 判断和 checkRequiresImage 规则（取并集）
-        const flashcards = (content.flashcards || []).map((card: any) => ({
-          ...card,
-          requires_image: card.requires_image || this.checkRequiresImage('flashcard', card.front, card.back)
-        }));
+        // v12.8: 添加所有新字段
+        const flashcards = (content.flashcards || []).map((card: any) => {
+          const imageNeeded = card.requires_image || this.checkRequiresImage('flashcard', card.front, card.back);
+          const difficulty = card.difficulty || this.calculateDifficultyLevel({
+            question: card.front,
+            options: [],
+            explanation: card.back
+          });
+          
+          return {
+            ...card,
+            requires_image: imageNeeded,
+            difficulty: difficulty,
+            image_suggested: imageNeeded,
+            image_suggestion_description: null,
+            version: '1.0.0',
+            status: 'draft'
+          };
+        });
         
-        const quiz = (content.quiz || []).map((q: any) => ({
-          ...q,
-          requires_image: q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation)
-        }));
+        const quiz = (content.quiz || []).map((q: any) => {
+          const imageNeeded = q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation);
+          const difficultyLevel = q.difficulty_level || this.calculateDifficultyLevel(q);
+          
+          return {
+            ...q,
+            requires_image: imageNeeded,
+            difficulty_level: difficultyLevel,
+            image_suggested: imageNeeded,
+            image_suggestion_description: null,
+            version: '1.0.0',
+            status: 'draft'
+          };
+        });
         
         return {
           study_guide: content.study_guide || '',
