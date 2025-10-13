@@ -91,19 +91,19 @@ export class CourseGenerator {
           topicEstimatedMinutes = plan.total_estimated_minutes || (learnMinutes + reviewMinutes + practiceMinutes);
         } else {
           // 旧格式：基于LO/EK数量计算
-          const loCount = Math.max(1, topic.learning_objectives?.length || 1);
-          const ekCount = Math.max(1, topic.essential_knowledge?.length || 1);
-
-          // Flashcards: 基于 EK 数量
-          const rawFlashcards = 6 + (ekCount - 2) * 2.5;
+        const loCount = Math.max(1, topic.learning_objectives?.length || 1);
+        const ekCount = Math.max(1, topic.essential_knowledge?.length || 1);
+        
+        // Flashcards: 基于 EK 数量
+        const rawFlashcards = 6 + (ekCount - 2) * 2.5;
           flashcardsCount = Math.max(10, Math.min(36, Math.round(rawFlashcards)));
 
-          // Quiz: 基于 LO 和 EK
-          const rawQuiz = 6 + (loCount - 1) * 4 + Math.min(ekCount, 8) * 1.25;
+        // Quiz: 基于 LO 和 EK
+        const rawQuiz = 6 + (loCount - 1) * 4 + Math.min(ekCount, 8) * 1.25;
           quizCount = Math.max(6, Math.min(16, Math.round(rawQuiz)));
 
-          // Study Guide 词数: 基于 LO 和 EK
-          const rawWords = 700 + loCount * 150 + ekCount * 80;
+        // Study Guide 词数: 基于 LO 和 EK
+        const rawWords = 700 + loCount * 150 + ekCount * 80;
           studyGuideWords = Math.max(600, Math.min(1500, Math.round(rawWords)));
 
           // 根据内容量反推时间
@@ -558,7 +558,7 @@ EXAMPLE of CORRECT format for Chemistry:
           });
           
           // v12.8.3: 只保留 image_suggested，移除 requires_image
-          return {
+        return {
             front: card.front,
             back: card.back,
             card_type: card.card_type || 'Term-Definition',
@@ -887,41 +887,33 @@ EXAMPLE of CORRECT format for Chemistry:
         });
 
         // Study Guide
+        // v12.8.3: study_guide 现在是一个对象，包含 content_markdown 和元数据
         if (topic.study_guide) {
-          const wordCount = this.calculateWordCount(topic.study_guide);
           studyGuides.push({
             study_guide_id: `${topicId}_sg`,
             topic_id: topicId,
-            content_markdown: topic.study_guide,
-            word_count: wordCount,  // v12.8: 字数统计
-            reading_minutes: this.calculateReadingMinutes(wordCount),  // v12.8: 阅读时间
-            version: '1.0',  // v12.8: 版本号
-            status: 'draft'  // v12.8: 状态
+            content_markdown: topic.study_guide.content_markdown,
+            word_count: topic.study_guide.word_count,
+            reading_minutes: topic.study_guide.reading_minutes,
+            version: topic.study_guide.version,
+            status: topic.study_guide.status
           });
         }
 
         // Flashcards
         if (topic.flashcards && topic.flashcards.length > 0) {
           topic.flashcards.forEach((card, cardIdx) => {
-            const difficulty = card.difficulty || this.calculateDifficultyLevel({
-              question: card.front,
-              options: [],
-              explanation: card.back
-            });
-            const imageNeeded = card.requires_image !== undefined ? card.requires_image : 
-                               this.checkRequiresImage('flashcard', card.front, card.back);
-            
             topicFlashcards.push({
               card_id: `${topicId}_fc_${String(cardIdx + 1).padStart(3, '0')}`,
               topic_id: topicId,
-              card_type: card.card_type || 'Term-Definition',
+              card_type: card.card_type,
               front_content: card.front,
               back_content: card.back,
-              difficulty: difficulty,  // v12.8: 难度等级
-              image_suggested: imageNeeded,  // v12.8: 是否建议配图（统一使用此字段）
-              image_suggestion_description: null,  // v12.8: 暂不生成描述
-              version: '1.0.0',  // v12.8: 版本号
-              status: 'draft'  // v12.8: 状态
+              difficulty: card.difficulty,
+              image_suggested: card.image_suggested,
+              image_suggestion_description: card.image_suggestion_description,
+              version: card.version,
+              status: card.status
             });
           });
         }
@@ -929,10 +921,6 @@ EXAMPLE of CORRECT format for Chemistry:
         // Quiz Questions
         if (topic.quiz && topic.quiz.length > 0) {
           topic.quiz.forEach((q, qIdx) => {
-            const difficultyLevel = q.difficulty_level || this.calculateDifficultyLevel(q);
-            const imageNeeded = q.requires_image !== undefined ? q.requires_image :
-                               this.checkRequiresImage('quiz', q.question, q.explanation);
-            
             quizzes.push({
               quiz_id: `${topicId}_q_${String(qIdx + 1).padStart(3, '0')}`,
               topic_id: topicId,
@@ -943,11 +931,11 @@ EXAMPLE of CORRECT format for Chemistry:
               option_d: q.options[3] || '',
               correct_answer: q.correct_answer,
               explanation: q.explanation,
-              difficulty_level: difficultyLevel,  // v12.8: 难度等级
-              image_suggested: imageNeeded,  // v12.8: 是否建议配图（统一使用此字段）
-              image_suggestion_description: null,  // v12.8: 暂不生成描述
-              version: '1.0.0',  // v12.8: 版本号
-              status: 'draft'  // v12.8: 状态
+              difficulty_level: q.difficulty_level,
+              image_suggested: q.image_suggested,
+              image_suggestion_description: q.image_suggestion_description,
+              version: q.version,
+              status: q.status
             });
           });
         }
@@ -994,9 +982,11 @@ EXAMPLE of CORRECT format for Chemistry:
           status: unitTestInfo.status
         };
 
-        // v12.8: 生成符合数据库表格式的test_questions
-        const currentUnitQuestions: UnitAssessmentQuestion[] = [];
-        
+        // v12.8.3: 生成test_questions
+        // separated_content_json 使用 UnitAssessmentQuestion[]（包含所有ID）
+        // combined_complete_json 使用简化版本（不包含自动生成的ID）
+        const currentUnitQuestions: any[] = [];
+
         selectedQuizzes.forEach((item, idx) => {
           const q = item.quiz;
           const topic = unit.topics.find(t => `${courseId}_${t.topic_number.replace('.', '_')}` === item.topicId);
@@ -1023,23 +1013,32 @@ EXAMPLE of CORRECT format for Chemistry:
           };
           
           // v12.8.3: 用于 combined_complete_json 的对象（不包含自动生成的 ID）
-          const questionObjForCombined = {
+          // 支持 MCQ, SAQ, FRQ 不同题型
+          const questionObjForCombined: any = {
             question_number: idx + 1,
-            question_type: 'mcq' as const,
+            question_type: 'mcq',  // 当前只生成MCQ，未来可扩展
             difficulty_level: this.calculateDifficultyLevel(q),
             ap_alignment: topic?.topic_number || `${unit.unit_number}.${idx + 1}`,
             source: 'PrepGo Original AP-Style',
-            question_text: q.question,
-            options: {
-              A: q.options[0] || '',
-              B: q.options[1] || '',
-              C: q.options[2] || '',
-              D: q.options[3] || ''
-            },
-            correct_answer: q.correct_answer,
-            explanation: q.explanation,
             image_suggested: q.image_suggested
           };
+          
+          // MCQ 特有字段
+          questionObjForCombined.question_text = q.question;
+          questionObjForCombined.options = {
+            A: q.options[0] || '',
+            B: q.options[1] || '',
+            C: q.options[2] || '',
+            D: q.options[3] || ''
+          };
+          questionObjForCombined.correct_answer = q.correct_answer;
+          questionObjForCombined.explanation = q.explanation;
+          
+          // 未来如果是 SAQ/FRQ，则添加：
+          // questionObjForCombined.stimulus_type = ...;
+          // questionObjForCombined.stimulus = ...;
+          // questionObjForCombined.rubric = ...;
+          // questionObjForCombined.parts = [...];
           
           // 添加到separated_content_json的数组
           unitAssessmentQuestions.push(questionObjForSeparated);

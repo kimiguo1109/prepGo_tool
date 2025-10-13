@@ -35,9 +35,7 @@ export interface APUnit {
   exam_weight?: string;
   topics: APTopic[];
   start_page?: number; // PDF 中的起始页码
-  unit_test?: {  // v12.8: 更新为完整的数据库表格式
-    test_id: string;
-    course_id: string;
+  unit_test?: {  // v12.8.3: combined_complete_json中不包含自动生成的ID
     title: string;
     description: string;
     recommended_minutes: number;
@@ -45,7 +43,37 @@ export interface APUnit {
     version: string;
     status: string;
   };
-  test_questions?: UnitAssessmentQuestion[];  // v12.8: 单元测试题目数组
+  test_questions?: Array<{  // v12.8.3: 单元测试题目数组（不包含自动生成的ID）
+    question_number: number;
+    question_type: 'mcq' | 'saq' | 'frq';
+    difficulty_level: number;
+    ap_alignment: string;
+    source: string;
+    
+    // MCQ fields
+    question_text?: string;
+    options?: {
+      A: string;
+      B: string;
+      C: string;
+      D: string;
+    };
+    correct_answer?: string;
+    explanation?: string;
+    
+    // SAQ/FRQ fields
+    stimulus_type?: string;
+    stimulus?: string;
+    rubric?: string;
+    parts?: Array<{
+      part_letter: string;
+      prompt: string;
+      max_points: number;
+    }>;
+    
+    // Common
+    image_suggested?: boolean;
+  }>;
 }
 
 /**
