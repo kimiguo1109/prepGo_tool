@@ -443,10 +443,21 @@ EXAMPLE of CORRECT format for Chemistry:
         throw new Error(`内容被截断（flashcards: ${actualFlashcards}/${flashcardCount}, quiz: ${actualQuiz}/${quizCount}）`);
       }
       
+      // v12.5: 使用 checkRequiresImage 覆盖 AI 的 requires_image 判断
+      const flashcards = (content.flashcards || []).map((card: any) => ({
+        ...card,
+        requires_image: this.checkRequiresImage('flashcard', card.front, card.back)
+      }));
+      
+      const quiz = (content.quiz || []).map((q: any) => ({
+        ...q,
+        requires_image: this.checkRequiresImage('quiz', q.question, q.explanation)
+      }));
+      
       return {
         study_guide: content.study_guide || '',
-        flashcards: content.flashcards || [],
-        quiz: content.quiz || []
+        flashcards,
+        quiz
       };
     } catch (parseError: any) {
       // 尝试修复常见的 JSON 格式错误
@@ -817,7 +828,7 @@ EXAMPLE of CORRECT format for Chemistry:
               card_type: card.card_type || 'Term-Definition',  // v12.0: 添加卡片类型
               front_content: card.front,
               back_content: card.back,
-              requires_image: this.checkRequiresImage('flashcard', card.front, card.back)
+              requires_image: this.checkRequiresImage('flashcard', card.front, card.back)  // 使用代码规则重新计算
             });
           });
         }
@@ -835,7 +846,7 @@ EXAMPLE of CORRECT format for Chemistry:
               option_d: q.options[3] || '',
               correct_answer: q.correct_answer,
               explanation: q.explanation,
-              requires_image: this.checkRequiresImage('quiz', q.question, q.explanation)
+              requires_image: this.checkRequiresImage('quiz', q.question, q.explanation)  // 使用代码规则重新计算
             });
           });
         }
@@ -876,7 +887,7 @@ EXAMPLE of CORRECT format for Chemistry:
             option_d: q.options[3] || '',
             correct_answer: q.correct_answer,
             explanation: q.explanation,
-            requires_image: this.checkRequiresImage('quiz', q.question, q.explanation)
+            requires_image: q.requires_image  // v12.5: 使用AI生成的字段
           });
         });
       }

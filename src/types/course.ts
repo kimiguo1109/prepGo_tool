@@ -57,12 +57,14 @@ export interface APTopic {
     front: string;
     back: string;
     card_type: 'Term-Definition' | 'Concept-Explanation' | 'Scenario/Question-Answer';
+    requires_image: boolean;  // v12.5: AI生成+checkRequiresImage修正
   }>;
   quiz?: Array<{
     question: string;
     options: string[];
     correct_answer: string;
     explanation: string;
+    requires_image: boolean;  // v12.5: AI生成+checkRequiresImage修正
   }>;
 }
 
