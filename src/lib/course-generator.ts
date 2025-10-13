@@ -557,9 +557,11 @@ EXAMPLE of CORRECT format for Chemistry:
             explanation: card.back
           });
           
+          // v12.8.3: 只保留 image_suggested，移除 requires_image
           return {
-            ...card,
-            requires_image: imageNeeded,
+            front: card.front,
+            back: card.back,
+            card_type: card.card_type || 'Term-Definition',
             difficulty: difficulty,
             image_suggested: imageNeeded,
             image_suggestion_description: null,
@@ -572,9 +574,12 @@ EXAMPLE of CORRECT format for Chemistry:
           const imageNeeded = q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation);
           const difficultyLevel = q.difficulty_level || this.calculateDifficultyLevel(q);
           
+          // v12.8.3: 只保留 image_suggested，移除 requires_image
           return {
-            ...q,
-            requires_image: imageNeeded,
+            question: q.question,
+            options: q.options,
+            correct_answer: q.correct_answer,
+            explanation: q.explanation,
             difficulty_level: difficultyLevel,
             image_suggested: imageNeeded,
             image_suggestion_description: null,
@@ -583,8 +588,19 @@ EXAMPLE of CORRECT format for Chemistry:
           };
         });
         
+        // v12.8.3: study_guide 改为对象格式，包含完整的元数据
+        const studyGuideText = content.study_guide || '';
+        const wordCount = this.calculateWordCount(studyGuideText);
+        const studyGuide = studyGuideText ? {
+          content_markdown: studyGuideText,
+          word_count: wordCount,
+          reading_minutes: this.calculateReadingMinutes(wordCount),
+          version: '1.0',
+          status: 'draft'
+        } : null;
+        
         return {
-          study_guide: content.study_guide || '',
+          study_guide: studyGuide,
           flashcards,
           quiz
         };
@@ -967,10 +983,9 @@ EXAMPLE of CORRECT format for Chemistry:
         // 添加到扁平化的unit_tests数组（用于separated_content_json）
         unitTests.push(unitTestInfo);
 
-        // v12.8: 同时添加到unit对象中（用于combined_complete_json）
+        // v12.8.3: 同时添加到unit对象中（用于combined_complete_json）
+        // 不包含自动生成的 ID（test_id, course_id, unit_id）
         unit.unit_test = {
-          test_id: unitTestInfo.test_id,
-          course_id: unitTestInfo.course_id,
           title: unitTestInfo.title,
           description: unitTestInfo.description,
           recommended_minutes: unitTestInfo.recommended_minutes,
@@ -986,7 +1001,8 @@ EXAMPLE of CORRECT format for Chemistry:
           const q = item.quiz;
           const topic = unit.topics.find(t => `${courseId}_${t.topic_number.replace('.', '_')}` === item.topicId);
           
-          const questionObj: UnitAssessmentQuestion = {
+          // 用于 separated_content_json 的完整对象（包含所有 ID）
+          const questionObjForSeparated: UnitAssessmentQuestion = {
             question_id: `${testId}_q_${String(idx + 1).padStart(3, '0')}`,
             test_id: testId,
             question_number: idx + 1,
@@ -1003,18 +1019,48 @@ EXAMPLE of CORRECT format for Chemistry:
             },
             correct_answer: q.correct_answer,
             explanation: q.explanation,
-            requires_image: q.requires_image
+            image_suggested: q.image_suggested
+          };
+          
+          // v12.8.3: 用于 combined_complete_json 的对象（不包含自动生成的 ID）
+          const questionObjForCombined = {
+            question_number: idx + 1,
+            question_type: 'mcq' as const,
+            difficulty_level: this.calculateDifficultyLevel(q),
+            ap_alignment: topic?.topic_number || `${unit.unit_number}.${idx + 1}`,
+            source: 'PrepGo Original AP-Style',
+            question_text: q.question,
+            options: {
+              A: q.options[0] || '',
+              B: q.options[1] || '',
+              C: q.options[2] || '',
+              D: q.options[3] || ''
+            },
+            correct_answer: q.correct_answer,
+            explanation: q.explanation,
+            image_suggested: q.image_suggested
           };
           
           // 添加到separated_content_json的数组
-          unitAssessmentQuestions.push(questionObj);
+          unitAssessmentQuestions.push(questionObjForSeparated);
           // 添加到combined_complete_json的unit数组
-          currentUnitQuestions.push(questionObj);
+          currentUnitQuestions.push(questionObjForCombined as any);
         });
         
         // v12.8: 将test_questions添加到unit对象（用于combined_complete_json）
         unit.test_questions = currentUnitQuestions;
       }
+    });
+
+    // v12.8.3: 清理临时字段（在返回之前）
+    // 移除 topic 中的临时字段：learn, review, practice, topic_estimated_minutes
+    courseData.units.forEach(unit => {
+      unit.topics.forEach((topic: any) => {
+        delete topic.learn;
+        delete topic.review;
+        delete topic.practice;
+        delete topic.topic_estimated_minutes;
+      });
     });
 
     // 返回双 JSON 输出

@@ -70,29 +70,33 @@ export interface APTopic {
     minutes: number;
     quiz_count: number;
   };
-  study_guide?: string;
+  study_guide?: {
+    content_markdown: string;
+    word_count: number;
+    reading_minutes: number;
+    version: string;
+    status: string;
+  } | null;  // v12.8.3: 改为对象格式，包含元数据
   flashcards?: Array<{
     front: string;
     back: string;
     card_type: 'Term-Definition' | 'Concept-Explanation' | 'Scenario/Question-Answer';
-    requires_image: boolean;  // v12.5: AI生成+checkRequiresImage修正
-    difficulty?: number;  // v12.8: 难度等级1-10
-    image_suggested?: boolean;  // v12.8: 是否建议配图（与requires_image对应）
-    image_suggestion_description?: string | null;  // v12.8: 配图建议描述
-    version?: string;  // v12.8: 版本号
-    status?: string;  // v12.8: 状态（draft/published）
+    difficulty: number;  // v12.8: 难度等级1-10
+    image_suggested: boolean;  // v12.8.3: 是否建议配图（移除requires_image，统一使用此字段）
+    image_suggestion_description: string | null;  // v12.8: 配图建议描述
+    version: string;  // v12.8: 版本号
+    status: string;  // v12.8: 状态（draft/published）
   }>;
   quiz?: Array<{
     question: string;
     options: string[];
     correct_answer: string;
     explanation: string;
-    requires_image: boolean;  // v12.5: AI生成+checkRequiresImage修正
-    difficulty_level?: number;  // v12.8: 难度等级1-10
-    image_suggested?: boolean;  // v12.8: 是否建议配图
-    image_suggestion_description?: string | null;  // v12.8: 配图建议描述
-    version?: string;  // v12.8: 版本号
-    status?: string;  // v12.8: 状态（draft/published）
+    difficulty_level: number;  // v12.8: 难度等级1-10
+    image_suggested: boolean;  // v12.8.3: 是否建议配图（移除requires_image，统一使用此字段）
+    image_suggestion_description: string | null;  // v12.8: 配图建议描述
+    version: string;  // v12.8: 版本号
+    status: string;  // v12.8: 状态（draft/published）
   }>;
 }
 
@@ -252,7 +256,7 @@ export interface UnitAssessmentQuestion {
   parts?: FRQPart[];  // FRQ的多部分
   
   // Common fields
-  requires_image?: boolean;  // v12.8: 改为可选，由stimulus_type判断
+  image_suggested?: boolean;  // v12.8.3: 是否建议配图（移除requires_image，统一使用此字段）
 }
 
 /**
