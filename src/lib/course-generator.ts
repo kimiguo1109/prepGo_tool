@@ -229,8 +229,10 @@ export class CourseGenerator {
           processedCount++;
           
           // 检查是否生成失败（内容为空或包含错误信息）
+          // v12.8.4: study_guide 现在是对象格式，需要检查 content_markdown 字段
           const isFailed = !content.study_guide || 
-                          content.study_guide.includes('[内容生成失败') ||
+                          !content.study_guide.content_markdown ||
+                          content.study_guide.content_markdown.includes('[内容生成失败') ||
                           content.flashcards.length === 0 ||
                           content.quiz.length === 0;
           
@@ -334,7 +336,7 @@ export class CourseGenerator {
     const ekSummaries = topic.essential_knowledge.map((ek: any) => ek.summary).join('; ');
     const flashcardCount = (topic as any).review?.flashcards_count || 3;
     const quizCount = (topic as any).practice?.quiz_count || 8;
-    const wordCount = (topic as any).learn?.study_guide_words || 100;
+    const targetWordCount = (topic as any).learn?.study_guide_words || 100;
 
     const prompt = `You are an AP course content generator. Create high-quality educational content for the following topic.
 
@@ -347,7 +349,7 @@ ESSENTIAL KNOWLEDGE: ${ekSummaries}
 Generate the following content in strict JSON format:
 
 {
-  "study_guide": "Write a comprehensive study guide in academic English (approximately ${wordCount} words). Cover all learning objectives and essential knowledge. Use clear explanations suitable for AP students.",
+  "study_guide": "Write a comprehensive study guide in academic English (approximately ${targetWordCount} words). Cover all learning objectives and essential knowledge. Use clear explanations suitable for AP students.",
   "flashcards": [
     {
       "front": "Clear question or concept",
@@ -369,7 +371,7 @@ CRITICAL REQUIREMENTS:
 1. ALL content MUST be in ENGLISH only
 2. Generate EXACTLY ${flashcardCount} flashcards (not more, not less)
 3. Generate EXACTLY ${quizCount} quiz questions (not more, not less)
-4. Study guide should be approximately ${wordCount} words
+4. Study guide should be approximately ${targetWordCount} words
 5. Use academic but clear language suitable for AP students
 6. Return ONLY valid JSON - NO comments, NO markdown backticks, NO extra text before or after
 7. Do NOT use Chinese or any other non-English languages
@@ -416,7 +418,7 @@ CRITICAL REQUIREMENTS:
     - "Scenario/Question-Answer": Application questions or scenarios
     Each flashcard MUST have a "card_type" field with one of these exact values
 
-11. PRIORITIZE QUIZ COMPLETION: If running low on tokens, reduce study_guide length but ALWAYS complete all ${quizCount} quiz questions
+11. PRIORITIZE QUIZ COMPLETION: If running low on tokens, reduce study_guide length but ALWAYS complete all ${quizCount} quiz questions from the target of ${targetWordCount} words
 
 EXAMPLE of CORRECT format for Chemistry:
 {
@@ -453,9 +455,11 @@ EXAMPLE of CORRECT format for Chemistry:
       throw new Error('API 返回空响应');
     }
 
+    let content: any;
+    
     try {
       const jsonText = this.extractJSON(text);
-      const content = JSON.parse(jsonText);
+      content = JSON.parse(jsonText);
       
       // 验证内容数量是否符合要求（允许 ±2 的误差）
       const actualFlashcards = content.flashcards?.length || 0;
@@ -466,23 +470,7 @@ EXAMPLE of CORRECT format for Chemistry:
         throw new Error(`内容被截断（flashcards: ${actualFlashcards}/${flashcardCount}, quiz: ${actualQuiz}/${quizCount}）`);
       }
       
-      // v12.6: 结合 AI 判断和 checkRequiresImage 规则（取并集）
-      // 逻辑：AI认为需要 OR 代码规则认为需要 → 标记为true
-      const flashcards = (content.flashcards || []).map((card: any) => ({
-        ...card,
-        requires_image: card.requires_image || this.checkRequiresImage('flashcard', card.front, card.back)
-      }));
-      
-      const quiz = (content.quiz || []).map((q: any) => ({
-        ...q,
-        requires_image: q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation)
-      }));
-      
-      return {
-        study_guide: content.study_guide || '',
-        flashcards,
-        quiz
-      };
+      // v12.8.4: 第一次解析成功，跳到转换逻辑
     } catch (parseError: any) {
       // 尝试修复常见的 JSON 格式错误
       console.warn(`⚠️  Topic ${topic.topic_number} 初次解析失败，尝试修复...`);
@@ -534,7 +522,7 @@ EXAMPLE of CORRECT format for Chemistry:
         
         // ========== 尝试解析修复后的 JSON ==========
         
-        const content = JSON.parse(fixedJson);
+        content = JSON.parse(fixedJson);
         
         // 再次验证数量
         const actualFlashcards = content.flashcards?.length || 0;
@@ -546,64 +534,6 @@ EXAMPLE of CORRECT format for Chemistry:
         }
         
         console.log(`    ✅ Topic ${topic.topic_number} JSON 修复成功`);
-        
-        // v12.6: 结合 AI 判断和 checkRequiresImage 规则（取并集）
-        // v12.8: 添加所有新字段
-        const flashcards = (content.flashcards || []).map((card: any) => {
-          const imageNeeded = card.requires_image || this.checkRequiresImage('flashcard', card.front, card.back);
-          const difficulty = card.difficulty || this.calculateDifficultyLevel({
-            question: card.front,
-            options: [],
-            explanation: card.back
-          });
-          
-          // v12.8.3: 只保留 image_suggested，移除 requires_image
-        return {
-            front: card.front,
-            back: card.back,
-            card_type: card.card_type || 'Term-Definition',
-            difficulty: difficulty,
-            image_suggested: imageNeeded,
-            image_suggestion_description: null,
-            version: '1.0.0',
-            status: 'draft'
-          };
-        });
-        
-        const quiz = (content.quiz || []).map((q: any) => {
-          const imageNeeded = q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation);
-          const difficultyLevel = q.difficulty_level || this.calculateDifficultyLevel(q);
-          
-          // v12.8.3: 只保留 image_suggested，移除 requires_image
-          return {
-            question: q.question,
-            options: q.options,
-            correct_answer: q.correct_answer,
-            explanation: q.explanation,
-            difficulty_level: difficultyLevel,
-            image_suggested: imageNeeded,
-            image_suggestion_description: null,
-            version: '1.0.0',
-            status: 'draft'
-          };
-        });
-        
-        // v12.8.3: study_guide 改为对象格式，包含完整的元数据
-        const studyGuideText = content.study_guide || '';
-        const wordCount = this.calculateWordCount(studyGuideText);
-        const studyGuide = studyGuideText ? {
-          content_markdown: studyGuideText,
-          word_count: wordCount,
-          reading_minutes: this.calculateReadingMinutes(wordCount),
-          version: '1.0',
-          status: 'draft'
-        } : null;
-        
-        return {
-          study_guide: studyGuide,
-          flashcards,
-          quiz
-        };
       } catch (secondError: any) {
         // 修复也失败，记录详细信息
         console.error(`❌ Topic ${topic.topic_number} JSON 解析失败:`, parseError.message);
@@ -612,6 +542,96 @@ EXAMPLE of CORRECT format for Chemistry:
         throw new Error(`JSON 解析失败: ${parseError.message}`);
       }
     }
+    
+    // ========== 统一的字段转换逻辑 (v12.8.4) ==========
+    // 无论是第一次解析成功还是修复后成功，都执行此转换
+    
+    // v12.6: 结合 AI 判断和 checkRequiresImage 规则（取并集）
+    // v12.8: 添加所有新字段
+    // v12.8.4: 使用正确的字段名 front_content/back_content，并添加 card_id 和 topic_id
+    const topicId = `ap_us_history_${topic.topic_number.replace('.', '_')}`;
+    const flashcards = (content.flashcards || []).map((card: any, cardIdx: number) => {
+      const imageNeeded = card.requires_image || this.checkRequiresImage('flashcard', card.front, card.back);
+      const difficulty = card.difficulty || this.calculateDifficultyLevel({
+        question: card.front,
+        options: [],
+        explanation: card.back
+      });
+      
+      // Map card_type to correct format
+      let mappedCardType = card.card_type || 'Concept-Explanation';
+      if (mappedCardType === 'Term-Definition') mappedCardType = 'definition';
+      else if (mappedCardType === 'Concept-Explanation') mappedCardType = 'concept';
+      else if (mappedCardType === 'Scenario/Question-Answer') mappedCardType = 'application';
+      
+      // v12.8.3: 只保留 image_suggested，移除 requires_image
+      return {
+        card_id: `${topicId}_fc_${String(cardIdx + 1).padStart(3, '0')}`,
+        topic_id: topicId,
+        card_type: mappedCardType,
+        front_content: card.front,
+        back_content: card.back,
+        difficulty: difficulty,
+        image_suggested: imageNeeded,
+        image_suggestion_description: null,
+        version: '1.0.0',
+        status: 'draft'
+      };
+    });
+    
+    // v12.8.4: 修改 quiz 格式，添加 quiz_id 和 topic_id，使用 question_text，options 改为对象格式
+    const quiz = (content.quiz || []).map((q: any, qIdx: number) => {
+      const imageNeeded = q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation);
+      const difficultyLevel = q.difficulty_level || this.calculateDifficultyLevel(q);
+      
+      // Convert options from array to object format {A, B, C, D}
+      let optionsObj: { A: string; B: string; C: string; D: string };
+      if (Array.isArray(q.options)) {
+        optionsObj = {
+          A: q.options[0] || '',
+          B: q.options[1] || '',
+          C: q.options[2] || '',
+          D: q.options[3] || ''
+        };
+      } else {
+        optionsObj = q.options || { A: '', B: '', C: '', D: '' };
+      }
+      
+      // v12.8.3: 只保留 image_suggested，移除 requires_image
+      return {
+        quiz_id: `${topicId}_q_${String(qIdx + 1).padStart(3, '0')}`,
+        topic_id: topicId,
+        difficulty_level: difficultyLevel,
+        question_text: q.question,
+        options: optionsObj,
+        correct_answer: q.correct_answer,
+        explanation: q.explanation,
+        image_suggested: imageNeeded,
+        image_suggestion_description: null,
+        version: '1.0.0',
+        status: 'draft'
+      };
+    });
+    
+    // v12.8.3: study_guide 改为对象格式，包含完整的元数据
+    // v12.8.4: 添加 study_guide_id 和 topic_id
+    const studyGuideText = content.study_guide || '';
+    const wordCount = this.calculateWordCount(studyGuideText);
+    const studyGuide = studyGuideText ? {
+      study_guide_id: `${topicId}_learn`,
+      topic_id: topicId,
+      content_markdown: studyGuideText,
+      word_count: wordCount,
+      reading_minutes: this.calculateReadingMinutes(wordCount),
+      version: '1.0',
+      status: 'draft'
+    } : null;
+    
+    return {
+      study_guide: studyGuide,
+      flashcards,
+      quiz
+    };
   }
 
   /**
@@ -860,7 +880,7 @@ EXAMPLE of CORRECT format for Chemistry:
    * - separated_content_json: 扁平化的新内容（用于数据库导入）
    * - combined_complete_json: 嵌套的完整课程结构（保持原始格式）
    */
-  convertToDualJSON(courseData: APCourse): DualJSONOutput {
+  async convertToDualJSON(courseData: APCourse): Promise<DualJSONOutput> {
     const courseName = courseData.course_name;
     const courseId = this.generateId(courseName);
     
@@ -873,7 +893,8 @@ EXAMPLE of CORRECT format for Chemistry:
     const unitAssessmentQuestions: UnitAssessmentQuestion[] = [];
 
     // 处理所有 units 和 topics，生成扁平化数据
-    courseData.units.forEach((unit) => {
+    // v12.8.5: 改为 for...of 以支持 async SAQ/FRQ 生成
+    for (const unit of courseData.units) {
       const unitId = `${courseId}_unit_${unit.unit_number}`;
 
       // 处理 Topics
@@ -888,9 +909,10 @@ EXAMPLE of CORRECT format for Chemistry:
 
         // Study Guide
         // v12.8.3: study_guide 现在是一个对象，包含 content_markdown 和元数据
+        // v12.8.4: 使用 _learn 后缀而不是 _sg，与 complete JSON 格式保持一致
         if (topic.study_guide) {
           studyGuides.push({
-            study_guide_id: `${topicId}_sg`,
+            study_guide_id: `${topicId}_learn`,
             topic_id: topicId,
             content_markdown: topic.study_guide.content_markdown,
             word_count: topic.study_guide.word_count,
@@ -901,14 +923,15 @@ EXAMPLE of CORRECT format for Chemistry:
         }
 
         // Flashcards
+        // v12.8.4: 更新为使用新字段名 front_content/back_content
         if (topic.flashcards && topic.flashcards.length > 0) {
           topic.flashcards.forEach((card, cardIdx) => {
             topicFlashcards.push({
               card_id: `${topicId}_fc_${String(cardIdx + 1).padStart(3, '0')}`,
               topic_id: topicId,
               card_type: card.card_type,
-              front_content: card.front,
-              back_content: card.back,
+              front_content: card.front_content,
+              back_content: card.back_content,
               difficulty: card.difficulty,
               image_suggested: card.image_suggested,
               image_suggestion_description: card.image_suggestion_description,
@@ -919,16 +942,17 @@ EXAMPLE of CORRECT format for Chemistry:
         }
 
         // Quiz Questions
+        // v12.8.4: 更新为使用新字段名 question_text，options 为对象格式
         if (topic.quiz && topic.quiz.length > 0) {
           topic.quiz.forEach((q, qIdx) => {
             quizzes.push({
               quiz_id: `${topicId}_q_${String(qIdx + 1).padStart(3, '0')}`,
               topic_id: topicId,
-              question_text: q.question,
-              option_a: q.options[0] || '',
-              option_b: q.options[1] || '',
-              option_c: q.options[2] || '',
-              option_d: q.options[3] || '',
+              question_text: q.question_text,
+              option_a: q.options.A || '',
+              option_b: q.options.B || '',
+              option_c: q.options.C || '',
+              option_d: q.options.D || '',
               correct_answer: q.correct_answer,
               explanation: q.explanation,
               difficulty_level: q.difficulty_level,
@@ -952,8 +976,19 @@ EXAMPLE of CORRECT format for Chemistry:
 
       if (unitQuizzes.length > 0) {
         const testId = `${unitId}_test`;
-        const selectedCount = Math.min(20, Math.max(15, unitQuizzes.length));
-        const selectedQuizzes = this.selectRandomQuizzes(unitQuizzes, selectedCount);
+        // v12.8.5: 减少 MCQ 数量为 15-17，为 SAQ/FRQ 留出空间
+        const mcqCount = Math.min(17, Math.max(15, unitQuizzes.length));
+        const selectedQuizzes = this.selectRandomQuizzes(unitQuizzes, mcqCount);
+
+        // v12.8.5: 生成 SAQ 和 FRQ 题目
+        console.log(`    📝 为 Unit ${unit.unit_number} 生成 SAQ/FRQ 题目...`);
+        const saqFrqQuestions = await this.generateSAQandFRQ(unit, courseId);
+        
+        // 计算总题数和时间
+        const totalQuestions = selectedQuizzes.length + saqFrqQuestions.length;
+        const mcqMinutes = Math.round(selectedQuizzes.length * 1.5);
+        const saqFrqMinutes = saqFrqQuestions.length * 8; // SAQ/FRQ 平均 8 分钟每题
+        const totalMinutes = mcqMinutes + saqFrqMinutes;
 
         // v12.8: 生成符合数据库表格式的unit_test信息
         const unitTestInfo = {
@@ -962,8 +997,8 @@ EXAMPLE of CORRECT format for Chemistry:
           course_id: courseId,
           title: `Unit ${unit.unit_number} Progress Check: ${unit.unit_title}`,
           description: this.generateTestDescription(unit),
-          recommended_minutes: Math.round(selectedQuizzes.length * 1.5),
-          total_questions: selectedQuizzes.length,
+          recommended_minutes: totalMinutes,
+          total_questions: totalQuestions,
           version: '1.0.0',
           status: 'draft'
         };
@@ -991,54 +1026,78 @@ EXAMPLE of CORRECT format for Chemistry:
           const q = item.quiz;
           const topic = unit.topics.find(t => `${courseId}_${t.topic_number.replace('.', '_')}` === item.topicId);
           
+          // v12.8.4: 根据题型动态构建对象
+          const questionType = q.question_type || 'mcq';
+          
           // 用于 separated_content_json 的完整对象（包含所有 ID）
           const questionObjForSeparated: UnitAssessmentQuestion = {
             question_id: `${testId}_q_${String(idx + 1).padStart(3, '0')}`,
             test_id: testId,
             question_number: idx + 1,
-            question_type: 'mcq',
+            question_type: questionType,
             difficulty_level: this.calculateDifficultyLevel(q),
             ap_alignment: topic?.topic_number || `${unit.unit_number}.${idx + 1}`,
             source: 'PrepGo Original AP-Style',
-            question_text: q.question,
-            options: {
+            question_text: q.question_text || q.question,
+            image_suggested: q.image_suggested || false
+          };
+          
+          // 根据题型添加对应字段
+          if (questionType === 'mcq') {
+            questionObjForSeparated.options = Array.isArray(q.options) ? {
               A: q.options[0] || '',
               B: q.options[1] || '',
               C: q.options[2] || '',
               D: q.options[3] || ''
-            },
-            correct_answer: q.correct_answer,
-            explanation: q.explanation,
-            image_suggested: q.image_suggested
-          };
+            } : q.options;
+            questionObjForSeparated.correct_answer = q.correct_answer;
+            questionObjForSeparated.explanation = q.explanation;
+          } else if (questionType === 'saq' || questionType === 'frq') {
+            if (q.stimulus_type) questionObjForSeparated.stimulus_type = q.stimulus_type;
+            if (q.stimulus) questionObjForSeparated.stimulus = q.stimulus;
+            if (q.rubric) questionObjForSeparated.rubric = q.rubric;
+            if (questionType === 'frq' && q.parts) {
+              questionObjForSeparated.parts = q.parts;
+            }
+          }
           
           // v12.8.3: 用于 combined_complete_json 的对象（不包含自动生成的 ID）
           // 支持 MCQ, SAQ, FRQ 不同题型
+          // v12.8.4: 根据题型动态添加字段（questionType 已在上方定义）
+          
           const questionObjForCombined: any = {
             question_number: idx + 1,
-            question_type: 'mcq',  // 当前只生成MCQ，未来可扩展
+            question_type: questionType,
             difficulty_level: this.calculateDifficultyLevel(q),
             ap_alignment: topic?.topic_number || `${unit.unit_number}.${idx + 1}`,
             source: 'PrepGo Original AP-Style',
-            image_suggested: q.image_suggested
+            image_suggested: q.image_suggested || false
           };
           
-          // MCQ 特有字段
-          questionObjForCombined.question_text = q.question;
-          questionObjForCombined.options = {
-            A: q.options[0] || '',
-            B: q.options[1] || '',
-            C: q.options[2] || '',
-            D: q.options[3] || ''
-          };
-          questionObjForCombined.correct_answer = q.correct_answer;
-          questionObjForCombined.explanation = q.explanation;
-          
-          // 未来如果是 SAQ/FRQ，则添加：
-          // questionObjForCombined.stimulus_type = ...;
-          // questionObjForCombined.stimulus = ...;
-          // questionObjForCombined.rubric = ...;
-          // questionObjForCombined.parts = [...];
+          // 根据题型添加对应字段
+          if (questionType === 'mcq') {
+            // MCQ 特有字段
+            questionObjForCombined.question_text = q.question_text || q.question;
+            questionObjForCombined.options = Array.isArray(q.options) ? {
+              A: q.options[0] || '',
+              B: q.options[1] || '',
+              C: q.options[2] || '',
+              D: q.options[3] || ''
+            } : q.options;
+            questionObjForCombined.correct_answer = q.correct_answer;
+            questionObjForCombined.explanation = q.explanation;
+          } else if (questionType === 'saq' || questionType === 'frq') {
+            // SAQ/FRQ 特有字段
+            if (q.stimulus_type) questionObjForCombined.stimulus_type = q.stimulus_type;
+            if (q.stimulus) questionObjForCombined.stimulus = q.stimulus;
+            questionObjForCombined.question_text = q.question_text || q.question;
+            if (q.rubric) questionObjForCombined.rubric = q.rubric;
+            
+            // FRQ 的多部分
+            if (questionType === 'frq' && q.parts) {
+              questionObjForCombined.parts = q.parts;
+            }
+          }
           
           // 添加到separated_content_json的数组
           unitAssessmentQuestions.push(questionObjForSeparated);
@@ -1046,10 +1105,60 @@ EXAMPLE of CORRECT format for Chemistry:
           currentUnitQuestions.push(questionObjForCombined as any);
         });
         
+        // v12.8.5: 添加 SAQ 和 FRQ 题目
+        saqFrqQuestions.forEach((q, idx) => {
+          const questionNumber = selectedQuizzes.length + idx + 1;
+          const questionType = q.question_type || 'saq';
+          
+          // 获取相关 topic（使用第一个 topic 作为默认对齐）
+          const firstTopic = unit.topics[0];
+          const apAlignment = q.ap_alignment || firstTopic?.topic_number || `${unit.unit_number}.1`;
+          
+          // 用于 separated_content_json 的完整对象（包含所有 ID）
+          const questionObjForSeparated: UnitAssessmentQuestion = {
+            question_id: `${testId}_q_${String(questionNumber).padStart(3, '0')}`,
+            test_id: testId,
+            question_number: questionNumber,
+            question_type: questionType,
+            difficulty_level: q.difficulty_level || 7,
+            ap_alignment: apAlignment,
+            source: 'PrepGo Original AP-Style',
+            question_text: q.question_text,
+            image_suggested: false
+          };
+          
+          // 添加 SAQ/FRQ 特有字段
+          if (q.stimulus_type) questionObjForSeparated.stimulus_type = q.stimulus_type;
+          if (q.stimulus) questionObjForSeparated.stimulus = q.stimulus;
+          if (q.rubric) questionObjForSeparated.rubric = q.rubric;
+          if (q.parts) questionObjForSeparated.parts = q.parts;
+          
+          // 用于 combined_complete_json 的对象（不包含自动生成的 ID）
+          const questionObjForCombined: any = {
+            question_number: questionNumber,
+            question_type: questionType,
+            difficulty_level: q.difficulty_level || 7,
+            ap_alignment: apAlignment,
+            source: 'PrepGo Original AP-Style',
+            image_suggested: false
+          };
+          
+          // 添加 SAQ/FRQ 特有字段
+          if (q.stimulus_type) questionObjForCombined.stimulus_type = q.stimulus_type;
+          if (q.stimulus) questionObjForCombined.stimulus = q.stimulus;
+          questionObjForCombined.question_text = q.question_text;
+          if (q.rubric) questionObjForCombined.rubric = q.rubric;
+          if (q.parts) questionObjForCombined.parts = q.parts;
+          
+          // 添加到数组
+          unitAssessmentQuestions.push(questionObjForSeparated);
+          currentUnitQuestions.push(questionObjForCombined);
+        });
+        
         // v12.8: 将test_questions添加到unit对象（用于combined_complete_json）
         unit.test_questions = currentUnitQuestions;
       }
-    });
+    }
 
     // v12.8.3: 清理临时字段（在返回之前）
     // 移除 topic 中的临时字段：learn, review, practice, topic_estimated_minutes
@@ -1311,6 +1420,115 @@ EXAMPLE of CORRECT format for Chemistry:
     
     // 至少1分钟，最多30分钟（超过30分钟的study guide可能需要分段）
     return Math.max(1, Math.min(30, minutes));
+  }
+
+  /**
+   * v12.8.5: 生成 SAQ 和 FRQ 题目
+   * 为单元测试生成简答题和论述题
+   */
+  private async generateSAQandFRQ(unit: any, courseId: string): Promise<any[]> {
+    const unitTitle = unit.unit_title;
+    const topicSummaries = unit.topics.map((t: any) => 
+      `${t.topic_number}. ${t.topic_title}`
+    ).join('\n');
+    
+    const prompt = `You are an AP course assessment generator. Create Short Answer Questions (SAQ) and Free Response Questions (FRQ) for a unit test.
+
+UNIT: ${unitTitle}
+
+TOPICS COVERED:
+${topicSummaries}
+
+Generate the following in strict JSON format:
+
+{
+  "saq_questions": [
+    {
+      "question_type": "saq",
+      "difficulty_level": 6-8 (integer),
+      "stimulus_type": "text" | "image" | "chart" | "map",
+      "stimulus": "Primary source quote, data, or image description",
+      "question_text": "Question with parts a, b, c clearly labeled",
+      "rubric": "Detailed scoring rubric explaining how to earn each point"
+    }
+  ],
+  "frq_question": {
+    "question_type": "frq",
+    "difficulty_level": 8-10 (integer),
+    "question_text": "Comprehensive essay question requiring analysis and argumentation",
+    "rubric": "Detailed scoring rubric with thesis, contextualization, evidence, and analysis requirements"
+  }
+}
+
+CRITICAL REQUIREMENTS:
+1. Generate EXACTLY 2 SAQ questions
+2. Generate EXACTLY 1 FRQ question
+3. ALL content MUST be in ENGLISH only
+4. Return ONLY valid JSON - NO markdown backticks, NO extra text
+5. SAQ questions should have 3 parts (a, b, c) testing different skills
+6. FRQ should be a synthesis/evaluation question requiring extended response
+7. Include specific, detailed rubrics for each question
+8. Difficulty levels: SAQ (6-8), FRQ (8-10)
+9. Stimulus should be relevant and realistic (quotes, data, scenarios)
+
+EXAMPLE SAQ FORMAT:
+{
+  "question_type": "saq",
+  "difficulty_level": 7,
+  "stimulus_type": "text",
+  "stimulus": "Quote from historical document or data set",
+  "question_text": "a) Identify ONE example of X in the stimulus.\\nb) Explain how Y relates to Z.\\nc) Describe ONE consequence of the development mentioned.",
+  "rubric": "a) 1 point for correctly identifying... b) 1 point for explaining the relationship... c) 1 point for describing a specific consequence..."
+}
+
+EXAMPLE FRQ FORMAT:
+{
+  "question_type": "frq", 
+  "difficulty_level": 9,
+  "question_text": "Evaluate the extent to which [topic] was significant in [context].",
+  "rubric": "Thesis (1 pt): Must make a historically defensible claim... Contextualization (1 pt)... Evidence (2 pts)... Analysis (2 pts)..."
+}`;
+
+    try {
+      // 调用 Gemini API
+      const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
+      
+      const response = await axios.post(url, {
+        contents: [{
+          role: 'user',
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4096,
+        }
+      });
+
+      const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        throw new Error('AI 返回空响应');
+      }
+
+      const jsonText = this.extractJSON(text);
+      const content = JSON.parse(jsonText);
+      
+      // 验证并返回题目数组
+      const questions = [];
+      
+      if (content.saq_questions && Array.isArray(content.saq_questions)) {
+        questions.push(...content.saq_questions);
+      }
+      
+      if (content.frq_question) {
+        questions.push(content.frq_question);
+      }
+      
+      console.log(`    ✅ 生成 ${questions.length} 个 SAQ/FRQ 题目`);
+      return questions;
+    } catch (error: any) {
+      console.error(`    ❌ 生成 SAQ/FRQ 失败:`, error.message);
+      return [];
+    }
   }
 }
 

@@ -99,6 +99,8 @@ export interface APTopic {
     quiz_count: number;
   };
   study_guide?: {
+    study_guide_id: string;  // v12.8.4: 添加 study_guide_id (格式: ap_us_history_1_1_learn)
+    topic_id: string;  // v12.8.4: 添加 topic_id (格式: ap_us_history_1_1)
     content_markdown: string;
     word_count: number;
     reading_minutes: number;
@@ -106,9 +108,11 @@ export interface APTopic {
     status: string;
   } | null;  // v12.8.3: 改为对象格式，包含元数据
   flashcards?: Array<{
-    front: string;
-    back: string;
-    card_type: 'Term-Definition' | 'Concept-Explanation' | 'Scenario/Question-Answer';
+    card_id: string;  // v12.8.4: 添加 card_id (格式: ap_us_history_1_1_fc_001)
+    topic_id: string;  // v12.8.4: 添加 topic_id (格式: ap_us_history_1_1)
+    card_type: 'definition' | 'concept' | 'application' | 'person_event';  // v12.8.4: 更新类型名称
+    front_content: string;  // v12.8.4: front → front_content
+    back_content: string;  // v12.8.4: back → back_content
     difficulty: number;  // v12.8: 难度等级1-10
     image_suggested: boolean;  // v12.8.3: 是否建议配图（移除requires_image，统一使用此字段）
     image_suggestion_description: string | null;  // v12.8: 配图建议描述
@@ -116,11 +120,13 @@ export interface APTopic {
     status: string;  // v12.8: 状态（draft/published）
   }>;
   quiz?: Array<{
-    question: string;
-    options: string[];
+    quiz_id: string;  // v12.8.4: 添加 quiz_id (格式: ap_us_history_1_1_q_001)
+    topic_id: string;  // v12.8.4: 添加 topic_id (格式: ap_us_history_1_1)
+    difficulty_level: number;  // v12.8: 难度等级1-10
+    question_text: string;  // v12.8.4: question → question_text
+    options: { A: string; B: string; C: string; D: string };  // v12.8.4: 改为对象格式
     correct_answer: string;
     explanation: string;
-    difficulty_level: number;  // v12.8: 难度等级1-10
     image_suggested: boolean;  // v12.8.3: 是否建议配图（移除requires_image，统一使用此字段）
     image_suggestion_description: string | null;  // v12.8: 配图建议描述
     version: string;  // v12.8: 版本号
@@ -195,7 +201,7 @@ export interface StudyGuide {
 export interface TopicFlashcard {
   card_id: string;
   topic_id: string;
-  card_type: 'Term-Definition' | 'Concept-Explanation' | 'Scenario/Question-Answer';
+  card_type: 'definition' | 'concept' | 'application' | 'person_event';  // v12.8.4: 更新类型名称
   front_content: string;
   back_content: string;
   difficulty?: number;  // v12.8: 难度等级1-10

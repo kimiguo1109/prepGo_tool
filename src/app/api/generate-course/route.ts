@@ -54,8 +54,9 @@ export async function POST(request: NextRequest) {
           );
 
           // v11.0: 转换为双 JSON 输出格式
+          // v12.8.5: convertToDualJSON 现在是 async（用于生成 SAQ/FRQ）
           onProgress?.('转换为双 JSON 格式...', 98);
-          const dualJSON = generator.convertToDualJSON(enhancedCourse);
+          const dualJSON = await generator.convertToDualJSON(enhancedCourse);
 
           const generationTime = Date.now() - startTime;
           console.log(`✅ 课程生成完成，耗时: ${(generationTime / 1000).toFixed(1)}s`);
@@ -73,10 +74,12 @@ export async function POST(request: NextRequest) {
             flashcards_requiring_images: flashcards.filter(f => f.image_suggested).length,  // v12.8: 使用image_suggested
             quiz_questions_requiring_images: dualJSON.separated_content_json.quizzes.filter(q => q.image_suggested).length,  // v12.8: 使用image_suggested
             // v12.0: Flashcard 类型分布
+            // v12.8.4: 更新为新的类型名称
             flashcard_types: {
-              term_definition: flashcards.filter(f => f.card_type === 'Term-Definition').length,
-              concept_explanation: flashcards.filter(f => f.card_type === 'Concept-Explanation').length,
-              scenario_question: flashcards.filter(f => f.card_type === 'Scenario/Question-Answer').length,
+              term_definition: flashcards.filter(f => f.card_type === 'definition').length,
+              concept_explanation: flashcards.filter(f => f.card_type === 'concept').length,
+              scenario_question: flashcards.filter(f => f.card_type === 'application').length,
+              person_event: flashcards.filter(f => f.card_type === 'person_event').length,
             }
           };
 
