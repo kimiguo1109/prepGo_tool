@@ -28,6 +28,12 @@ export interface APUnit {
   exam_weight: string; // 格式: "4-6%"
   topics: APTopic[];
   start_page?: number; // PDF 中的起始页码
+  unit_test?: {  // v12.7: 添加单元测试信息（与separated的unit_tests对应）
+    test_id: string;
+    test_title: string;
+    total_questions: number;
+    estimated_minutes: number;
+  };
 }
 
 /**

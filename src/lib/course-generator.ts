@@ -878,13 +878,24 @@ EXAMPLE of CORRECT format for Chemistry:
         const selectedCount = Math.min(20, Math.max(15, unitQuizzes.length));
         const selectedQuizzes = this.selectRandomQuizzes(unitQuizzes, selectedCount);
 
-        unitTests.push({
+        const unitTestInfo = {
           test_id: testId,
           unit_id: unitId,
           test_title: `Unit ${unit.unit_number} Test`,
           total_questions: selectedQuizzes.length,
           estimated_minutes: Math.round(selectedQuizzes.length * 1.5)
-        });
+        };
+
+        // 添加到扁平化的unit_tests数组（用于separated_content_json）
+        unitTests.push(unitTestInfo);
+
+        // v12.7: 同时添加到unit对象中（用于combined_complete_json）
+        unit.unit_test = {
+          test_id: unitTestInfo.test_id,
+          test_title: unitTestInfo.test_title,
+          total_questions: unitTestInfo.total_questions,
+          estimated_minutes: unitTestInfo.estimated_minutes
+        };
 
         selectedQuizzes.forEach((item, idx) => {
           const q = item.quiz;
