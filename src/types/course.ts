@@ -6,6 +6,41 @@ export interface APCourse {
   course_name: string;
   units: APUnit[];
   metadata?: CourseMetadata;
+  mock_exam?: {  // v12.8.6: 课程级别的模拟考试
+    title: string;
+    description: string;
+    recommended_minutes: number;
+    total_questions: number;
+    version: string;
+    status: string;
+    official_year: string;
+    mock_questions: Array<{
+      question_number: number;
+      question_type: 'mcq' | 'saq' | 'frq';
+      difficulty_level: number;
+      ap_alignment: string;
+      version: string;
+      status: string;
+      official_year: string;
+      source: string;
+      
+      // MCQ fields
+      question_text?: string;
+      options?: {
+        A: string;
+        B: string;
+        C: string;
+        D: string;
+      };
+      correct_answer?: string;
+      explanation?: string;
+      
+      // SAQ/FRQ fields
+      stimulus_type?: string;
+      stimulus?: string;
+      rubric?: string;
+    }>;
+  };
 }
 
 /**

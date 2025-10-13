@@ -1177,6 +1177,13 @@ TIP: For a ${targetWordCount}-word study guide, aim for ${Math.ceil(targetWordCo
       });
     });
 
+    // v12.8.6: 生成课程级别的 Mock Exam
+    console.log(`\n📝 生成课程 Mock Exam...`);
+    const mockExam = await this.generateMockExam(courseData, courseId);
+    if (mockExam) {
+      courseData.mock_exam = mockExam;
+    }
+
     // 返回双 JSON 输出
     return {
       // separated: 扁平化的新内容（用于数据库导入）
@@ -1426,6 +1433,206 @@ TIP: For a ${targetWordCount}-word study guide, aim for ${Math.ceil(targetWordCo
     
     // 至少1分钟，最多30分钟（超过30分钟的study guide可能需要分段）
     return Math.max(1, Math.min(30, minutes));
+  }
+
+  /**
+   * v12.8.6: 生成课程级别的 Mock Exam
+   * 包含跨单元的综合性题目
+   */
+  private async generateMockExam(courseData: APCourse, courseId: string): Promise<any> {
+    const courseName = courseData.course_name;
+    const totalUnits = courseData.units.length;
+    
+    // 收集所有 units 的 topic 信息
+    const allTopics = courseData.units.flatMap(unit => 
+      unit.topics.map(topic => ({
+        unit_number: unit.unit_number,
+        topic_number: topic.topic_number,
+        topic_title: topic.topic_title
+      }))
+    );
+    
+    const topicSummary = allTopics.slice(0, 10).map(t => 
+      `${t.topic_number}. ${t.topic_title}`
+    ).join('\n');
+    
+    // 从所有 units 的 quiz 中选择 MCQ 题目
+    const allQuizzes: any[] = [];
+    courseData.units.forEach(unit => {
+      unit.topics.forEach(topic => {
+        if (topic.quiz && Array.isArray(topic.quiz)) {
+          topic.quiz.forEach(q => {
+            allQuizzes.push({
+              quiz: q,
+              unit_number: unit.unit_number,
+              topic_number: topic.topic_number
+            });
+          });
+        }
+      });
+    });
+    
+    // 选择 45-50 个 MCQ（模拟真实 AP 考试）
+    const selectedMCQCount = Math.min(50, Math.max(45, Math.floor(allQuizzes.length * 0.3)));
+    const selectedMCQs = this.selectRandomQuizzes(
+      allQuizzes.map((item, idx) => ({ ...item, qIdx: idx })),
+      selectedMCQCount
+    );
+    
+    // 使用 AI 生成 SAQ 和 FRQ
+    const prompt = `You are an AP course assessment generator. Create a comprehensive Mock Exam for the entire course.
+
+COURSE: ${courseName}
+TOTAL UNITS: ${totalUnits}
+
+KEY TOPICS (first 10):
+${topicSummary}
+
+Generate SAQ and FRQ questions in strict JSON format:
+
+{
+  "saq_questions": [
+    {
+      "question_type": "saq",
+      "difficulty_level": 7-9,
+      "ap_alignment": "cross-unit (e.g., 1.2, 3.4)",
+      "stimulus_type": "text" | "image" | "chart",
+      "stimulus": "Material for the question",
+      "question_text": "Question with parts a, b, c",
+      "rubric": "Detailed scoring rubric"
+    }
+  ],
+  "frq_questions": [
+    {
+      "question_type": "frq",
+      "difficulty_level": 9-10,
+      "ap_alignment": "cross-unit",
+      "question_text": "Comprehensive synthesis question",
+      "rubric": "Detailed rubric with thesis, evidence, analysis requirements"
+    }
+  ]
+}
+
+REQUIREMENTS:
+1. Generate EXACTLY 4 SAQ questions (covering different units)
+2. Generate EXACTLY 2 FRQ questions (synthesis across multiple units)
+3. Questions should test cross-unit connections and themes
+4. SAQ and FRQ should be challenging and comprehensive
+5. Return ONLY valid JSON`;
+
+    try {
+      const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
+      
+      const response = await axios.post(url, {
+        contents: [{
+          role: 'user',
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 8000,
+        }
+      });
+
+      const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        throw new Error('AI 返回空响应');
+      }
+
+      const jsonText = this.extractJSON(text);
+      const content = JSON.parse(jsonText);
+      
+      // 构建 mock questions
+      const mockQuestions: any[] = [];
+      let questionNumber = 1;
+      
+      // 添加 MCQ
+      selectedMCQs.forEach((item) => {
+        const q = item.quiz;
+        const optionsObj = Array.isArray(q.options) ? {
+          A: q.options[0] || '',
+          B: q.options[1] || '',
+          C: q.options[2] || '',
+          D: q.options[3] || ''
+        } : q.options;
+        
+        mockQuestions.push({
+          question_number: questionNumber++,
+          question_type: 'mcq',
+          difficulty_level: q.difficulty_level || 5,
+          ap_alignment: `${item.unit_number}.${item.topic_number}`,
+          version: '1.0.0',
+          status: 'draft',
+          official_year: '2024',
+          source: 'PrepGo Original AP-Style',
+          question_text: q.question_text || q.question,
+          options: optionsObj,
+          correct_answer: q.correct_answer,
+          explanation: q.explanation
+        });
+      });
+      
+      // 添加 SAQ
+      if (content.saq_questions && Array.isArray(content.saq_questions)) {
+        content.saq_questions.forEach((q: any) => {
+          mockQuestions.push({
+            question_number: questionNumber++,
+            question_type: 'saq',
+            difficulty_level: q.difficulty_level || 7,
+            ap_alignment: q.ap_alignment || 'cross-unit',
+            version: '1.0.0',
+            status: 'draft',
+            official_year: '2024',
+            source: 'PrepGo Original AP-Style',
+            stimulus_type: q.stimulus_type,
+            stimulus: q.stimulus,
+            question_text: q.question_text,
+            rubric: q.rubric
+          });
+        });
+      }
+      
+      // 添加 FRQ
+      if (content.frq_questions && Array.isArray(content.frq_questions)) {
+        content.frq_questions.forEach((q: any) => {
+          mockQuestions.push({
+            question_number: questionNumber++,
+            question_type: 'frq',
+            difficulty_level: q.difficulty_level || 9,
+            ap_alignment: q.ap_alignment || 'cross-unit',
+            version: '1.0.0',
+            status: 'draft',
+            official_year: '2024',
+            source: 'PrepGo Original AP-Style',
+            question_text: q.question_text,
+            rubric: q.rubric
+          });
+        });
+      }
+      
+      // 计算推荐时间
+      const mcqMinutes = selectedMCQCount * 1.5;
+      const saqMinutes = 4 * 15; // 4 SAQ * 15分钟
+      const frqMinutes = 2 * 40; // 2 FRQ * 40分钟
+      const totalMinutes = Math.round(mcqMinutes + saqMinutes + frqMinutes);
+      
+      console.log(`    ✅ Mock Exam 生成成功: ${mockQuestions.length} 题 (${selectedMCQCount} MCQ + 4 SAQ + 2 FRQ)`);
+      
+      return {
+        title: `${courseName} - Full-Length Mock Exam`,
+        description: `Comprehensive mock exam covering all ${totalUnits} units. Designed to simulate the actual AP exam experience with MCQ, SAQ, and FRQ sections.`,
+        recommended_minutes: totalMinutes,
+        total_questions: mockQuestions.length,
+        version: '1.0.0',
+        status: 'draft',
+        official_year: '2024',
+        mock_questions: mockQuestions
+      };
+      
+    } catch (error: any) {
+      console.error(`    ❌ Mock Exam 生成失败:`, error.message);
+      return null;
+    }
   }
 
   /**
