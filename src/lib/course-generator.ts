@@ -349,7 +349,7 @@ ESSENTIAL KNOWLEDGE: ${ekSummaries}
 Generate the following content in strict JSON format:
 
 {
-  "study_guide": "Write a comprehensive study guide in academic English (approximately ${targetWordCount} words). Cover all learning objectives and essential knowledge. Use clear explanations suitable for AP students.",
+  "study_guide": "MUST BE ${targetWordCount} ± 100 WORDS. Write a comprehensive, detailed study guide in academic English. Cover all learning objectives and essential knowledge thoroughly. Use multiple paragraphs with clear explanations, examples, and connections between concepts. Target length: ${targetWordCount} words.",
   "flashcards": [
     {
       "front": "Clear question or concept",
@@ -371,7 +371,7 @@ CRITICAL REQUIREMENTS:
 1. ALL content MUST be in ENGLISH only
 2. Generate EXACTLY ${flashcardCount} flashcards (not more, not less)
 3. Generate EXACTLY ${quizCount} quiz questions (not more, not less)
-4. Study guide should be approximately ${targetWordCount} words
+4. ⚠️ STUDY GUIDE LENGTH IS CRITICAL: MUST be ${targetWordCount} ± 100 words (minimum ${Math.max(100, targetWordCount - 100)} words, maximum ${targetWordCount + 100} words). Write thorough, detailed explanations to reach this word count.
 5. Use academic but clear language suitable for AP students
 6. Return ONLY valid JSON - NO comments, NO markdown backticks, NO extra text before or after
 7. Do NOT use Chinese or any other non-English languages
@@ -418,14 +418,20 @@ CRITICAL REQUIREMENTS:
     - "Scenario/Question-Answer": Application questions or scenarios
     Each flashcard MUST have a "card_type" field with one of these exact values
 
-11. PRIORITIZE QUIZ COMPLETION: If running low on tokens, reduce study_guide length but ALWAYS complete all ${quizCount} quiz questions from the target of ${targetWordCount} words
+11. WORD COUNT PRIORITY: The study_guide MUST meet the ${targetWordCount} ± 100 word requirement. Write comprehensive, detailed content with examples and thorough explanations to reach this length. DO NOT write short summaries - expand with context, examples, and connections between ideas.
 
-EXAMPLE of CORRECT format for Chemistry:
-{
-  "study_guide": "Gibbs free energy (Delta-G) determines spontaneity. When Delta-G is negative the reaction is spontaneous. Use formula Delta-G = Delta-H - T times Delta-S.",
-  "flashcards": [{"front": "Delta-H", "back": "Enthalpy change in a reaction", "card_type": "Term-Definition"}],
-  "quiz": [{"question": "For the reaction 2H2(g) + O2(g) -> 2H2O(l), Delta-H = -572 kJ. Is this exothermic?", "options": ["A. Yes", "B. No", "C. Cannot determine", "D. It depends"], "correct_answer": "A", "explanation": "Delta-H is negative so heat is released making it exothermic."}]
-}`;
+12. WRITING STRATEGIES TO REACH WORD COUNT:
+    - Start with an introduction paragraph explaining the topic's importance
+    - Define all key terms thoroughly with examples
+    - Explain concepts step-by-step with reasoning
+    - Provide real-world examples or applications
+    - Discuss connections to other concepts in the unit
+    - Include historical context or development of ideas (where relevant)
+    - Address common misconceptions
+    - End with a brief summary or conclusion
+    - Use transitional phrases and complete sentences (avoid bullet points in study guide)
+
+REMEMBER: For a ${targetWordCount}-word study guide, you need ${Math.ceil(targetWordCount / 100)} substantial paragraphs of 80-120 words each. Write full, developed paragraphs with topic sentences, supporting details, and examples.`;
 
     // 调用 Gemini API
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
