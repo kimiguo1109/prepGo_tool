@@ -31,8 +31,8 @@ const mergedData = {
     return {
       unit_number: geminiUnit.unit_number,
       unit_title: geminiUnit.unit_title,
-      ced_class_periods: geminiUnit.unit_overview.ced_class_periods,
-      exam_weight: geminiUnit.unit_overview.exam_weight,
+      ced_class_periods: originalUnit?.ced_class_periods || geminiUnit.unit_overview.ced_class_periods,
+      exam_weight: originalUnit?.exam_weight || geminiUnit.unit_overview.exam_weight,
       unit_overview: geminiUnit.unit_overview,
       topics: geminiUnit.topics.map(geminiTopic => {
         // 查找对应的原始topic
