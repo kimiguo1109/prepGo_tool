@@ -340,6 +340,8 @@ export class CourseGenerator {
 
     const prompt = `You are an AP course content generator. Create high-quality educational content for the following topic.
 
+⚠️ CRITICAL: The study guide MUST be ${targetWordCount} words (minimum ${Math.floor(targetWordCount * 0.85)} words). This is NOT optional.
+
 TOPIC: ${topic.topic_title}
 
 LEARNING OBJECTIVES: ${loSummaries}
@@ -349,7 +351,7 @@ ESSENTIAL KNOWLEDGE: ${ekSummaries}
 Generate the following content in strict JSON format:
 
 {
-  "study_guide": "Target: ${targetWordCount} words. Write a comprehensive study guide in academic English covering all learning objectives. Use clear explanations, examples, and connections between concepts. Aim for thorough coverage within token limits.",
+  "study_guide": "REQUIRED LENGTH: ${targetWordCount} words (MINIMUM ${Math.floor(targetWordCount * 0.85)} words). Write a comprehensive, detailed study guide in academic English. Cover ALL learning objectives with thorough explanations, multiple examples, and deep analysis. Use complete paragraphs with rich detail.",
   "flashcards": [
     {
       "front": "Clear question or concept",
@@ -368,10 +370,15 @@ Generate the following content in strict JSON format:
 }
 
 CRITICAL REQUIREMENTS:
-1. ALL content MUST be in ENGLISH only
-2. Generate EXACTLY ${flashcardCount} flashcards (not more, not less)
-3. Generate EXACTLY ${quizCount} quiz questions (not more, not less)
-4. ⚠️ STUDY GUIDE LENGTH: Target ${targetWordCount} words (aim for ${Math.max(100, targetWordCount - 200)} to ${targetWordCount + 100} words). Write thorough, detailed explanations. If content is complete and comprehensive, slightly under target is acceptable.
+1. 🔴 STUDY GUIDE WORD COUNT IS MANDATORY: 
+   - MUST be between ${Math.floor(targetWordCount * 0.85)} and ${Math.floor(targetWordCount * 1.15)} words
+   - Target: ${targetWordCount} words
+   - Anything below ${Math.floor(targetWordCount * 0.85)} words will be REJECTED
+   - Write in rich detail with extensive explanations, examples, and analysis
+   
+2. ALL content MUST be in ENGLISH only
+3. Generate EXACTLY ${flashcardCount} flashcards (not more, not less)
+4. Generate EXACTLY ${quizCount} quiz questions (not more, not less)
 5. Use academic but clear language suitable for AP students
 6. Return ONLY valid JSON - NO comments, NO markdown backticks, NO extra text before or after
 7. Do NOT use Chinese or any other non-English languages
@@ -418,20 +425,30 @@ CRITICAL REQUIREMENTS:
     - "Scenario/Question-Answer": Application questions or scenarios
     Each flashcard MUST have a "card_type" field with one of these exact values
 
-11. BALANCE QUALITY AND LENGTH: Aim for ${targetWordCount} words in study_guide, but prioritize content quality and JSON completeness. Write comprehensive, detailed content with examples. If running low on output tokens, ensure quiz and flashcards are complete, then write study_guide as detailed as possible within token limits.
+11. WORD COUNT IS THE TOP PRIORITY FOR STUDY GUIDE:
+    - The study guide MUST reach ${Math.floor(targetWordCount * 0.85)}-${Math.floor(targetWordCount * 1.15)} words
+    - Flashcards and quiz questions should be complete BUT keep them concise
+    - Allocate MOST of your output tokens to the study guide
+    - If approaching token limit, shorten quiz explanations but NEVER shorten study guide below minimum
 
-12. WRITING STRATEGIES TO REACH WORD COUNT:
-    - Start with an introduction paragraph explaining the topic's importance
-    - Define all key terms thoroughly with examples
-    - Explain concepts step-by-step with reasoning
-    - Provide real-world examples or applications
-    - Discuss connections to other concepts in the unit
-    - Include historical context or development of ideas (where relevant)
-    - Address common misconceptions
-    - End with a brief summary or conclusion
-    - Use transitional phrases and complete sentences (avoid bullet points in study guide)
-
-TIP: For a ${targetWordCount}-word study guide, aim for ${Math.ceil(targetWordCount / 150)}-${Math.ceil(targetWordCount / 100)} well-developed paragraphs. Prioritize clarity and completeness over exact word count.`;
+12. MANDATORY STRATEGIES TO REACH ${targetWordCount} WORDS:
+    You MUST include ALL of the following in your study guide:
+    
+    ✓ Introduction (100-150 words): Explain the topic's significance and context
+    ✓ Key Terms Section: Define EACH important term with 50-80 word explanations and examples
+    ✓ Concept Deep-Dive: Explain EACH learning objective with:
+       - Step-by-step reasoning (not just statements)
+       - Multiple concrete examples for each concept
+       - Cause-and-effect relationships
+       - Comparisons and contrasts where applicable
+    ✓ Real-World Applications: 2-3 detailed examples (50+ words each)
+    ✓ Connections: How this topic relates to other concepts (80-100 words)
+    ✓ Common Misconceptions: Address 2-3 with explanations (40+ words each)
+    ✓ Conclusion/Summary: Synthesize the key ideas (80-100 words)
+    
+    PARAGRAPH REQUIREMENT: Write ${Math.ceil(targetWordCount / 120)}-${Math.ceil(targetWordCount / 100)} substantial paragraphs of 100-150 words EACH.
+    
+    DO NOT write brief summaries. EXPAND every point with thorough analysis and detailed examples.`;
 
     // 调用 Gemini API
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
