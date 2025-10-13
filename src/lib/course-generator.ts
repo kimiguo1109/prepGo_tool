@@ -1243,7 +1243,7 @@ EXAMPLE of CORRECT format for Chemistry:
     if (!text) return 0;
     
     // 移除Markdown语法标记
-    let cleanText = text.replace(/[#*`\[\]()]/g, ' ');
+    const cleanText = text.replace(/[#*`\[\]()]/g, ' ');
     
     // 统计英文单词
     const englishWords = cleanText.match(/[a-zA-Z]+/g) || [];
