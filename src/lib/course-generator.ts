@@ -350,26 +350,38 @@ CRITICAL REQUIREMENTS:
 5. Use academic but clear language suitable for AP students
 6. Return ONLY valid JSON - NO comments, NO markdown backticks, NO extra text before or after
 7. Do NOT use Chinese or any other non-English languages
-8. CRITICAL JSON SYNTAX - MUST FOLLOW STRICTLY:
-   - In study_guide: Replace ALL newlines with spaces or \\n
-   - In study_guide: Replace ALL quotes with apostrophes or escape them as \\"
-   - In all text: NO unescaped double quotes inside strings
-   - In all text: NO actual line breaks (use \\n if needed)
-   - Use proper commas between array/object items
-   - NO trailing commas after last items
-   - Keep study_guide as ONE continuous string without line breaks
-9. Start your response immediately with { and end with } - nothing else
-10. FLASHCARD DIVERSIFICATION (v12.0): MUST include a MIX of all three card types:
+
+8. SPECIAL CHARACTERS HANDLING (CRITICAL for Chemistry, Math, Physics):
+   - Chemical formulas: Use plain text (H2O not $H_2O$, CO2 not $CO_2$)
+   - Greek letters: Use full names (Delta-H not ΔH, Delta-S not ΔS, theta not θ)
+   - Superscripts/subscripts: Use plain text with parentheses (H2O, CO2, x^2, H+ ion)
+   - Math expressions: Use plain text (2x + 3 not $2x + 3$)
+   - Degrees: Use word "degrees" not ° symbol
+   - NO LaTeX formatting ($...$)
+   - NO special Unicode symbols
+
+9. JSON SYNTAX - MUST FOLLOW STRICTLY:
+   - In study_guide: ONE continuous line, replace newlines with spaces
+   - Use ONLY ASCII characters in JSON structure
+   - Use apostrophes instead of fancy quotes (' not ' or ")
+   - Escape ALL double quotes inside strings as \\"
+   - NO line breaks inside string values
+   - NO trailing commas
+   - Keep explanations concise to avoid token limits
+
+10. FLASHCARD DIVERSIFICATION: MUST include a MIX of all three card types:
     - "Term-Definition": Simple vocabulary or terminology
     - "Concept-Explanation": Explaining principles or processes
     - "Scenario/Question-Answer": Application questions or scenarios
     Each flashcard MUST have a "card_type" field with one of these exact values
 
-EXAMPLE of CORRECT JSON format:
+11. PRIORITIZE QUIZ COMPLETION: If running low on tokens, reduce study_guide length but ALWAYS complete all ${quizCount} quiz questions
+
+EXAMPLE of CORRECT format for Chemistry:
 {
-  "study_guide": "This is a single line string without actual line breaks. Use spaces instead of newlines. Apostrophes are safer than quotes.",
-  "flashcards": [{"front": "Term", "back": "Definition", "card_type": "Term-Definition"}],
-  "quiz": [{"question": "Q?", "options": ["A", "B", "C", "D"], "correct_answer": "A", "explanation": "Because..."}]
+  "study_guide": "Gibbs free energy (Delta-G) determines spontaneity. When Delta-G is negative the reaction is spontaneous. Use formula Delta-G = Delta-H - T times Delta-S.",
+  "flashcards": [{"front": "Delta-H", "back": "Enthalpy change in a reaction", "card_type": "Term-Definition"}],
+  "quiz": [{"question": "For the reaction 2H2(g) + O2(g) -> 2H2O(l), Delta-H = -572 kJ. Is this exothermic?", "options": ["A. Yes", "B. No", "C. Cannot determine", "D. It depends"], "correct_answer": "A", "explanation": "Delta-H is negative so heat is released making it exothermic."}]
 }`;
 
     // 调用 Gemini API
@@ -384,7 +396,7 @@ EXAMPLE of CORRECT JSON format:
       ],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 8000,  // 增加到 8000，确保完整内容生成
+        maxOutputTokens: 12000,  // v12.3: 增加到12000，确保Chemistry等课程完整生成
       }
     }, {
       headers: {
@@ -425,14 +437,17 @@ EXAMPLE of CORRECT JSON format:
       try {
         let fixedJson = this.extractJSON(text);
         
-        // ========== 增强的 JSON 修复逻辑 ==========
+        // ========== 增强的 JSON 修复逻辑 (v12.3 - 支持所有AP课程) ==========
+        
+        // 0. 清理特殊字符（Chemistry, Physics, Math）
+        fixedJson = this.cleanSpecialCharacters(fixedJson);
         
         // 1. 修复 study_guide 中的未转义换行符
         // 查找 "study_guide": "..." 并修复其中的换行
         fixedJson = fixedJson.replace(
           /"study_guide"\s*:\s*"((?:[^"\\]|\\.)*)"/g,
           (match, content) => {
-            // 替换真实的换行符为 \\n
+            // 替换真实的换行符为空格
             const fixed = content
               .replace(/\r\n/g, ' ')
               .replace(/\n/g, ' ')
@@ -492,6 +507,89 @@ EXAMPLE of CORRECT JSON format:
         throw new Error(`JSON 解析失败: ${parseError.message}`);
       }
     }
+  }
+
+  /**
+   * 辅助函数：清理特殊字符（Chemistry, Physics, Math）
+   * v12.3: 处理LaTeX公式、希腊字母、特殊符号
+   */
+  private cleanSpecialCharacters(jsonText: string): string {
+    let cleaned = jsonText;
+    
+    // 1. 移除LaTeX格式标记 ($...$)
+    cleaned = cleaned.replace(/\$([^$]+)\$/g, '$1');
+    
+    // 2. 替换常见的希腊字母和特殊符号
+    const replacements: Record<string, string> = {
+      // 希腊字母
+      'Δ': 'Delta-',
+      'δ': 'delta-',
+      'θ': 'theta',
+      'Θ': 'Theta',
+      'π': 'pi',
+      'Π': 'Pi',
+      'σ': 'sigma',
+      'Σ': 'Sigma',
+      'μ': 'mu',
+      'λ': 'lambda',
+      'ω': 'omega',
+      'Ω': 'Omega',
+      'α': 'alpha',
+      'β': 'beta',
+      'γ': 'gamma',
+      
+      // 特殊符号
+      '°': ' degrees',
+      '±': '+/-',
+      '≈': 'approximately',
+      '≠': 'not equal to',
+      '≤': 'less than or equal to',
+      '≥': 'greater than or equal to',
+      '→': '->',
+      '←': '<-',
+      '⇌': '<->',
+      '∞': 'infinity',
+      '√': 'sqrt',
+      '∫': 'integral',
+      '∑': 'sum',
+      '∏': 'product',
+      
+      // 上标/下标（常见）
+      '²': '^2',
+      '³': '^3',
+      '⁰': '^0',
+      '¹': '^1',
+      '⁴': '^4',
+      '⁵': '^5',
+      '⁶': '^6',
+      '⁷': '^7',
+      '⁸': '^8',
+      '⁹': '^9',
+      
+      // 引号（使用转义）
+      '\u201C': '"',  // "
+      '\u201D': '"',  // "
+      '\u2018': "'",  // '
+      '\u2019': "'",  // '
+      
+      // 其他
+      '—': '-',
+      '–': '-',
+      '…': '...',
+      '×': 'x',
+      '÷': '/',
+    };
+    
+    // 应用所有替换
+    for (const [symbol, replacement] of Object.entries(replacements)) {
+      cleaned = cleaned.split(symbol).join(replacement);
+    }
+    
+    // 3. 清理残留的特殊Unicode字符（替换为空格）
+    // 保留ASCII字符 (32-126) 和基本标点
+    cleaned = cleaned.replace(/[^\x20-\x7E\n\r\t]/g, ' ');
+    
+    return cleaned;
   }
 
   /**
