@@ -68,43 +68,54 @@ export class CourseGenerator {
     // 遍历所有 Units 和 Topics
     for (const unit of enhancedData.units) {
       for (const topic of unit.topics) {
-        // 获取 LO 和 EK 数量
-        const loCount = Math.max(1, topic.learning_objectives?.length || 1);
-        const ekCount = Math.max(1, topic.essential_knowledge?.length || 1);
-
-        // ===== STEP 1: 根据 LO/EK 计算内容量 =====
+        // v12.8: 检查是否为新格式（Gemini step 1），如果是则优先使用prepgo_plan
+        const hasPrepgoPlan = (topic as any).prepgo_plan !== undefined;
         
-        // Flashcards: 基于 EK 数量
-        // 公式: max(10, min(36, 6 + (ekCount - 2) * 2.5))
-        const rawFlashcards = 6 + (ekCount - 2) * 2.5;
-        const flashcardsCount = Math.max(10, Math.min(36, Math.round(rawFlashcards)));
-
-        // Quiz: 基于 LO 和 EK
-        // 公式: max(6, min(16, 6 + (loCount - 1) * 4 + min(ekCount, 8) * 1.25))
-        const rawQuiz = 6 + (loCount - 1) * 4 + Math.min(ekCount, 8) * 1.25;
-        const quizCount = Math.max(6, Math.min(16, Math.round(rawQuiz)));
-
-        // Study Guide 词数: 基于 LO 和 EK
-        // 公式: max(600, min(1500, 700 + loCount * 150 + ekCount * 80))
-        const rawWords = 700 + loCount * 150 + ekCount * 80;
-        const studyGuideWords = Math.max(600, Math.min(1500, Math.round(rawWords)));
-
-        // ===== STEP 2: 根据内容量反推时间 =====
+        let flashcardsCount: number;
+        let quizCount: number;
+        let studyGuideWords: number;
+        let learnMinutes: number;
+        let reviewMinutes: number;
+        let practiceMinutes: number;
+        let topicEstimatedMinutes: number;
         
-        // Learn: 150词/分钟阅读速度
-        const learnMinutes = Math.round(studyGuideWords / 150);
+        if (hasPrepgoPlan) {
+          // 新格式：直接使用prepgo_plan中的值
+          const plan = (topic as any).prepgo_plan;
+          flashcardsCount = plan.target_flashcards_count || 10;
+          quizCount = plan.target_mcq_count || 6;
+          studyGuideWords = plan.target_study_guide_words || 1000;
+          learnMinutes = plan.learn_minutes || Math.round(studyGuideWords / 150);
+          reviewMinutes = plan.review_minutes || Math.round(flashcardsCount * 0.5);
+          practiceMinutes = plan.practice_minutes || Math.round(quizCount * 1.5);
+          topicEstimatedMinutes = plan.total_estimated_minutes || (learnMinutes + reviewMinutes + practiceMinutes);
+        } else {
+          // 旧格式：基于LO/EK数量计算
+          const loCount = Math.max(1, topic.learning_objectives?.length || 1);
+          const ekCount = Math.max(1, topic.essential_knowledge?.length || 1);
 
-        // Review: 0.5分钟/张卡
-        const reviewMinutes = Math.round(flashcardsCount * 0.5);
+          // Flashcards: 基于 EK 数量
+          const rawFlashcards = 6 + (ekCount - 2) * 2.5;
+          flashcardsCount = Math.max(10, Math.min(36, Math.round(rawFlashcards)));
 
-        // Practice: 1.5分钟/题
-        const practiceMinutes = Math.round(quizCount * 1.5);
+          // Quiz: 基于 LO 和 EK
+          const rawQuiz = 6 + (loCount - 1) * 4 + Math.min(ekCount, 8) * 1.25;
+          quizCount = Math.max(6, Math.min(16, Math.round(rawQuiz)));
 
-        // Topic 总时间
-        const topicEstimatedMinutes = learnMinutes + reviewMinutes + practiceMinutes;
+          // Study Guide 词数: 基于 LO 和 EK
+          const rawWords = 700 + loCount * 150 + ekCount * 80;
+          studyGuideWords = Math.max(600, Math.min(1500, Math.round(rawWords)));
+
+          // 根据内容量反推时间
+          learnMinutes = Math.round(studyGuideWords / 150);
+          reviewMinutes = Math.round(flashcardsCount * 0.5);
+          practiceMinutes = Math.round(quizCount * 1.5);
+          topicEstimatedMinutes = learnMinutes + reviewMinutes + practiceMinutes;
+        }
+
+        // 设置topic的时间和内容量数据
         (topic as any).topic_estimated_minutes = topicEstimatedMinutes;
 
-        // 添加模块数据
         (topic as any).learn = {
           minutes: learnMinutes,
           study_guide_words: studyGuideWords
@@ -137,11 +148,14 @@ export class CourseGenerator {
       (unit as any).unit_estimated_minutes = unitTotalMinutes;
       
       // v12.8: 添加unit_overview结构
+      // 如果输入已有unit_overview（新格式），则保留summary并更新时间
+      // 如果没有（旧格式），则创建新的unit_overview
+      const existingOverview = (unit as any).unit_overview;
       (unit as any).unit_overview = {
-        summary: '',  // 暂时留空，等待AI生成或从input提取
-        ced_class_periods: unit.ced_class_periods || '',
-        exam_weight: unit.exam_weight || '',
-        prepgo_estimated_minutes: unitTotalMinutes
+        summary: existingOverview?.summary || '',  // 优先使用输入中的summary
+        ced_class_periods: existingOverview?.ced_class_periods || unit.ced_class_periods || '',
+        exam_weight: existingOverview?.exam_weight || unit.exam_weight || '',
+        prepgo_estimated_minutes: existingOverview?.prepgo_estimated_minutes || unitTotalMinutes  // 优先使用输入中的时间
       };
       
       courseTotalMinutes += unitTotalMinutes;
@@ -966,11 +980,13 @@ EXAMPLE of CORRECT format for Chemistry:
         };
 
         // v12.8: 生成符合数据库表格式的test_questions
+        const currentUnitQuestions: UnitAssessmentQuestion[] = [];
+        
         selectedQuizzes.forEach((item, idx) => {
           const q = item.quiz;
           const topic = unit.topics.find(t => `${courseId}_${t.topic_number.replace('.', '_')}` === item.topicId);
           
-          unitAssessmentQuestions.push({
+          const questionObj: UnitAssessmentQuestion = {
             question_id: `${testId}_q_${String(idx + 1).padStart(3, '0')}`,
             test_id: testId,
             question_number: idx + 1,
@@ -988,8 +1004,16 @@ EXAMPLE of CORRECT format for Chemistry:
             correct_answer: q.correct_answer,
             explanation: q.explanation,
             requires_image: q.requires_image
-          });
+          };
+          
+          // 添加到separated_content_json的数组
+          unitAssessmentQuestions.push(questionObj);
+          // 添加到combined_complete_json的unit数组
+          currentUnitQuestions.push(questionObj);
         });
+        
+        // v12.8: 将test_questions添加到unit对象（用于combined_complete_json）
+        unit.test_questions = currentUnitQuestions;
       }
     });
 

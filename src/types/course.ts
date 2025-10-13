@@ -45,6 +45,7 @@ export interface APUnit {
     version: string;
     status: string;
   };
+  test_questions?: UnitAssessmentQuestion[];  // v12.8: 单元测试题目数组
 }
 
 /**
