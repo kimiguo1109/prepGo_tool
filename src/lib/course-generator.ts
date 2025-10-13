@@ -39,78 +39,19 @@ export class CourseGenerator {
   }
 
   /**
-   * 步骤 1：计算学习时长
-   * 规则：
-   * - 课程总时长 = (平均 CED Class Period 数 × 45 分钟) × Factor (0.45-0.55)
-   * - Unit 时长 = 70% 按 period 分配 + 30% 按 exam weight 分配
-   * - Topic 时长 = 按 LO 数量 (每个 3 分) + EK 数量 (每个 2 分) 比例分配
+   * 步骤 1：计算学习时长（预留，实际在 assignModuleTasks 中自下而上累加）
+   * v12.0 更新：时长由 Topic 内容量驱动，自下而上累加
    */
   async calculateDurations(courseData: APCourse, onProgress?: (message: string, percent?: number) => void): Promise<APCourse> {
-    console.log('⏱️  步骤 1/3: 计算学习时长...');
-    onProgress?.('计算学习时长...', 10);
+    console.log('⏱️  步骤 1/3: 初始化时长计算（内容驱动模型）...');
+    onProgress?.('初始化时长计算...', 10);
 
-    // 直接计算，不调用 AI（避免 JSON 过大问题）
+    // v12.0: 时长计算已移至 assignModuleTasks 中
+    // 这里只做简单的数据复制和初始化
     const enhancedData = JSON.parse(JSON.stringify(courseData)) as APCourse;
-    let totalPeriods = 0;
 
-    // 遍历所有 Units 计算时长
-    for (const unit of enhancedData.units) {
-      let unitTotalMinutes = 0;
-
-      // 计算该 Unit 的 periods（处理多种格式）
-      const periodsStr = unit.ced_class_periods;
-      let unitPeriods = 0;
-      
-      // 处理多种格式：
-      // - "~8 Class Periods" -> 8
-      // - "~10-12 Class Periods" -> 11 (平均值)
-      // - "~10–11 CLASS PERIODS" -> 10.5 (长破折号)
-      // - "~13–14 AB~9–10 BC" -> 取第一个范围 11.5
-      
-      // 尝试匹配范围格式（支持短横线和长破折号）
-      const rangeMatch = periodsStr.match(/~?(\d+)[–\-](\d+)/);
-      if (rangeMatch) {
-        const min = parseInt(rangeMatch[1]);
-        const max = parseInt(rangeMatch[2]);
-        unitPeriods = (min + max) / 2;
-      } else {
-        // 单个数字格式
-        const singleMatch = periodsStr.match(/~?(\d+)/);
-        if (singleMatch) {
-          unitPeriods = parseInt(singleMatch[1]);
-        }
-      }
-
-      totalPeriods += unitPeriods;
-
-      // 计算每个 Topic 的时长
-      for (const topic of unit.topics) {
-        const loCount = topic.learning_objectives?.length || 0;
-        const ekCount = topic.essential_knowledge?.length || 0;
-        
-        // Topic 时长 = LO × 3 + EK × 2（至少5分钟）
-        const topicMinutes = Math.max(5, loCount * 3 + ekCount * 2);
-        (topic as any).topic_estimated_minutes = topicMinutes;
-        
-        unitTotalMinutes += topicMinutes;
-      }
-
-      // Unit 时长 = 所有 Topics 时长之和
-      (unit as any).unit_estimated_minutes = unitTotalMinutes;
-    }
-
-    // 课程总时长 = (总 periods × 45) × Factor 0.5
-    const factor = 0.5;  // 在 0.45-0.55 范围内
-    const courseTotalMinutes = Math.round(totalPeriods * 45 * factor);
-    (enhancedData as any).course_estimated_minutes = courseTotalMinutes;
-
-    console.log('✅ 时长计算完成');
-    console.log(`   📊 总 Class Periods: ${totalPeriods}`);
-    console.log(`   📈 Factor: ${factor}`);
-    console.log(`   ⏱️  课程总时长: ${courseTotalMinutes} 分钟`);
-    console.log(`   📝 Units 时长总和: ${enhancedData.units.reduce((sum, u) => (sum + (u as any).unit_estimated_minutes), 0)} 分钟`);
-
-    onProgress?.('✅ 学习时长计算完成', 25);
+    console.log('✅ 时长计算准备完成（将在模块分配时进行实际计算）');
+    onProgress?.('✅ 学习时长计算准备完成', 25);
     return enhancedData;
   }
 
@@ -181,7 +122,27 @@ export class CourseGenerator {
       }
     }
 
+    // v12.0: 自下而上累加时长（Topic → Unit → Course）
+    console.log('📊 计算总时长（自下而上累加）...');
+    
+    let courseTotalMinutes = 0;
+    for (const unit of enhancedData.units) {
+      let unitTotalMinutes = 0;
+      
+      for (const topic of unit.topics) {
+        const topicMinutes = (topic as any).topic_estimated_minutes || 0;
+        unitTotalMinutes += topicMinutes;
+      }
+      
+      (unit as any).unit_estimated_minutes = unitTotalMinutes;
+      courseTotalMinutes += unitTotalMinutes;
+    }
+    
+    (enhancedData as any).course_estimated_minutes = courseTotalMinutes;
+
     console.log(`✅ 模块分配完成（内容驱动模型：LO/EK → 内容量 → 时间）`);
+    console.log(`   ⏱️  课程总时长: ${courseTotalMinutes} 分钟`);
+    console.log(`   📝 Units 数量: ${enhancedData.units.length}`);
     onProgress?.('✅ 模块任务分配完成', 40);
 
     return enhancedData;
@@ -367,7 +328,8 @@ Generate the following content in strict JSON format:
   "flashcards": [
     {
       "front": "Clear question or concept",
-      "back": "Concise answer or explanation"
+      "back": "Concise answer or explanation",
+      "card_type": "Term-Definition" | "Concept-Explanation" | "Scenario/Question-Answer"
     }
   ],
   "quiz": [
@@ -393,7 +355,12 @@ CRITICAL REQUIREMENTS:
    - Use proper commas between items
    - NO trailing commas after the last item in arrays or objects
    - NO line breaks within string values (use \\n instead)
-9. Start your response immediately with { and end with } - nothing else`;
+9. Start your response immediately with { and end with } - nothing else
+10. FLASHCARD DIVERSIFICATION (v12.0): MUST include a MIX of all three card types:
+    - "Term-Definition": Simple vocabulary or terminology
+    - "Concept-Explanation": Explaining principles or processes
+    - "Scenario/Question-Answer": Application questions or scenarios
+    Each flashcard MUST have a "card_type" field with one of these exact values`;
 
     // 调用 Gemini API
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
@@ -689,6 +656,7 @@ CRITICAL REQUIREMENTS:
             topicFlashcards.push({
               card_id: `${topicId}_fc_${String(cardIdx + 1).padStart(3, '0')}`,
               topic_id: topicId,
+              card_type: card.card_type || 'Term-Definition',  // v12.0: 添加卡片类型
               front_content: card.front,
               back_content: card.back,
               requires_image: this.checkRequiresImage('flashcard', card.front, card.back)
@@ -742,6 +710,7 @@ CRITICAL REQUIREMENTS:
           unitAssessmentQuestions.push({
             question_id: `${testId}_q_${String(idx + 1).padStart(3, '0')}`,
             test_id: testId,
+            question_type: 'MCQ',  // v12.0: 添加题型标记（当前只有MCQ，未来可扩展FRQ）
             question_text: q.question,
             option_a: q.options[0] || '',
             option_b: q.options[1] || '',
@@ -783,53 +752,56 @@ CRITICAL REQUIREMENTS:
 
   /**
    * 辅助函数：检查是否需要图片
-   * 针对 AP 课程优化（特别是心理学、生物学）
+   * v12.0: 严格必要性规则 - ONLY IF unintelligible without visual
    */
   private checkRequiresImage(type: 'flashcard' | 'quiz', front: string, back: string): boolean {
     const text = `${front} ${back}`.toLowerCase();
     
-    // 通用视觉关键词
-    const generalKeywords = [
-      'diagram', 'chart', 'graph', 'map', 'table', 'figure',
-      'image', 'picture', 'photo', 'illustration', 'drawing',
-      'shown', 'depicted', 'displayed', 'visualize', 'visual',
-      'based on the', 'refer to the', 'look at', 'see the'
+    // v12.0: 严格必要性 - 只标记明确需要看图才能回答的问题
+    const strictNecessityPatterns = [
+      // 明确引用图表
+      'refer to the diagram',
+      'refer to the figure',
+      'refer to the table',
+      'refer to the chart',
+      'refer to the graph',
+      'refer to the image',
+      'shown in the diagram',
+      'shown in the figure',
+      'shown in the table',
+      'shown in the image',
+      'in the diagram',
+      'in the figure above',
+      'in the table',
+      'based on the diagram',
+      'based on the figure',
+      'according to the diagram',
+      'according to the figure',
+      
+      // 标记的结构（A/B/C/D 选择）
+      'labeled structure a',
+      'labeled structure b',
+      'labeled structure c',
+      'labeled structure d',
+      'structure labeled',
+      'which structure',
+      'identify the structure',
+      'label the',
+      'which labeled',
+      
+      // 图中问题
+      'in the image',
+      'from the graph',
+      'from the chart',
+      'the graph shows',
+      'the diagram shows',
+      'as shown',
+      'see figure',
+      'see diagram'
     ];
     
-    // 心理学特定关键词
-    const psychologyKeywords = [
-      // 大脑结构
-      'brain', 'cerebellum', 'cerebral', 'cortex', 'lobe', 
-      'frontal', 'parietal', 'temporal', 'occipital',
-      'broca', 'wernicke', 'hippocampus', 'amygdala', 'thalamus',
-      'hypothalamus', 'pituitary', 'brainstem', 'corpus callosum',
-      
-      // 神经系统
-      'neuron', 'synapse', 'dendrite', 'axon', 'myelin',
-      'neurotransmitter', 'neural pathway', 'nervous system',
-      
-      // 感觉系统
-      'eye', 'retina', 'cornea', 'pupil', 'lens', 'fovea', 'blind spot',
-      'ear', 'cochlea', 'eardrum', 'auditory', 'vestibular',
-      
-      // 知觉原理
-      'gestalt', 'closure', 'proximity', 'similarity', 'continuity',
-      'perspective', 'depth cue', 'binocular', 'monocular',
-      'convergence', 'disparity', 'parallax'
-    ];
-    
-    // 生物学特定关键词
-    const biologyKeywords = [
-      'cell', 'organelle', 'mitochondria', 'chloroplast', 'nucleus',
-      'membrane', 'molecule', 'molecular', 'DNA', 'RNA',
-      'structure', 'anatomy', 'organ', 'tissue', 'system',
-      'lewis', 'bond', 'compound', 'reaction'
-    ];
-    
-    // 合并所有关键词
-    const allKeywords = [...generalKeywords, ...psychologyKeywords, ...biologyKeywords];
-    
-    return allKeywords.some(keyword => text.includes(keyword));
+    // 只有明确匹配这些模式才需要图片
+    return strictNecessityPatterns.some(pattern => text.includes(pattern));
   }
 
   /**

@@ -56,6 +56,7 @@ export interface APTopic {
   flashcards?: Array<{
     front: string;
     back: string;
+    card_type: 'Term-Definition' | 'Concept-Explanation' | 'Scenario/Question-Answer';
   }>;
   quiz?: Array<{
     question: string;
@@ -128,6 +129,7 @@ export interface StudyGuide {
 export interface TopicFlashcard {
   card_id: string;
   topic_id: string;
+  card_type: 'Term-Definition' | 'Concept-Explanation' | 'Scenario/Question-Answer';
   front_content: string;
   back_content: string;
   requires_image: boolean;
@@ -161,17 +163,34 @@ export interface UnitTest {
 }
 
 /**
+ * FRQ Part（自由回答题部分）
+ */
+export interface FRQPart {
+  part_label: string;  // "a", "b", "c", etc.
+  part_question: string;
+  points: number;
+  expected_answer: string;
+}
+
+/**
  * Unit Assessment Question（Phase 3 生成）
+ * 支持 MCQ 和 FRQ 两种题型
  */
 export interface UnitAssessmentQuestion {
   question_id: string;
   test_id: string;
+  question_type: 'MCQ' | 'FRQ';
   question_text: string;
-  option_a: string;
-  option_b: string;
-  option_c: string;
-  option_d: string;
-  correct_answer: string;
+  // MCQ fields (optional for FRQ)
+  option_a?: string;
+  option_b?: string;
+  option_c?: string;
+  option_d?: string;
+  correct_answer?: string;
+  // FRQ fields (optional for MCQ)
+  parts?: FRQPart[];
+  rubric?: string;
+  // Common fields
   explanation: string;
   requires_image: boolean;
 }

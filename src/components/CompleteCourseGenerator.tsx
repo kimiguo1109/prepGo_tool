@@ -23,6 +23,12 @@ interface GenerationStatistics {
   total_unit_tests: number;
   flashcards_requiring_images: number;
   quiz_questions_requiring_images: number;
+  // v12.0: Flashcard 类型分布
+  flashcard_types?: {
+    term_definition: number;
+    concept_explanation: number;
+    scenario_question: number;
+  };
 }
 
 export function CompleteCourseGenerator({ 
@@ -312,7 +318,7 @@ export function CompleteCourseGenerator({
               
               {/* 图片需求统计 */}
               <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="text-xs font-semibold text-yellow-800 mb-2">📸 图片需求统计</div>
+                <div className="text-xs font-semibold text-yellow-800 mb-2">📸 图片需求统计 (v12.0严格必要性)</div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Flashcards 需配图:</span>
@@ -330,6 +336,42 @@ export function CompleteCourseGenerator({
                   </div>
                 </div>
               </div>
+
+              {/* v12.0: Flashcard 类型分布 */}
+              {statistics.flashcard_types && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-xs font-semibold text-blue-800 mb-2">🎴 Flashcard 类型分布 (v12.0)</div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="text-center p-2 bg-white rounded">
+                      <div className="font-bold text-blue-600">
+                        {statistics.flashcard_types.term_definition}
+                      </div>
+                      <div className="text-gray-600 mt-1">Term-Definition</div>
+                      <div className="text-gray-500 text-[10px]">
+                        {Math.round(statistics.flashcard_types.term_definition / statistics.total_flashcards * 100)}%
+                      </div>
+                    </div>
+                    <div className="text-center p-2 bg-white rounded">
+                      <div className="font-bold text-purple-600">
+                        {statistics.flashcard_types.concept_explanation}
+                      </div>
+                      <div className="text-gray-600 mt-1">Concept-Explanation</div>
+                      <div className="text-gray-500 text-[10px]">
+                        {Math.round(statistics.flashcard_types.concept_explanation / statistics.total_flashcards * 100)}%
+                      </div>
+                    </div>
+                    <div className="text-center p-2 bg-white rounded">
+                      <div className="font-bold text-green-600">
+                        {statistics.flashcard_types.scenario_question}
+                      </div>
+                      <div className="text-gray-600 mt-1">Scenario/Question</div>
+                      <div className="text-gray-500 text-[10px]">
+                        {Math.round(statistics.flashcard_types.scenario_question / statistics.total_flashcards * 100)}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -60,17 +60,24 @@ export async function POST(request: NextRequest) {
           const generationTime = Date.now() - startTime;
           console.log(`✅ 课程生成完成，耗时: ${(generationTime / 1000).toFixed(1)}s`);
 
-          // 计算统计信息
+          // 计算统计信息（v12.0: 添加 card_type 分布）
           const totalTopics = dualJSON.combined_complete_json.units.reduce(
             (sum, unit) => sum + unit.topics.length, 0
           );
+          const flashcards = dualJSON.separated_content_json.topic_flashcards;
           const statistics = {
             total_topics: totalTopics,
-            total_flashcards: dualJSON.separated_content_json.topic_flashcards.length,
+            total_flashcards: flashcards.length,
             total_quiz_questions: dualJSON.separated_content_json.quizzes.length,
             total_unit_tests: dualJSON.separated_content_json.unit_tests.length,
-            flashcards_requiring_images: dualJSON.separated_content_json.topic_flashcards.filter(f => f.requires_image).length,
+            flashcards_requiring_images: flashcards.filter(f => f.requires_image).length,
             quiz_questions_requiring_images: dualJSON.separated_content_json.quizzes.filter(q => q.requires_image).length,
+            // v12.0: Flashcard 类型分布
+            flashcard_types: {
+              term_definition: flashcards.filter(f => f.card_type === 'Term-Definition').length,
+              concept_explanation: flashcards.filter(f => f.card_type === 'Concept-Explanation').length,
+              scenario_question: flashcards.filter(f => f.card_type === 'Scenario/Question-Answer').length,
+            }
           };
 
           // 发送完成消息
