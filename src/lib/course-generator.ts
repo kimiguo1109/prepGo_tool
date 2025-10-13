@@ -360,7 +360,25 @@ CRITICAL REQUIREMENTS:
    - NO LaTeX formatting ($...$)
    - NO special Unicode symbols
 
-9. JSON SYNTAX - MUST FOLLOW STRICTLY:
+9. IMAGE FLAGGING - MARK requires_image CORRECTLY:
+   For EACH flashcard and quiz question, set requires_image flag:
+   
+   A. General Rule (All Courses):
+      - TRUE if question is unintelligible or impossible to answer without visual
+      - Example: "Which labeled structure (A/B/C) is the cerebellum?"
+   
+   B. History/Social Science Rule (CRITICAL for this course):
+      - TRUE if question is a STIMULUS-BASED question requiring PRIMARY or SECONDARY source analysis
+      - Include: political cartoons, historical maps, photographs, propaganda posters, charts/graphs
+      - Example: "Based on the political cartoon from 1898, what does the cartoonist suggest about..."
+      - Example: "The map above shows territorial expansion. Which acquisition..."
+      - These are ANALYSIS questions where the source material is ESSENTIAL
+   
+   C. Exclusion Rule:
+      - FALSE if question only mentions a visualizable object but asks about function/definition
+      - Example: "What was the purpose of the Monroe Doctrine?" (no image needed)
+
+10. JSON SYNTAX - MUST FOLLOW STRICTLY:
    - In study_guide: ONE continuous line, replace newlines with spaces
    - Use ONLY ASCII characters in JSON structure
    - Use apostrophes instead of fancy quotes (' not ' or ")
@@ -892,12 +910,12 @@ EXAMPLE of CORRECT format for Chemistry:
 
   /**
    * 辅助函数：检查是否需要图片
-   * v12.2: 通用平衡规则 - 适用于所有AP学科
+   * v12.4: 通用平衡规则 + 历史/社科类专用规则
    * 
    * 策略：
    * 1. 明确引用图表 → 必须标记
-   * 2. 通用视觉概念模式 → Flashcard中标记
-   * 3. 避免特定学科术语，使用通用模式
+   * 2. 历史/社科材料分析 → 必须标记（NEW）
+   * 3. 通用视觉概念模式 → Flashcard中标记
    */
   private checkRequiresImage(type: 'flashcard' | 'quiz', front: string, back: string): boolean {
     const text = `${front} ${back}`.toLowerCase();
@@ -906,81 +924,88 @@ EXAMPLE of CORRECT format for Chemistry:
     // ========== 第一优先级：明确引用图表（所有题型，必须标记） ==========
     const explicitReferences = [
       // 直接引用
-      'refer to the diagram',
-      'refer to the figure',
-      'refer to the table',
-      'refer to the chart',
-      'refer to the graph',
-      'refer to the image',
-      'refer to the map',
-      'refer to the illustration',
+      'refer to the diagram', 'refer to the figure', 'refer to the table',
+      'refer to the chart', 'refer to the graph', 'refer to the image',
+      'refer to the map', 'refer to the illustration', 'refer to the cartoon',
+      'refer to the photograph', 'refer to the poster',
       
       // 显示在...
-      'shown in the diagram',
-      'shown in the figure',
-      'shown in the table',
-      'shown in the image',
-      'shown in the graph',
-      'shown above',
-      'shown below',
-      'pictured in',
-      'depicted in',
+      'shown in the diagram', 'shown in the figure', 'shown in the table',
+      'shown in the image', 'shown in the graph', 'shown above', 'shown below',
+      'pictured in', 'depicted in', 'illustrated in',
       
       // 在...中
-      'in the diagram',
-      'in the figure',
-      'in the table',
-      'in the chart',
-      'in the graph',
-      'in the image',
-      'in the map',
+      'in the diagram', 'in the figure', 'in the table', 'in the chart',
+      'in the graph', 'in the image', 'in the map', 'in the cartoon',
+      'in the photograph', 'in the poster above',
       
       // 基于...
-      'based on the diagram',
-      'based on the figure',
-      'based on the graph',
-      'based on the table',
-      'based on the map',
-      'according to the diagram',
-      'according to the figure',
-      'according to the graph',
+      'based on the diagram', 'based on the figure', 'based on the graph',
+      'based on the table', 'based on the map', 'based on the cartoon',
+      'based on the photograph', 'based on the poster',
+      'according to the diagram', 'according to the figure', 'according to the graph',
       
       // 标记和识别
-      'labeled as',
-      'labeled with',
-      'label the',
-      'identify the',
-      'which labeled',
+      'labeled as', 'labeled with', 'label the', 'identify the', 'which labeled',
       
       // 数据来源
-      'from the graph',
-      'from the chart',
-      'from the table',
-      'from the diagram',
+      'from the graph', 'from the chart', 'from the table', 'from the diagram',
+      'from the map', 'from the cartoon',
       
       // 展示
-      'the graph shows',
-      'the diagram shows',
-      'the table shows',
-      'the chart shows',
-      'as shown in',
-      'as illustrated',
-      'as depicted',
+      'the graph shows', 'the diagram shows', 'the table shows', 'the chart shows',
+      'the map shows', 'the cartoon shows', 'the photograph shows',
+      'as shown in', 'as illustrated', 'as depicted',
       
       // 观察
-      'observe the',
-      'look at the',
-      'see figure',
-      'see diagram',
-      'see table',
-      'see graph'
+      'observe the', 'look at the', 'see figure', 'see diagram',
+      'see table', 'see graph', 'see map', 'see cartoon'
     ];
     
     if (explicitReferences.some(pattern => text.includes(pattern))) {
       return true;
     }
     
-    // ========== 第二优先级：通用视觉概念模式（仅Flashcard） ==========
+    // ========== 第二优先级：历史/社科材料分析（NEW - v12.4） ==========
+    // 识别"stimulus-based questions"的关键模式
+    const historicalSourcePatterns = [
+      // 政治漫画分析
+      'the cartoon suggests', 'the cartoon depicts', 'the cartoon illustrates',
+      'the cartoonist suggests', 'the cartoonist argues', 'the cartoonist portrays',
+      'political cartoon', 'editorial cartoon',
+      
+      // 地图分析
+      'the map above', 'the map illustrates', 'the map shows',
+      'territorial expansion', 'the shaded area', 'the region shown',
+      
+      // 照片/图片分析
+      'the photograph above', 'the photograph shows', 'the image above',
+      'the picture shows', 'the illustration above',
+      
+      // 海报/宣传材料
+      'the poster above', 'the poster suggests', 'propaganda poster',
+      'recruitment poster', 'wartime poster',
+      
+      // 图表/数据分析
+      'the chart above', 'the graph above', 'the data shown',
+      'the statistics in', 'the table above',
+      
+      // 文档/材料分析
+      'the document above', 'the excerpt above', 'the passage above',
+      'the primary source', 'the author suggests', 'according to the source',
+      
+      // 解读性提问（历史材料）
+      'what does the', 'what does this', 'interpret the', 'analyze the',
+      'the source suggests', 'the source indicates', 'the source reflects',
+      'best reflects', 'best represents', 'best illustrates',
+      'perspective of', 'point of view', 'intended audience'
+    ];
+    
+    if (historicalSourcePatterns.some(pattern => text.includes(pattern))) {
+      return true;
+    }
+    
+    // ========== 第三优先级：通用视觉概念模式（仅Flashcard） ==========
     // Quiz需要明确引用才标记，保持严格性
     if (type === 'flashcard') {
       
@@ -989,12 +1014,8 @@ EXAMPLE of CORRECT format for Chemistry:
         'structure of', 'structure is', 'structure shows',
         'diagram of', 'diagram shows',
         'model of', 'model shows',
-        'cross-section of',
-        'anatomy of',
-        'schematic of',
-        'blueprint of',
-        'layout of',
-        'configuration of'
+        'cross-section of', 'anatomy of', 'schematic of',
+        'blueprint of', 'layout of', 'configuration of'
       ];
       
       if (visualKeywords.some(keyword => text.includes(keyword))) {
@@ -1003,30 +1024,19 @@ EXAMPLE of CORRECT format for Chemistry:
       
       // 模式2: 问题询问视觉特征或位置
       const visualQuestionPatterns = [
-        'what does', // What does X look like?
-        'how does', // How does X appear?
-        'where is', // Where is X located?
-        'locate the',
-        'identify the location',
-        'position of',
-        'placement of',
-        'arrangement of',
-        'shape of',
-        'appearance of',
-        'visual features'
+        'what does', 'how does', 'where is',
+        'locate the', 'identify the location',
+        'position of', 'placement of', 'arrangement of',
+        'shape of', 'appearance of', 'visual features'
       ];
       
-      // 只有当同时包含视觉问题词和对象时才标记
       const hasVisualQuestion = visualQuestionPatterns.some(pattern => 
         frontText.includes(pattern)
       );
       
       if (hasVisualQuestion && (
-        text.includes('structure') || 
-        text.includes('component') ||
-        text.includes('part') ||
-        text.includes('organ') ||
-        text.includes('system')
+        text.includes('structure') || text.includes('component') ||
+        text.includes('part') || text.includes('organ') || text.includes('system')
       )) {
         return true;
       }
