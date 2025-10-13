@@ -824,23 +824,40 @@ EXAMPLE of CORRECT format for Chemistry:
 
         // Study Guide
         if (topic.study_guide) {
+          const wordCount = this.calculateWordCount(topic.study_guide);
           studyGuides.push({
             study_guide_id: `${topicId}_sg`,
             topic_id: topicId,
-            content_markdown: topic.study_guide
+            content_markdown: topic.study_guide,
+            word_count: wordCount,  // v12.8: 字数统计
+            reading_minutes: this.calculateReadingMinutes(wordCount),  // v12.8: 阅读时间
+            version: '1.0',  // v12.8: 版本号
+            status: 'draft'  // v12.8: 状态
           });
         }
 
         // Flashcards
         if (topic.flashcards && topic.flashcards.length > 0) {
           topic.flashcards.forEach((card, cardIdx) => {
+            const difficulty = card.difficulty || this.calculateDifficultyLevel({
+              question: card.front,
+              options: [],
+              explanation: card.back
+            });
+            const imageNeeded = card.requires_image !== undefined ? card.requires_image : 
+                               this.checkRequiresImage('flashcard', card.front, card.back);
+            
             topicFlashcards.push({
               card_id: `${topicId}_fc_${String(cardIdx + 1).padStart(3, '0')}`,
               topic_id: topicId,
-              card_type: card.card_type || 'Term-Definition',  // v12.0: 添加卡片类型
+              card_type: card.card_type || 'Term-Definition',
               front_content: card.front,
               back_content: card.back,
-              requires_image: this.checkRequiresImage('flashcard', card.front, card.back)  // 使用代码规则重新计算
+              difficulty: difficulty,  // v12.8: 难度等级
+              image_suggested: imageNeeded,  // v12.8: 是否建议配图（统一使用此字段）
+              image_suggestion_description: null,  // v12.8: 暂不生成描述
+              version: '1.0.0',  // v12.8: 版本号
+              status: 'draft'  // v12.8: 状态
             });
           });
         }
@@ -848,6 +865,10 @@ EXAMPLE of CORRECT format for Chemistry:
         // Quiz Questions
         if (topic.quiz && topic.quiz.length > 0) {
           topic.quiz.forEach((q, qIdx) => {
+            const difficultyLevel = q.difficulty_level || this.calculateDifficultyLevel(q);
+            const imageNeeded = q.requires_image !== undefined ? q.requires_image :
+                               this.checkRequiresImage('quiz', q.question, q.explanation);
+            
             quizzes.push({
               quiz_id: `${topicId}_q_${String(qIdx + 1).padStart(3, '0')}`,
               topic_id: topicId,
@@ -858,7 +879,11 @@ EXAMPLE of CORRECT format for Chemistry:
               option_d: q.options[3] || '',
               correct_answer: q.correct_answer,
               explanation: q.explanation,
-              requires_image: this.checkRequiresImage('quiz', q.question, q.explanation)  // 使用代码规则重新计算
+              difficulty_level: difficultyLevel,  // v12.8: 难度等级
+              image_suggested: imageNeeded,  // v12.8: 是否建议配图（统一使用此字段）
+              image_suggestion_description: null,  // v12.8: 暂不生成描述
+              version: '1.0.0',  // v12.8: 版本号
+              status: 'draft'  // v12.8: 状态
             });
           });
         }
@@ -878,39 +903,57 @@ EXAMPLE of CORRECT format for Chemistry:
         const selectedCount = Math.min(20, Math.max(15, unitQuizzes.length));
         const selectedQuizzes = this.selectRandomQuizzes(unitQuizzes, selectedCount);
 
+        // v12.8: 生成符合数据库表格式的unit_test信息
         const unitTestInfo = {
           test_id: testId,
           unit_id: unitId,
-          test_title: `Unit ${unit.unit_number} Test`,
+          course_id: courseId,
+          title: `Unit ${unit.unit_number} Progress Check: ${unit.unit_title}`,
+          description: this.generateTestDescription(unit),
+          recommended_minutes: Math.round(selectedQuizzes.length * 1.5),
           total_questions: selectedQuizzes.length,
-          estimated_minutes: Math.round(selectedQuizzes.length * 1.5)
+          version: '1.0.0',
+          status: 'draft'
         };
 
         // 添加到扁平化的unit_tests数组（用于separated_content_json）
         unitTests.push(unitTestInfo);
 
-        // v12.7: 同时添加到unit对象中（用于combined_complete_json）
+        // v12.8: 同时添加到unit对象中（用于combined_complete_json）
         unit.unit_test = {
           test_id: unitTestInfo.test_id,
-          test_title: unitTestInfo.test_title,
+          course_id: unitTestInfo.course_id,
+          title: unitTestInfo.title,
+          description: unitTestInfo.description,
+          recommended_minutes: unitTestInfo.recommended_minutes,
           total_questions: unitTestInfo.total_questions,
-          estimated_minutes: unitTestInfo.estimated_minutes
+          version: unitTestInfo.version,
+          status: unitTestInfo.status
         };
 
+        // v12.8: 生成符合数据库表格式的test_questions
         selectedQuizzes.forEach((item, idx) => {
           const q = item.quiz;
+          const topic = unit.topics.find(t => `${courseId}_${t.topic_number.replace('.', '_')}` === item.topicId);
+          
           unitAssessmentQuestions.push({
             question_id: `${testId}_q_${String(idx + 1).padStart(3, '0')}`,
             test_id: testId,
-            question_type: 'MCQ',  // v12.0: 添加题型标记（当前只有MCQ，未来可扩展FRQ）
+            question_number: idx + 1,
+            question_type: 'mcq',
+            difficulty_level: this.calculateDifficultyLevel(q),
+            ap_alignment: topic?.topic_number || `${unit.unit_number}.${idx + 1}`,
+            source: 'PrepGo Original AP-Style',
             question_text: q.question,
-            option_a: q.options[0] || '',
-            option_b: q.options[1] || '',
-            option_c: q.options[2] || '',
-            option_d: q.options[3] || '',
+            options: {
+              A: q.options[0] || '',
+              B: q.options[1] || '',
+              C: q.options[2] || '',
+              D: q.options[3] || ''
+            },
             correct_answer: q.correct_answer,
             explanation: q.explanation,
-            requires_image: q.requires_image  // v12.5: 使用AI生成的字段
+            requires_image: q.requires_image
           });
         });
       }
@@ -1093,6 +1136,78 @@ EXAMPLE of CORRECT format for Chemistry:
   private selectRandomQuizzes(quizzes: any[], count: number): any[] {
     const shuffled = [...quizzes].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, count);
+  }
+
+  /**
+   * v12.8: 生成单元测试描述
+   * 基于unit的topics生成一段简短的测试描述
+   */
+  private generateTestDescription(unit: any): string {
+    // 提取前3-4个topic的标题来生成描述
+    const topicTitles = unit.topics.slice(0, 4).map((t: any) => t.topic_title);
+    const topicSummary = topicTitles.join(', ');
+    
+    // 根据unit标题生成通用描述
+    return `This test assesses your understanding of ${unit.unit_title.toLowerCase()}. Questions will cover key concepts including ${topicSummary}, and related topics from this unit.`;
+  }
+
+  /**
+   * v12.8: 计算题目难度等级（1-10）
+   * 基于题目长度、选项复杂度等启发式规则估算
+   */
+  private calculateDifficultyLevel(question: any): number {
+    let difficulty = 5; // 基础难度
+    
+    // 题目长度：越长越难
+    const questionLength = question.question ? question.question.length : 0;
+    if (questionLength > 200) difficulty += 1;
+    if (questionLength > 300) difficulty += 1;
+    
+    // 选项长度：平均选项越长越难（仅对有选项的题目）
+    if (question.options && question.options.length > 0) {
+      const avgOptionLength = question.options.reduce((sum: number, opt: string) => 
+        sum + opt.length, 0) / question.options.length;
+      if (avgOptionLength > 100) difficulty += 1;
+    }
+    
+    // 解释长度：需要长解释说明通常较难
+    if (question.explanation && question.explanation.length > 200) difficulty += 1;
+    
+    // 限制在1-10范围内
+    return Math.max(1, Math.min(10, difficulty));
+  }
+
+  /**
+   * v12.8: 计算文本字数
+   * 支持中英文混合统计
+   */
+  private calculateWordCount(text: string): number {
+    if (!text) return 0;
+    
+    // 移除Markdown语法标记
+    let cleanText = text.replace(/[#*`\[\]()]/g, ' ');
+    
+    // 统计英文单词
+    const englishWords = cleanText.match(/[a-zA-Z]+/g) || [];
+    
+    // 统计中文字符
+    const chineseChars = cleanText.match(/[\u4e00-\u9fa5]/g) || [];
+    
+    // 英文单词数 + 中文字符数
+    return englishWords.length + chineseChars.length;
+  }
+
+  /**
+   * v12.8: 计算阅读时间（分钟）
+   * 基于标准阅读速度：英文250词/分钟，中文300字/分钟
+   */
+  private calculateReadingMinutes(wordCount: number): number {
+    // 假设平均阅读速度为275词/分钟（英文和中文的折中）
+    const readingSpeed = 275;
+    const minutes = Math.ceil(wordCount / readingSpeed);
+    
+    // 至少1分钟，最多30分钟（超过30分钟的study guide可能需要分段）
+    return Math.max(1, Math.min(30, minutes));
   }
 }
 

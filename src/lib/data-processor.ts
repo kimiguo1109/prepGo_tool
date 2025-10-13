@@ -112,11 +112,13 @@ function calculateUnitStatistics(unit: APUnit): UnitStatistics {
     0
   );
 
-  // 从 "~8 Class Periods" 提取数字
-  const class_periods = extractClassPeriods(unit.ced_class_periods);
+  // 从 "~8 Class Periods" 提取数字 (v12.8: 支持unit_overview嵌套结构)
+  const cedClassPeriods = unit.unit_overview?.ced_class_periods || unit.ced_class_periods || '';
+  const class_periods = extractClassPeriods(cedClassPeriods);
 
-  // 从 "4-6%" 提取权重范围
-  const { min, max, avg } = extractExamWeight(unit.exam_weight);
+  // 从 "4-6%" 提取权重范围 (v12.8: 支持unit_overview嵌套结构)
+  const examWeight = unit.unit_overview?.exam_weight || unit.exam_weight || '';
+  const { min, max, avg } = extractExamWeight(examWeight);
 
   return {
     unit_number: unit.unit_number,
@@ -185,15 +187,19 @@ function calculateKnowledgeHierarchy(
  * 计算考试权重分布
  */
 function calculateExamWeight(unit: APUnit): ExamWeightDistribution {
-  const class_periods = extractClassPeriods(unit.ced_class_periods);
-  const { min, max, avg } = extractExamWeight(unit.exam_weight);
+  // v12.8: 支持unit_overview嵌套结构
+  const cedClassPeriods = unit.unit_overview?.ced_class_periods || unit.ced_class_periods || '';
+  const examWeight = unit.unit_overview?.exam_weight || unit.exam_weight || '';
+  
+  const class_periods = extractClassPeriods(cedClassPeriods);
+  const { min, max, avg } = extractExamWeight(examWeight);
   
   // 计算效率：权重/课时比
   const efficiency = class_periods > 0 ? avg / class_periods : 0;
 
   return {
     unit_number: unit.unit_number,
-    weight_range: unit.exam_weight,
+    weight_range: examWeight,
     min_weight: min,
     max_weight: max,
     avg_weight: avg,

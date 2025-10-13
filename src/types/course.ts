@@ -24,15 +24,26 @@ export interface CourseMetadata {
 export interface APUnit {
   unit_number: number;
   unit_title: string;
-  ced_class_periods: string; // 格式: "~8 Class Periods"
-  exam_weight: string; // 格式: "4-6%"
+  unit_overview?: {  // v12.8: 添加unit_overview嵌套结构（对应Gemini step 1格式）
+    summary: string;  // 单元概述，需要AI生成或从input提取
+    ced_class_periods: string;  // 如"8 Class Periods"
+    exam_weight: string;  // 如"4-6%"
+    prepgo_estimated_minutes: number;  // PrepGo估计学习时长
+  };
+  // v12.8: 保留平铺字段以向后兼容，但推荐使用unit_overview
+  ced_class_periods?: string;
+  exam_weight?: string;
   topics: APTopic[];
   start_page?: number; // PDF 中的起始页码
-  unit_test?: {  // v12.7: 添加单元测试信息（与separated的unit_tests对应）
+  unit_test?: {  // v12.8: 更新为完整的数据库表格式
     test_id: string;
-    test_title: string;
+    course_id: string;
+    title: string;
+    description: string;
+    recommended_minutes: number;
     total_questions: number;
-    estimated_minutes: number;
+    version: string;
+    status: string;
   };
 }
 
@@ -64,6 +75,11 @@ export interface APTopic {
     back: string;
     card_type: 'Term-Definition' | 'Concept-Explanation' | 'Scenario/Question-Answer';
     requires_image: boolean;  // v12.5: AI生成+checkRequiresImage修正
+    difficulty?: number;  // v12.8: 难度等级1-10
+    image_suggested?: boolean;  // v12.8: 是否建议配图（与requires_image对应）
+    image_suggestion_description?: string | null;  // v12.8: 配图建议描述
+    version?: string;  // v12.8: 版本号
+    status?: string;  // v12.8: 状态（draft/published）
   }>;
   quiz?: Array<{
     question: string;
@@ -71,6 +87,11 @@ export interface APTopic {
     correct_answer: string;
     explanation: string;
     requires_image: boolean;  // v12.5: AI生成+checkRequiresImage修正
+    difficulty_level?: number;  // v12.8: 难度等级1-10
+    image_suggested?: boolean;  // v12.8: 是否建议配图
+    image_suggestion_description?: string | null;  // v12.8: 配图建议描述
+    version?: string;  // v12.8: 版本号
+    status?: string;  // v12.8: 状态（draft/published）
   }>;
 }
 
@@ -129,6 +150,10 @@ export interface StudyGuide {
   study_guide_id: string;
   topic_id: string;
   content_markdown: string;
+  word_count?: number;  // v12.8: 字数统计
+  reading_minutes?: number;  // v12.8: 预计阅读时间（分钟）
+  version?: string;  // v12.8: 版本号
+  status?: string;  // v12.8: 状态（draft/published）
 }
 
 /**
@@ -140,7 +165,11 @@ export interface TopicFlashcard {
   card_type: 'Term-Definition' | 'Concept-Explanation' | 'Scenario/Question-Answer';
   front_content: string;
   back_content: string;
-  requires_image: boolean;
+  difficulty?: number;  // v12.8: 难度等级1-10
+  image_suggested?: boolean;  // v12.8: 是否建议配图
+  image_suggestion_description?: string | null;  // v12.8: 配图建议描述
+  version?: string;  // v12.8: 版本号
+  status?: string;  // v12.8: 状态（draft/published）
 }
 
 /**
@@ -156,7 +185,11 @@ export interface Quiz {
   option_d: string;
   correct_answer: string;
   explanation: string;
-  requires_image: boolean;
+  difficulty_level?: number;  // v12.8: 难度等级1-10
+  image_suggested?: boolean;  // v12.8: 是否建议配图
+  image_suggestion_description?: string | null;  // v12.8: 配图建议描述
+  version?: string;  // v12.8: 版本号
+  status?: string;  // v12.8: 状态（draft/published）
 }
 
 /**
@@ -165,9 +198,13 @@ export interface Quiz {
 export interface UnitTest {
   test_id: string;
   unit_id: string;
-  test_title: string;
+  course_id: string;  // v12.8: 添加课程ID
+  title: string;  // v12.8: 使用title替代test_title
+  description: string;  // v12.8: 添加测试描述
+  recommended_minutes: number;  // v12.8: 使用recommended_minutes替代estimated_minutes
   total_questions: number;
-  estimated_minutes: number;
+  version: string;  // v12.8: 版本号
+  status: string;  // v12.8: 状态（draft/published/active）
 }
 
 /**
@@ -182,25 +219,39 @@ export interface FRQPart {
 
 /**
  * Unit Assessment Question（Phase 3 生成）
- * 支持 MCQ 和 FRQ 两种题型
+ * 支持 MCQ、SAQ 和 FRQ 三种题型
  */
 export interface UnitAssessmentQuestion {
   question_id: string;
   test_id: string;
-  question_type: 'MCQ' | 'FRQ';
+  question_number: number;  // v12.8: 题号
+  question_type: 'mcq' | 'saq' | 'frq';  // v12.8: 小写格式，添加SAQ
+  difficulty_level: number;  // v12.8: 难度等级（1-10）
+  ap_alignment: string;  // v12.8: AP考点对应（如"1.2"或"1.2, 1.4"）
+  source: string;  // v12.8: 题目来源
+  
+  // 材料题相关字段
+  stimulus_type?: 'text' | 'image' | 'chart' | 'map';  // v12.8: 材料类型
+  stimulus?: string;  // v12.8: 材料内容
+  
   question_text: string;
-  // MCQ fields (optional for FRQ)
-  option_a?: string;
-  option_b?: string;
-  option_c?: string;
-  option_d?: string;
+  
+  // MCQ fields (仅用于MCQ)
+  options?: {  // v12.8: 改为对象格式
+    A: string;
+    B: string;
+    C: string;
+    D: string;
+  };
   correct_answer?: string;
-  // FRQ fields (optional for MCQ)
-  parts?: FRQPart[];
-  rubric?: string;
+  explanation?: string;  // v12.8: MCQ的解释
+  
+  // SAQ/FRQ fields
+  rubric?: string;  // v12.8: SAQ和FRQ的评分标准
+  parts?: FRQPart[];  // FRQ的多部分
+  
   // Common fields
-  explanation: string;
-  requires_image: boolean;
+  requires_image?: boolean;  // v12.8: 改为可选，由stimulus_type判断
 }
 
 /**
