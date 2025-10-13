@@ -794,89 +794,150 @@ EXAMPLE of CORRECT JSON format:
 
   /**
    * 辅助函数：检查是否需要图片
-   * v12.1: 平衡规则 - 明确引用 + 视觉概念（但不过度标记）
+   * v12.2: 通用平衡规则 - 适用于所有AP学科
+   * 
+   * 策略：
+   * 1. 明确引用图表 → 必须标记
+   * 2. 通用视觉概念模式 → Flashcard中标记
+   * 3. 避免特定学科术语，使用通用模式
    */
   private checkRequiresImage(type: 'flashcard' | 'quiz', front: string, back: string): boolean {
     const text = `${front} ${back}`.toLowerCase();
+    const frontText = front.trim().toLowerCase();
     
-    // 第一优先级：明确引用图表（必须标记）
+    // ========== 第一优先级：明确引用图表（所有题型，必须标记） ==========
     const explicitReferences = [
+      // 直接引用
       'refer to the diagram',
       'refer to the figure',
       'refer to the table',
       'refer to the chart',
       'refer to the graph',
       'refer to the image',
+      'refer to the map',
+      'refer to the illustration',
+      
+      // 显示在...
       'shown in the diagram',
       'shown in the figure',
       'shown in the table',
       'shown in the image',
+      'shown in the graph',
+      'shown above',
+      'shown below',
+      'pictured in',
+      'depicted in',
+      
+      // 在...中
       'in the diagram',
       'in the figure',
       'in the table',
+      'in the chart',
+      'in the graph',
+      'in the image',
+      'in the map',
+      
+      // 基于...
       'based on the diagram',
       'based on the figure',
+      'based on the graph',
+      'based on the table',
+      'based on the map',
       'according to the diagram',
       'according to the figure',
-      'labeled structure',
-      'structure labeled',
-      'identify the structure',
+      'according to the graph',
+      
+      // 标记和识别
+      'labeled as',
+      'labeled with',
+      'label the',
+      'identify the',
       'which labeled',
+      
+      // 数据来源
       'from the graph',
       'from the chart',
+      'from the table',
+      'from the diagram',
+      
+      // 展示
       'the graph shows',
       'the diagram shows',
+      'the table shows',
+      'the chart shows',
       'as shown in',
+      'as illustrated',
+      'as depicted',
+      
+      // 观察
+      'observe the',
+      'look at the',
       'see figure',
-      'see diagram'
+      'see diagram',
+      'see table',
+      'see graph'
     ];
     
     if (explicitReferences.some(pattern => text.includes(pattern))) {
       return true;
     }
     
-    // 第二优先级：视觉结构性概念（有助于理解但非必需）
-    // 只在 Flashcards 中标记，Quiz 中需要明确引用
+    // ========== 第二优先级：通用视觉概念模式（仅Flashcard） ==========
+    // Quiz需要明确引用才标记，保持严格性
     if (type === 'flashcard') {
-      const visualStructures = [
-        // 大脑结构
-        'brain structure', 'cerebellum', 'cerebral cortex', 'hippocampus', 
-        'amygdala', 'thalamus', 'hypothalamus', 'corpus callosum',
-        'frontal lobe', 'parietal lobe', 'temporal lobe', 'occipital lobe',
-        'broca', 'wernicke', 'limbic system',
-        
-        // 神经结构
-        'neuron structure', 'synapse', 'axon terminal', 'myelin sheath',
-        'dendrites',
-        
-        // 细胞结构
-        'cell structure', 'mitochondrion', 'chloroplast', 'endoplasmic reticulum',
-        'golgi apparatus', 'organelle structure',
-        
-        // 感觉器官结构
-        'eye structure', 'retina', 'cornea', 'lens structure',
-        'ear structure', 'cochlea',
-        
-        // 分子结构
-        'molecular structure', 'lewis structure', 'molecular geometry',
-        
-        // 解剖结构
-        'anatomical structure', 'organ system diagram'
+      
+      // 模式1: 包含"structure"或"diagram"等视觉关键词
+      const visualKeywords = [
+        'structure of', 'structure is', 'structure shows',
+        'diagram of', 'diagram shows',
+        'model of', 'model shows',
+        'cross-section of',
+        'anatomy of',
+        'schematic of',
+        'blueprint of',
+        'layout of',
+        'configuration of'
       ];
       
-      // 只有当 front 或 back 中明确提到"结构"相关的术语时才标记
-      if (visualStructures.some(term => text.includes(term))) {
+      if (visualKeywords.some(keyword => text.includes(keyword))) {
         return true;
       }
       
-      // 特殊情况：Flashcard front 是一个单独的结构名称
-      const frontText = front.trim().toLowerCase();
-      const singleStructureTerms = [
-        'mitochondrion', 'chloroplast', 'neuron', 'synapse',
-        'cerebellum', 'hippocampus', 'amygdala', 'retina', 'cochlea'
+      // 模式2: 问题询问视觉特征或位置
+      const visualQuestionPatterns = [
+        'what does', // What does X look like?
+        'how does', // How does X appear?
+        'where is', // Where is X located?
+        'locate the',
+        'identify the location',
+        'position of',
+        'placement of',
+        'arrangement of',
+        'shape of',
+        'appearance of',
+        'visual features'
       ];
       
-      if (singleStructureTerms.some(term => frontText === term)) {
+      // 只有当同时包含视觉问题词和对象时才标记
+      const hasVisualQuestion = visualQuestionPatterns.some(pattern => 
+        frontText.includes(pattern)
+      );
+      
+      if (hasVisualQuestion && (
+        text.includes('structure') || 
+        text.includes('component') ||
+        text.includes('part') ||
+        text.includes('organ') ||
+        text.includes('system')
+      )) {
+        return true;
+      }
+      
+      // 模式3: Flashcard front 询问"这是什么"类型的视觉识别
+      if (frontText.includes('what is this') || 
+          frontText.includes('identify this') ||
+          frontText.includes('name this') ||
+          frontText.includes('label this')) {
         return true;
       }
     }
