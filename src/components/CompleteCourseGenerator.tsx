@@ -318,7 +318,7 @@ export function CompleteCourseGenerator({
               
               {/* 图片需求统计 */}
               <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="text-xs font-semibold text-yellow-800 mb-2">📸 图片需求统计 (v12.0严格必要性)</div>
+                <div className="text-xs font-semibold text-yellow-800 mb-2">📸 图片需求统计 (v12.1平衡规则)</div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Flashcards 需配图:</span>

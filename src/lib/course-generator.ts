@@ -179,7 +179,7 @@ export class CourseGenerator {
     }
 
     // 工作池模式：worker完成后立即取下一个任务
-    const CONCURRENCY = 5; // 5 个并发 worker
+    const CONCURRENCY = 8; // 5 个并发 worker
     let processedCount = 0;
     let failedCount = 0;
     let currentIndex = 0;
@@ -350,17 +350,27 @@ CRITICAL REQUIREMENTS:
 5. Use academic but clear language suitable for AP students
 6. Return ONLY valid JSON - NO comments, NO markdown backticks, NO extra text before or after
 7. Do NOT use Chinese or any other non-English languages
-8. Ensure valid JSON syntax:
-   - All strings must be properly escaped (use \\" for quotes, \\n for newlines)
-   - Use proper commas between items
-   - NO trailing commas after the last item in arrays or objects
-   - NO line breaks within string values (use \\n instead)
+8. CRITICAL JSON SYNTAX - MUST FOLLOW STRICTLY:
+   - In study_guide: Replace ALL newlines with spaces or \\n
+   - In study_guide: Replace ALL quotes with apostrophes or escape them as \\"
+   - In all text: NO unescaped double quotes inside strings
+   - In all text: NO actual line breaks (use \\n if needed)
+   - Use proper commas between array/object items
+   - NO trailing commas after last items
+   - Keep study_guide as ONE continuous string without line breaks
 9. Start your response immediately with { and end with } - nothing else
 10. FLASHCARD DIVERSIFICATION (v12.0): MUST include a MIX of all three card types:
     - "Term-Definition": Simple vocabulary or terminology
     - "Concept-Explanation": Explaining principles or processes
     - "Scenario/Question-Answer": Application questions or scenarios
-    Each flashcard MUST have a "card_type" field with one of these exact values`;
+    Each flashcard MUST have a "card_type" field with one of these exact values
+
+EXAMPLE of CORRECT JSON format:
+{
+  "study_guide": "This is a single line string without actual line breaks. Use spaces instead of newlines. Apostrophes are safer than quotes.",
+  "flashcards": [{"front": "Term", "back": "Definition", "card_type": "Term-Definition"}],
+  "quiz": [{"question": "Q?", "options": ["A", "B", "C", "D"], "correct_answer": "A", "explanation": "Because..."}]
+}`;
 
     // 调用 Gemini API
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
@@ -415,15 +425,47 @@ CRITICAL REQUIREMENTS:
       try {
         let fixedJson = this.extractJSON(text);
         
-        // 修复未转义的换行符（在字符串中）
-        fixedJson = fixedJson.replace(/"([^"]*?)[\r\n]+([^"]*?)"/g, (match, before, after) => {
-          return `"${before}\\n${after}"`;
-        });
+        // ========== 增强的 JSON 修复逻辑 ==========
         
-        // 修复连续的多个换行符
+        // 1. 修复 study_guide 中的未转义换行符
+        // 查找 "study_guide": "..." 并修复其中的换行
+        fixedJson = fixedJson.replace(
+          /"study_guide"\s*:\s*"((?:[^"\\]|\\.)*)"/g,
+          (match, content) => {
+            // 替换真实的换行符为 \\n
+            const fixed = content
+              .replace(/\r\n/g, ' ')
+              .replace(/\n/g, ' ')
+              .replace(/\r/g, ' ')
+              .replace(/\s+/g, ' '); // 合并多个空格
+            return `"study_guide": "${fixed}"`;
+          }
+        );
+        
+        // 2. 修复未转义的引号（但不影响已转义的）
+        // 在字符串值中查找未转义的双引号
+        fixedJson = fixedJson.replace(
+          /:\s*"([^"]*[^\\])"([^,}\]]*?)"/g,
+          (match, before, after) => {
+            // 如果检测到问题，尝试修复
+            if (after && after.trim()) {
+              return `: "${before}\\"${after}"`;
+            }
+            return match;
+          }
+        );
+        
+        // 3. 修复数组/对象中的换行符
+        fixedJson = fixedJson.replace(/[\r\n]+/g, ' ');
+        
+        // 4. 修复连续的多个空格
+        fixedJson = fixedJson.replace(/\s{2,}/g, ' ');
+        
+        // 5. 修复已转义但仍有问题的换行符
         fixedJson = fixedJson.replace(/\\n\\n+/g, '\\n');
         
-        // 尝试再次解析
+        // ========== 尝试解析修复后的 JSON ==========
+        
         const content = JSON.parse(fixedJson);
         
         // 再次验证数量
@@ -442,7 +484,7 @@ CRITICAL REQUIREMENTS:
           flashcards: content.flashcards || [],
           quiz: content.quiz || []
         };
-      } catch {
+      } catch (secondError: any) {
         // 修复也失败，记录详细信息
         console.error(`❌ Topic ${topic.topic_number} JSON 解析失败:`, parseError.message);
         console.error(`   原始响应前 500 字符:`, text.substring(0, 500));
@@ -752,14 +794,13 @@ CRITICAL REQUIREMENTS:
 
   /**
    * 辅助函数：检查是否需要图片
-   * v12.0: 严格必要性规则 - ONLY IF unintelligible without visual
+   * v12.1: 平衡规则 - 明确引用 + 视觉概念（但不过度标记）
    */
   private checkRequiresImage(type: 'flashcard' | 'quiz', front: string, back: string): boolean {
     const text = `${front} ${back}`.toLowerCase();
     
-    // v12.0: 严格必要性 - 只标记明确需要看图才能回答的问题
-    const strictNecessityPatterns = [
-      // 明确引用图表
+    // 第一优先级：明确引用图表（必须标记）
+    const explicitReferences = [
       'refer to the diagram',
       'refer to the figure',
       'refer to the table',
@@ -771,37 +812,76 @@ CRITICAL REQUIREMENTS:
       'shown in the table',
       'shown in the image',
       'in the diagram',
-      'in the figure above',
+      'in the figure',
       'in the table',
       'based on the diagram',
       'based on the figure',
       'according to the diagram',
       'according to the figure',
-      
-      // 标记的结构（A/B/C/D 选择）
-      'labeled structure a',
-      'labeled structure b',
-      'labeled structure c',
-      'labeled structure d',
+      'labeled structure',
       'structure labeled',
-      'which structure',
       'identify the structure',
-      'label the',
       'which labeled',
-      
-      // 图中问题
-      'in the image',
       'from the graph',
       'from the chart',
       'the graph shows',
       'the diagram shows',
-      'as shown',
+      'as shown in',
       'see figure',
       'see diagram'
     ];
     
-    // 只有明确匹配这些模式才需要图片
-    return strictNecessityPatterns.some(pattern => text.includes(pattern));
+    if (explicitReferences.some(pattern => text.includes(pattern))) {
+      return true;
+    }
+    
+    // 第二优先级：视觉结构性概念（有助于理解但非必需）
+    // 只在 Flashcards 中标记，Quiz 中需要明确引用
+    if (type === 'flashcard') {
+      const visualStructures = [
+        // 大脑结构
+        'brain structure', 'cerebellum', 'cerebral cortex', 'hippocampus', 
+        'amygdala', 'thalamus', 'hypothalamus', 'corpus callosum',
+        'frontal lobe', 'parietal lobe', 'temporal lobe', 'occipital lobe',
+        'broca', 'wernicke', 'limbic system',
+        
+        // 神经结构
+        'neuron structure', 'synapse', 'axon terminal', 'myelin sheath',
+        'dendrites',
+        
+        // 细胞结构
+        'cell structure', 'mitochondrion', 'chloroplast', 'endoplasmic reticulum',
+        'golgi apparatus', 'organelle structure',
+        
+        // 感觉器官结构
+        'eye structure', 'retina', 'cornea', 'lens structure',
+        'ear structure', 'cochlea',
+        
+        // 分子结构
+        'molecular structure', 'lewis structure', 'molecular geometry',
+        
+        // 解剖结构
+        'anatomical structure', 'organ system diagram'
+      ];
+      
+      // 只有当 front 或 back 中明确提到"结构"相关的术语时才标记
+      if (visualStructures.some(term => text.includes(term))) {
+        return true;
+      }
+      
+      // 特殊情况：Flashcard front 是一个单独的结构名称
+      const frontText = front.trim().toLowerCase();
+      const singleStructureTerms = [
+        'mitochondrion', 'chloroplast', 'neuron', 'synapse',
+        'cerebellum', 'hippocampus', 'amygdala', 'retina', 'cochlea'
+      ];
+      
+      if (singleStructureTerms.some(term => frontText === term)) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   /**
