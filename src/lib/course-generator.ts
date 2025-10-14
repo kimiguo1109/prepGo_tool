@@ -389,7 +389,7 @@ CRITICAL REQUIREMENTS (PRIORITY ORDER):
 7. Return ONLY valid JSON - NO comments, NO markdown backticks, NO extra text before or after
 8. Do NOT use Chinese or any other non-English languages
 
-8. SPECIAL CHARACTERS HANDLING (CRITICAL for Chemistry, Math, Physics):
+SPECIAL CHARACTERS HANDLING (CRITICAL for Chemistry, Math, Physics):
    - Chemical formulas: Use plain text (H2O not $H_2O$, CO2 not $CO_2$)
    - Greek letters: Use full names (Delta-H not ΔH, Delta-S not ΔS, theta not θ)
    - Superscripts/subscripts: Use plain text with parentheses (H2O, CO2, x^2, H+ ion)
@@ -398,7 +398,7 @@ CRITICAL REQUIREMENTS (PRIORITY ORDER):
    - NO LaTeX formatting ($...$)
    - NO special Unicode symbols
 
-9. IMAGE FLAGGING - MARK requires_image CORRECTLY:
+IMAGE FLAGGING - MARK requires_image CORRECTLY:
    For EACH flashcard and quiz question, set requires_image flag:
    
    A. General Rule (All Courses):
@@ -416,28 +416,44 @@ CRITICAL REQUIREMENTS (PRIORITY ORDER):
       - FALSE if question only mentions a visualizable object but asks about function/definition
       - Example: "What was the purpose of the Monroe Doctrine?" (no image needed)
 
-10. JSON SYNTAX - MUST FOLLOW STRICTLY:
-   - In study_guide: ONE continuous line, replace newlines with spaces
-   - Use ONLY ASCII characters in JSON structure
-   - Use apostrophes instead of fancy quotes (' not ' or ")
-   - Escape ALL double quotes inside strings as \\"
-   - NO line breaks inside string values
-   - NO trailing commas
-   - Keep explanations concise to avoid token limits
+JSON SYNTAX - CRITICAL FOR PARSING SUCCESS:
+   ⚠️ The following rules are MANDATORY to prevent JSON parsing errors:
+   
+   a) String Content Rules:
+      - NEVER use double quotes (") inside string values
+      - Use single quotes (') or apostrophes for possessives (it's, don't, can't)
+      - Replace any internal quotes with apostrophes: "the 'concept' is" NOT "the \"concept\" is"
+      - For emphasis or terminology, use single quotes: 'key term' NOT "key term"
+   
+   b) Formatting Rules:
+      - In study_guide: Write as ONE continuous line (no line breaks)
+      - Replace all newlines with spaces in long text
+      - NO trailing commas after last array/object item
+      - Use ONLY standard ASCII punctuation
+   
+   c) Special Characters:
+      - Avoid fancy quotes (", ", ', ') - use standard quotes only
+      - Avoid em dashes (—) - use regular hyphens (-)
+      - Avoid ellipsis character (…) - use three periods (...)
+   
+   d) Validation:
+      - Every opening bracket must have closing bracket: { }, [ ]
+      - Every key must have quoted value: "key": "value"
+      - Commas between items but NOT before closing bracket
 
-10. FLASHCARD DIVERSIFICATION: MUST include a MIX of all three card types:
+FLASHCARD DIVERSIFICATION: MUST include a MIX of all three card types:
     - "Term-Definition": Simple vocabulary or terminology
     - "Concept-Explanation": Explaining principles or processes
     - "Scenario/Question-Answer": Application questions or scenarios
     Each flashcard MUST have a "card_type" field with one of these exact values
 
-11. STUDY GUIDE WRITING STRATEGY (Target ${targetWordCount} words):
+STUDY GUIDE WRITING STRATEGY (Target ${targetWordCount} words):
     - Aim for ${Math.floor(targetWordCount * 0.85)}-${Math.floor(targetWordCount * 1.15)} words
     - Write flashcards and quiz FIRST (keep explanations concise, 50-100 words each)
     - Then write study_guide as detailed as possible with remaining tokens
     - CRITICAL: Monitor your output length and ensure you can complete ALL three sections with proper JSON closing
 
-12. RECOMMENDED STUDY GUIDE STRUCTURE FOR ${targetWordCount} WORDS:
+RECOMMENDED STUDY GUIDE STRUCTURE FOR ${targetWordCount} WORDS:
     Try to include the following elements (adjust if needed to fit token limits):
     
     ✓ Introduction (100-150 words): Topic significance and context
@@ -524,16 +540,25 @@ CRITICAL REQUIREMENTS (PRIORITY ORDER):
           }
         );
         
-        // 2. 修复未转义的引号（但不影响已转义的）
-        // 在字符串值中查找未转义的双引号
+        // 2. 修复常见的引号问题（v12.8.11: 增强版）
+        // a) 替换中文引号和特殊引号
+        fixedJson = fixedJson
+          .replace(/"/g, '"')
+          .replace(/"/g, '"')
+          .replace(/'/g, "'")
+          .replace(/'/g, "'");
+        
+        // b) 修复字符串值中未转义的双引号
+        // 使用更健壮的正则表达式
         fixedJson = fixedJson.replace(
-          /:\s*"([^"]*[^\\])"([^,}\]]*?)"/g,
-          (match, before, after) => {
-            // 如果检测到问题，尝试修复
-            if (after && after.trim()) {
-              return `: "${before}\\"${after}"`;
-            }
-            return match;
+          /"(explanation|question_text|front|back|question|study_guide)":\s*"((?:[^"\\]|\\.)*)"/g,
+          (match, key, value) => {
+            // 确保内部引号被转义
+            const escapedValue = value
+              .replace(/\\"/g, '__ESCAPED_QUOTE__')  // 保护已转义的引号
+              .replace(/"/g, '\\"')                   // 转义未转义的引号
+              .replace(/__ESCAPED_QUOTE__/g, '\\"');  // 恢复已转义的引号
+            return `"${key}": "${escapedValue}"`;
           }
         );
         
