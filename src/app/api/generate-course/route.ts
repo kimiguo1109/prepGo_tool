@@ -36,15 +36,27 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // 进度回调函数
+          // 进度回调函数（v12.8.18: 添加 controller 状态检查）
           const onProgress = (message: string, percent?: number) => {
-            const progressData = JSON.stringify({
-              type: 'progress',
-              message,
-              percent: percent || 0,
-              timestamp: Date.now()
-            }) + '\n';
-            controller.enqueue(encoder.encode(progressData));
+            try {
+              // 检查 controller 是否已关闭（超时或客户端断开）
+              if (controller.desiredSize === null) {
+                // Controller 已关闭，静默返回，不抛出错误
+                return;
+              }
+              
+              const progressData = JSON.stringify({
+                type: 'progress',
+                message,
+                percent: percent || 0,
+                timestamp: Date.now()
+              }) + '\n';
+              controller.enqueue(encoder.encode(progressData));
+            } catch (err) {
+              // 如果 enqueue 失败（controller 已关闭），静默忽略
+              // 不中断生成流程
+              console.warn('⚠️  进度更新失败（连接已断开）:', (err as Error).message);
+            }
           };
 
           // 执行完整生成流程

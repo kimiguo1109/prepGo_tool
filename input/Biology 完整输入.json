@@ -1,0 +1,2469 @@
+{
+  "course_name": "AP Biology",
+  "units": [
+    {
+      "unit_number": 1,
+      "unit_title": "Unit 1: Chemistry of Life",
+      "ced_class_periods": "~9-11 Class Periods",
+      "exam_weight": "8-11%",
+      "unit_overview": {
+        "summary": "Welcome to the fundamental chemistry that drives all life! In this unit, you'll explore the building blocks of biology, starting with the unique properties of water that make life on Earth possible. We'll then introduce the essential elements of life, focusing on carbon's versatility. The core of this unit is a deep dive into the structure and function of the four major classes of biological macromolecules: carbohydrates, lipids, proteins, and nucleic acids. You'll learn how these molecules are built and how their specific structures determine their vital roles. Understanding this molecular foundation is crucial, as these concepts will reappear in every subsequent unit. Get ready to think small to understand the big picture!",
+        "ced_class_periods": "~9-11",
+        "exam_weight": "8-11%",
+        "prepgo_estimated_minutes": 204
+      },
+      "topics": [
+        {
+          "topic_number": "1.1",
+          "topic_title": "Structure of Water and Hydrogen Bonding",
+          "ced_topic_title": "Structure of Water and Hydrogen Bonding",
+          "topic_overview": "This topic is all about the superstar molecule of life: water! You'll learn about the structure of a water molecule, its polarity, and how this leads to the formation of hydrogen bonds. These weak bonds are responsible for water's incredible life-sustaining properties, including cohesion, adhesion, and its ability to moderate temperature. Understanding why water is such a fantastic solvent and how it behaves is the first essential step in understanding the chemical environment where all of life's reactions take place. This is a foundational concept that will help you understand everything from protein folding to cell transport later in the course.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 22,
+            "learn_minutes": 4,
+            "review_minutes": 6,
+            "practice_minutes": 12,
+            "target_study_guide_words": 600,
+            "target_flashcards_count": 12,
+            "target_mcq_count": 8
+          },
+          "learning_objectives": [
+            {
+              "id": "1.1.A",
+              "summary": "Explain how water's properties, resulting from its polarity and hydrogen bonding, affect its biological function."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "1.1.A.1",
+              "summary": "Living systems rely on water's properties. Its polarity leads to hydrogen bonding, its high specific heat helps maintain temperature, and its high heat of vaporization allows evaporative cooling."
+            },
+            {
+              "id": "1.1.A.2",
+              "summary": "Hydrogen bonds between water molecules are responsible for cohesion, adhesion, and surface tension."
+            }
+          ]
+        },
+        {
+          "topic_number": "1.2",
+          "topic_title": "Elements of Life",
+          "ced_topic_title": "Elements of Life",
+          "topic_overview": "What are living things actually made of? In this topic, we focus on the key chemical elements that form the basis of all life, especially carbon. You'll explore why carbon is the perfect backbone for the large, complex molecules essential for biological processes. Its ability to form four stable covalent bonds allows for an incredible diversity of molecular structures. We will introduce the concept of monomers as the building blocks that link together to form polymers, a central theme in understanding biological macromolecules. Grasping carbon's versatility is key to appreciating the complexity of the molecules you'll study next.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 19,
+            "learn_minutes": 3,
+            "review_minutes": 4,
+            "practice_minutes": 12,
+            "target_study_guide_words": 450,
+            "target_flashcards_count": 8,
+            "target_mcq_count": 8
+          },
+          "learning_objectives": [
+            {
+              "id": "1.2.A",
+              "summary": "Describe the composition of essential macromolecules required by living organisms."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "1.2.A.1",
+              "summary": "Organisms use atoms from the environment to build molecules. Carbon, hydrogen, and oxygen are primary. Sulfur is key for proteins; phosphorus for phospholipids and nucleic acids; and nitrogen for nucleic acids."
+            }
+          ]
+        },
+        {
+          "topic_number": "1.3",
+          "topic_title": "Introduction to Macromolecules",
+          "ced_topic_title": "Introduction to Biological Macromolecules",
+          "topic_overview": "Here, we'll establish the fundamental principles of building and breaking down the large polymers of life. This topic introduces the 'big four': carbohydrates, lipids, proteins, and nucleic acids. You'll learn the universal processes of dehydration synthesis (building polymers from monomers by removing water) and hydrolysis (breaking polymers down by adding water). This core mechanism of molecular construction and deconstruction is essential, as it provides the framework for how organisms build their structures and obtain energy from food. It is the chemical grammar for the language of life.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 27,
+            "learn_minutes": 5,
+            "review_minutes": 7,
+            "practice_minutes": 15,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 14,
+            "target_mcq_count": 10
+          },
+          "learning_objectives": [
+            {
+              "id": "1.3.A",
+              "summary": "Describe the chemical reactions responsible for building and breaking down biological macromolecules."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "1.3.A.1",
+              "summary": "Hydrolysis is a chemical reaction that breaks down molecules by cleaving covalent bonds with the addition of water."
+            },
+            {
+              "id": "1.3.A.2",
+              "summary": "Dehydration synthesis joins smaller molecules into polymers by forming covalent bonds and removing a water molecule."
+            }
+          ]
+        },
+        {
+          "topic_number": "1.4",
+          "topic_title": "Carbohydrates",
+          "ced_topic_title": "Carbohydrates",
+          "topic_overview": "Time for some sugar science! This topic focuses specifically on carbohydrates, from simple monosaccharides like glucose to complex polysaccharides like starch and cellulose. You'll learn how these molecules are structured and how that structure relates to their primary functions: providing quick energy and forming structural components in organisms (like the cell walls of plants). Understanding the different types of glycosidic linkages and how they affect the digestibility and function of carbohydrates is a key objective. This knowledge is vital for understanding cellular respiration and plant biology.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 32,
+            "learn_minutes": 6,
+            "review_minutes": 7,
+            "practice_minutes": 19,
+            "target_study_guide_words": 900,
+            "target_flashcards_count": 14,
+            "target_mcq_count": 13
+          },
+          "learning_objectives": [
+            {
+              "id": "1.4.A",
+              "summary": "Describe the structure and function of carbohydrates."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "1.4.A.1",
+              "summary": "Monosaccharides (simple sugars) are the monomers that form polysaccharides (complex carbohydrates) through covalent bonds, creating linear or branched polymers."
+            }
+          ]
+        },
+        {
+          "topic_number": "1.5",
+          "topic_title": "Lipids",
+          "ced_topic_title": "Lipids",
+          "topic_overview": "Let's explore the diverse world of lipids. This topic covers the one group of macromolecules that are not true polymers and are defined by their hydrophobic nature. You'll learn about the structure of triglycerides (fats and oils), phospholipids, and steroids. A major focus will be on the function of each type: fats for long-term energy storage, phospholipids as the primary components of cell membranes, and steroids as hormones. Understanding the amphipathic nature of phospholipids, with their hydrophilic heads and hydrophobic tails, is absolutely critical for understanding cell membrane structure in the next unit.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 33,
+            "learn_minutes": 6,
+            "review_minutes": 8,
+            "practice_minutes": 19,
+            "target_study_guide_words": 900,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 13
+          },
+          "learning_objectives": [
+            {
+              "id": "1.5.A",
+              "summary": "Describe the structure and function of lipids."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "1.5.A.1",
+              "summary": "Lipids are nonpolar, hydrophobic molecules. They are assembled from subcomponents like fatty acids, which can be saturated (all single bonds) or unsaturated (at least one double bond), affecting their physical properties."
+            },
+            {
+              "id": "1.5.A.2",
+              "summary": "Lipids like fats, steroids, and phospholipids perform diverse functions, including energy storage, cell signaling, structural support in membranes, and insulation."
+            }
+          ]
+        },
+        {
+          "topic_number": "1.6",
+          "topic_title": "Nucleic Acids",
+          "ced_topic_title": "Nucleic Acids",
+          "topic_overview": "This topic is a deep dive into the information molecules: DNA and RNA. You'll learn the detailed structure of their monomer, the nucleotide, and how these link together to form the long polymers of nucleic acids. A major focus will be on the differences between DNA and RNA in terms of their sugar, bases, and overall structure (double vs. single helix). You will also master the crucial concept of base pairing (A with T, G with C) and understand how the sequence of these bases encodes the genetic instructions for all living organisms. This knowledge is the bedrock of genetics and molecular biology.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 36,
+            "learn_minutes": 7,
+            "review_minutes": 8,
+            "practice_minutes": 21,
+            "target_study_guide_words": 1050,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 14
+          },
+          "learning_objectives": [
+            {
+              "id": "1.6.A",
+              "summary": "Describe the structure and function of both DNA and RNA."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "1.6.A.1",
+              "summary": "Nucleic acids encode biological information in sequences of nucleotide monomers. Each nucleotide contains a five-carbon sugar, a phosphate group, and a nitrogenous base."
+            },
+            {
+              "id": "1.6.A.2",
+              "summary": "Nucleic acids are linear polymers with defined 3' hydroxyl and 5' phosphate ends. During synthesis, new nucleotides are added to the 3' end."
+            },
+            {
+              "id": "1.6.A.3",
+              "summary": "DNA forms an antiparallel double helix with specific base pairing: adenine with thymine (A-T) and cytosine with guanine (C-G). In RNA, adenine pairs with uracil (A-U)."
+            },
+            {
+              "id": "1.6.A.4",
+              "summary": "Key structural differences between DNA and RNA include the type of sugar (deoxyribose vs. ribose), one nitrogenous base (thymine vs. uracil), and strandedness (typically double-stranded vs. single-stranded)."
+            }
+          ]
+        },
+        {
+          "topic_number": "1.7",
+          "topic_title": "Proteins",
+          "ced_topic_title": "Proteins",
+          "topic_overview": "Meet the most versatile macromolecules: proteins. In this topic, you'll explore how amino acids are the monomers that build protein polymers (polypeptides). The central concept is the four levels of protein structure—primary, secondary, tertiary, and quaternary—and how a protein's intricate 3D shape is critical for its specific function, whether it's acting as an enzyme, providing structural support, or transporting substances. You'll learn how the sequence of amino acids dictates the final folded shape. This structure-function relationship is one of the most important themes in all of biology.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 35,
+            "learn_minutes": 7,
+            "review_minutes": 7,
+            "practice_minutes": 21,
+            "target_study_guide_words": 1050,
+            "target_flashcards_count": 14,
+            "target_mcq_count": 14
+          },
+          "learning_objectives": [
+            {
+              "id": "1.7.A",
+              "summary": "Describe the structure and function of proteins."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "1.7.A.1",
+              "summary": "Proteins are linear chains of amino acids linked by covalent peptide bonds formed between the carboxyl group of one amino acid and the amine group of another."
+            },
+            {
+              "id": "1.7.A.2",
+              "summary": "Amino acids consist of a central carbon atom bonded to a hydrogen, a carboxyl group, an amine group, and a variable R group. The chemical properties of the R group determine the protein's structure and function."
+            },
+            {
+              "id": "1.7.A.3",
+              "summary": "The sequence of amino acids in a polypeptide chain determines its primary structure and ultimately its overall shape."
+            },
+            {
+              "id": "1.7.A.4",
+              "summary": "Secondary structure in proteins involves local folding into alpha-helices and beta-pleated sheets, resulting from hydrogen bonds in the polypeptide backbone."
+            },
+            {
+              "id": "1.7.A.5",
+              "summary": "Tertiary structure is the overall three-dimensional shape of a protein, formed by interactions between R groups, such as hydrogen bonds, ionic bonds, and disulfide bridges."
+            },
+            {
+              "id": "1.7.A.6",
+              "summary": "Quaternary structure arises from the interaction of multiple polypeptide subunits. All four levels of protein structure collectively determine its function."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit_number": 2,
+      "unit_title": "Unit 2: Cells",
+      "ced_class_periods": "~14-16 Class Periods",
+      "exam_weight": "10-13%",
+      "unit_overview": {
+        "summary": "Get ready to explore the fundamental unit of life: the cell! This unit takes you on a tour inside both prokaryotic and eukaryotic cells, revealing the intricate world of organelles. You'll learn the specific roles of each cellular component, from the nucleus that houses the genetic material to the mitochondria that power the cell. A major focus will be on the cell membrane, the gatekeeper that controls everything that enters and leaves. We'll examine the mechanisms of transport across this membrane, including passive transport, active transport, and osmosis—a critical concept involving water movement. You'll also explore how cell size limitations and internal compartmentalization contribute to efficiency. By the end of this unit, you'll understand how a cell's components work together as a coordinated, dynamic system.",
+        "ced_class_periods": "~14-16",
+        "exam_weight": "10-13%",
+        "prepgo_estimated_minutes": 260
+      },
+      "topics": [
+        {
+          "topic_number": "2.1",
+          "topic_title": "Cell Structure and Function",
+          "ced_topic_title": "Cell Structure and Function",
+          "topic_overview": "Here, we'll compare and contrast the different types of cells. The main focus is on the fundamental differences between prokaryotic cells (like bacteria) and eukaryotic cells (like those in plants, animals, and fungi). You'll learn how the presence or absence of a nucleus and other membrane-bound organelles leads to vastly different strategies for life. We will also compare the structures of plant and animal cells, highlighting key differences like the cell wall, central vacuole, and chloroplasts. This comparative approach helps solidify your understanding of how a cell's structure is directly related to its overall function and the needs of the organism.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 28,
+            "learn_minutes": 5,
+            "review_minutes": 6,
+            "practice_minutes": 17,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 12,
+            "target_mcq_count": 11
+          },
+          "learning_objectives": [
+            {
+              "id": "2.1.A",
+              "summary": "Explain how the structure and function of subcellular components and organelles contribute to the overall function of cells."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "2.1.A.1",
+              "summary": "Ribosomes, composed of rRNA and protein, synthesize proteins and are found in all forms of life, reflecting common ancestry."
+            },
+            {
+              "id": "2.1.A.2",
+              "summary": "The endomembrane system works together to modify, package, and transport lipids and proteins within the cell."
+            },
+            {
+              "id": "2.1.A.3",
+              "summary": "The endoplasmic reticulum provides mechanical support and transport. Rough ER synthesizes proteins, while smooth ER synthesizes lipids and handles detoxification."
+            },
+            {
+              "id": "2.1.A.4",
+              "summary": "The Golgi complex, a series of flattened membrane sacs, chemically modifies, folds, and packages cellular products for trafficking."
+            },
+            {
+              "id": "2.1.A.5",
+              "summary": "Mitochondria feature a double membrane with convoluted inner folds that provide compartments for metabolic reactions and efficient ATP synthesis."
+            },
+            {
+              "id": "2.1.A.6",
+              "summary": "Lysosomes are sacs containing hydrolytic enzymes that digest materials and play a role in programmed cell death (apoptosis)."
+            },
+            {
+              "id": "2.1.A.7",
+              "summary": "Vacuoles are membrane-bound sacs; in plants, a large central vacuole stores nutrients and maintains turgor pressure."
+            },
+            {
+              "id": "2.1.A.8",
+              "summary": "Chloroplasts, found in plants and algae, have a double membrane and are the site of photosynthesis."
+            }
+          ]
+        },
+        {
+          "topic_number": "2.2",
+          "topic_title": "Cell Size",
+          "ced_topic_title": "Cell Size",
+          "topic_overview": "Why aren't there elephant-sized amoebas? This topic explores the critical relationship between a cell's surface area and its volume. You will learn why cells are small and how the surface area-to-volume ratio limits their maximum size. As a cell grows, its volume increases much faster than its surface area, making it difficult to transport materials in and waste out efficiently. We'll investigate the mathematical basis of this principle and explore the various strategies organisms use, like folding membranes, to maximize surface area and overcome these limitations. This is a key concept for understanding cellular efficiency.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 25,
+            "learn_minutes": 5,
+            "review_minutes": 5,
+            "practice_minutes": 15,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 10,
+            "target_mcq_count": 10
+          },
+          "learning_objectives": [
+            {
+              "id": "2.2.A",
+              "summary": "Explain the effect of surface area-to-volume ratios on the exchange of materials between cells or organisms and their environment."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "2.2.A.1",
+              "summary": "Surface area-to-volume ratios impact a biological system's ability to obtain necessary resources, eliminate waste, and exchange energy."
+            },
+            {
+              "id": "2.2.A.2",
+              "summary": "Smaller cells typically have a higher surface area-to-volume ratio, enabling more efficient material exchange. As volume increases, this ratio decreases, requiring more complex structures to meet resource demands."
+            }
+          ]
+        },
+        {
+          "topic_number": "2.3",
+          "topic_title": "Plasma Membrane",
+          "ced_topic_title": "Plasma Membrane",
+          "topic_overview": "Let's meet the gatekeeper of the cell: the plasma membrane. Here you'll learn about the fluid mosaic model, which describes the membrane's structure as a flexible layer of phospholipids with various proteins embedded within it. We'll break down the roles of these components: the phospholipid bilayer that forms the basic barrier, and the proteins that act as channels, pumps, and receptors. Understanding this structure is crucial because the membrane isn't just a simple wall; it's a dynamic, selective barrier that actively controls what gets in and out of the cell.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 25,
+            "learn_minutes": 5,
+            "review_minutes": 5,
+            "practice_minutes": 15,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 10,
+            "target_mcq_count": 10
+          },
+          "learning_objectives": [
+            {
+              "id": "2.3.A",
+              "summary": "Describe the roles of each component of the cell membrane in maintaining the internal environment of the cell."
+            },
+            {
+              "id": "2.3.B",
+              "summary": "Describe the fluid mosaic model of cell membranes."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "2.3.A.1",
+              "summary": "Phospholipids have hydrophilic polar heads oriented toward aqueous environments and hydrophobic nonpolar tails facing inward, forming the core of the membrane."
+            },
+            {
+              "id": "2.3.A.2",
+              "summary": "Embedded proteins have hydrophilic and hydrophobic regions that determine their orientation and interaction within the phospholipid bilayer."
+            },
+            {
+              "id": "2.3.B.1",
+              "summary": "The fluid mosaic model illustrates that plasma membranes are a dynamic structure of phospholipid molecules embedded with proteins, steroids, and carbohydrates that can move laterally."
+            }
+          ]
+        },
+        {
+          "topic_number": "2.4",
+          "topic_title": "Membrane Permeability",
+          "ced_topic_title": "Membrane Permeability",
+          "topic_overview": "Now that you know the structure of the cell membrane, let's explore how things cross it. This topic focuses on the concept of selective permeability. You'll learn which types of molecules can pass through the phospholipid bilayer easily (small, nonpolar molecules) and which ones need help (ions and large polar molecules). This fundamental principle explains why the cell needs specialized protein channels and pumps to move many essential substances. It sets the stage for understanding the different types of membrane transport.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 22,
+            "learn_minutes": 4,
+            "review_minutes": 4,
+            "practice_minutes": 14,
+            "target_study_guide_words": 600,
+            "target_flashcards_count": 8,
+            "target_mcq_count": 9
+          },
+          "learning_objectives": [
+            {
+              "id": "2.4.A",
+              "summary": "Explain how the structure of biological membranes influences selective permeability."
+            },
+            {
+              "id": "2.4.B",
+              "summary": "Describe the role of the cell wall in maintaining cell structure and function."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "2.4.A.1",
+              "summary": "Plasma membranes separate the cell's internal environment from the external, with selective permeability resulting from its hydrophobic interior."
+            },
+            {
+              "id": "2.4.A.2",
+              "summary": "Small nonpolar molecules pass freely across the membrane, while hydrophilic substances like large polar molecules and ions require embedded channels or transport proteins."
+            },
+            {
+              "id": "2.4.A.3",
+              "summary": "The nonpolar tails of phospholipids prevent most polar molecules and ions from passing, though small polar molecules like water can pass in small amounts."
+            },
+            {
+              "id": "2.4.B.1",
+              "summary": "The cell walls of plants, fungi, bacteria, and archaea provide a structural boundary and a permeability barrier, offering protection from osmotic lysis."
+            }
+          ]
+        },
+        {
+          "topic_number": "2.5",
+          "topic_title": "Membrane Transport",
+          "ced_topic_title": "Facilitated Diffusion",
+          "topic_overview": "This topic is a deep dive into a specific type of passive transport: facilitated diffusion. While simple diffusion allows small, nonpolar molecules to slip through the membrane, larger or charged molecules need help. You'll learn about the role of channel proteins and carrier proteins in 'facilitating' this movement. These proteins are highly specific, only allowing certain molecules to pass through. Importantly, even with protein assistance, this is still a passive process. The movement is always down the concentration gradient, from high to low concentration, and does not require the cell to expend any energy.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 22,
+            "learn_minutes": 4,
+            "review_minutes": 4,
+            "practice_minutes": 14,
+            "target_study_guide_words": 600,
+            "target_flashcards_count": 8,
+            "target_mcq_count": 9
+          },
+          "learning_objectives": [
+            {
+              "id": "2.5.A",
+              "summary": "Describe the mechanisms that organisms use to maintain solute and water balance."
+            },
+            {
+              "id": "2.5.B",
+              "summary": "Describe the mechanisms organisms use to transport large molecules across the plasma membrane."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "2.5.A.1",
+              "summary": "The selective permeability of membranes enables the formation of concentration gradients of solutes."
+            },
+            {
+              "id": "2.5.A.2",
+              "summary": "Passive transport is the net movement of molecules from high to low concentration without requiring metabolic energy."
+            },
+            {
+              "id": "2.5.A.3",
+              "summary": "Active transport requires a direct input of energy to move molecules, often from a region of low concentration to one of high concentration."
+            },
+            {
+              "id": "2.5.B.1",
+              "summary": "Endocytosis and exocytosis require energy to move large substances into and out of cells by forming vesicles that engulf material or fuse with the plasma membrane."
+            }
+          ]
+        },
+        {
+          "topic_number": "2.6",
+          "topic_title": "Facilitated Diffusion",
+          "ced_topic_title": "Tonicity and Osmoregulation",
+          "topic_overview": "Get ready to master one of the most important concepts in cell biology: osmosis! This topic focuses exclusively on the movement of water across a selectively permeable membrane. You'll learn about water potential and tonicity (hypertonic, hypotonic, isotonic) to predict the direction of water flow. We'll also explore osmoregulation, the strategies organisms use to control water balance and maintain homeostasis in different environments. Understanding this is critical for explaining everything from how plants stand upright to why you can't drink saltwater.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 38,
+            "learn_minutes": 8,
+            "review_minutes": 8,
+            "practice_minutes": 22,
+            "target_study_guide_words": 1200,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 15
+          },
+          "learning_objectives": [
+            {
+              "id": "2.6.A",
+              "summary": "Explain how the structure of a molecule affects its ability to pass through the plasma membrane."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "2.6.A.1",
+              "summary": "Facilitated diffusion requires channel or transport proteins for charged ions like Na+ and K+ to move through the membrane, which can lead to membrane polarization."
+            },
+            {
+              "id": "2.6.A.2",
+              "summary": "Facilitated diffusion allows large polar molecules to move down their concentration gradient through membranes without energy input."
+            },
+            {
+              "id": "2.6.A.3",
+              "summary": "Aquaporins are specific channel proteins that facilitate the transport of large quantities of water across membranes."
+            }
+          ]
+        },
+        {
+          "topic_number": "2.7",
+          "topic_title": "Tonicity and Osmoregulation",
+          "ced_topic_title": "Mechanisms of Transport",
+          "topic_overview": "In this topic, we'll cover both passive and active transport to provide a complete picture of how cells move materials. We'll review passive transport (diffusion, facilitated diffusion) which requires no energy, and then focus on active transport. You'll learn how cells use energy, usually in the form of ATP, to power protein pumps that move molecules against their concentration gradient, from low to high concentration. This process is essential for maintaining specific internal environments, like nerve gradients, and is a fundamental process of life.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 32,
+            "learn_minutes": 6,
+            "review_minutes": 7,
+            "practice_minutes": 19,
+            "target_study_guide_words": 900,
+            "target_flashcards_count": 14,
+            "target_mcq_count": 13
+          },
+          "learning_objectives": [
+            {
+              "id": "2.7.A",
+              "summary": "Explain how concentration gradients affect the movement of molecules across membranes."
+            },
+            {
+              "id": "2.7.B",
+              "summary": "Explain how osmoregulatory mechanisms contribute to the health and survival of organisms."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "2.7.A.1",
+              "summary": "External environments relative to a cell can be hypotonic, hypertonic, or isotonic. Water moves by osmosis from areas of high water potential to areas of low water potential."
+            },
+            {
+              "id": "2.7.B.1",
+              "summary": "The constant movement of molecules across membranes is essential for maintaining growth and homeostasis."
+            },
+            {
+              "id": "2.7.B.2",
+              "summary": "Osmoregulation maintains water balance and allows organisms to control their internal solute concentration and water potential."
+            }
+          ]
+        },
+        {
+          "topic_number": "2.8",
+          "topic_title": "Mechanisms of Transport",
+          "ced_topic_title": "Cell Compartmentalization",
+          "topic_overview": "Why are eukaryotic cells full of organelles? The answer is compartmentalization. This topic explores how membrane-bound organelles create specialized local environments within the cell. These compartments allow different, and often incompatible, metabolic processes to occur simultaneously without interfering with each other. For example, the acidic environment needed for digestion inside a lysosome is kept separate from the rest of the cell. You'll learn how this internal organization increases the efficiency of cellular processes, a key advantage of eukaryotes over prokaryotes.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 25,
+            "learn_minutes": 5,
+            "review_minutes": 5,
+            "practice_minutes": 15,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 10,
+            "target_mcq_count": 10
+          },
+          "learning_objectives": [
+            {
+              "id": "2.8.A",
+              "summary": "Describe the processes that allow ions and other molecules to move across membranes."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "2.8.A.1",
+              "summary": "Metabolic energy (e.g., from ATP) is required for the active transport of molecules and ions across the membrane, which establishes and maintains electrochemical gradients via membrane proteins like the Na+/K+ pump."
+            }
+          ]
+        },
+        {
+          "topic_number": "2.9",
+          "topic_title": "Cell Compartmentalization",
+          "ced_topic_title": "Cell Compartmentalization",
+          "topic_overview": "This topic continues the exploration of compartmentalization by focusing on the specific roles of various organelles. You'll learn the detailed functions of the endoplasmic reticulum, Golgi complex, mitochondria, lysosomes, vacuoles, and chloroplasts. The emphasis is on how these subcellular components work together in a coordinated fashion. For example, you'll trace the path of a protein from its synthesis on a ribosome, through modification in the ER and Golgi, to its final destination. This illustrates the cell as a dynamic, interconnected factory.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 23,
+            "learn_minutes": 5,
+            "review_minutes": 4,
+            "practice_minutes": 14,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 8,
+            "target_mcq_count": 9
+          },
+          "learning_objectives": [
+            {
+              "id": "2.9.A",
+              "summary": "Describe the membrane-bound structures of the eukaryotic cell."
+            },
+            {
+              "id": "2.9.B",
+              "summary": "Explain how internal membranes and membrane-bound organelles contribute to the compartmentalization of eukaryotic cell functions."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "2.9.A.1",
+              "summary": "In eukaryotic cells, membranes and organelles compartmentalize intracellular metabolic processes and specific enzymatic reactions."
+            },
+            {
+              "id": "2.9.B.1",
+              "summary": "Internal membranes facilitate cellular processes by minimizing competing interactions and by increasing the surface area where reactions can occur."
+            }
+          ]
+        },
+        {
+          "topic_number": "2.1",
+          "topic_title": "Cell Structure and Function",
+          "ced_topic_title": "Origins of Cell Compartmentalization",
+          "topic_overview": "Where did complex eukaryotic cells come from? This topic introduces the widely accepted theory of endosymbiosis. You will learn the evidence supporting the idea that mitochondria and chloroplasts were once free-living prokaryotic cells that were engulfed by a larger ancestral cell. We'll examine the key pieces of evidence for this theory, such as the fact that these organelles have their own DNA, ribosomes, and a double membrane. Understanding endosymbiosis provides a fascinating glimpse into the evolutionary history of life and explains the origin of the compartmentalization that makes eukaryotic life so complex and successful.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 20,
+            "learn_minutes": 4,
+            "review_minutes": 4,
+            "practice_minutes": 12,
+            "target_study_guide_words": 600,
+            "target_flashcards_count": 8,
+            "target_mcq_count": 8
+          },
+          "learning_objectives": [
+            {
+              "id": "2.1.A",
+              "summary": "Explain how the structure and function of subcellular components and organelles contribute to the overall function of cells."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "2.1.A.1",
+              "summary": "Ribosomes, composed of rRNA and protein, synthesize proteins and are found in all forms of life, reflecting common ancestry."
+            },
+            {
+              "id": "2.1.A.2",
+              "summary": "The endomembrane system works together to modify, package, and transport lipids and proteins within the cell."
+            },
+            {
+              "id": "2.1.A.3",
+              "summary": "The endoplasmic reticulum provides mechanical support and transport. Rough ER synthesizes proteins, while smooth ER synthesizes lipids and handles detoxification."
+            },
+            {
+              "id": "2.1.A.4",
+              "summary": "The Golgi complex, a series of flattened membrane sacs, chemically modifies, folds, and packages cellular products for trafficking."
+            },
+            {
+              "id": "2.1.A.5",
+              "summary": "Mitochondria feature a double membrane with convoluted inner folds that provide compartments for metabolic reactions and efficient ATP synthesis."
+            },
+            {
+              "id": "2.1.A.6",
+              "summary": "Lysosomes are sacs containing hydrolytic enzymes that digest materials and play a role in programmed cell death (apoptosis)."
+            },
+            {
+              "id": "2.1.A.7",
+              "summary": "Vacuoles are membrane-bound sacs; in plants, a large central vacuole stores nutrients and maintains turgor pressure."
+            },
+            {
+              "id": "2.1.A.8",
+              "summary": "Chloroplasts, found in plants and algae, have a double membrane and are the site of photosynthesis."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit_number": 3,
+      "unit_title": "Unit 3: Cellular Energetics",
+      "ced_class_periods": "~12-14 Class Periods",
+      "exam_weight": "12-16%",
+      "unit_overview": {
+        "summary": "This unit is all about energy, the currency of life. You'll explore how living systems manage the constant flow of energy required to stay alive, grow, and reproduce. We begin with the role of enzymes as biological catalysts that speed up chemical reactions by lowering activation energy. Then, we dive into the two most important energy-transforming processes in biology: photosynthesis and cellular respiration. You'll learn how cells capture light energy and convert it into the chemical energy of glucose during photosynthesis. Then you'll see how all organisms break down that glucose through cellular respiration to produce ATP, the main energy molecule that powers nearly all cellular work. By the end, you'll understand the intricate molecular pathways that allow energy to flow from the sun to ecosystems.",
+        "ced_class_periods": "~12-14",
+        "exam_weight": "12-16%",
+        "prepgo_estimated_minutes": 204
+      },
+      "topics": [
+        {
+          "topic_number": "3.1",
+          "topic_title": "Enzymes",
+          "ced_topic_title": "Enzymes",
+          "topic_overview": "Let's meet the workhorses of the cell: enzymes! This topic introduces you to enzymes as biological catalysts, which are almost always proteins. You will learn that an enzyme's function is dictated by its specific three-dimensional structure and its active site. The main concept is how enzymes lower the activation energy of reactions, allowing them to proceed much more quickly at biologically relevant temperatures. Understanding this concept is key to appreciating why virtually every process in a cell depends on the action of a specific enzyme.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 35,
+            "learn_minutes": 7,
+            "review_minutes": 7,
+            "practice_minutes": 21,
+            "target_study_guide_words": 1050,
+            "target_flashcards_count": 14,
+            "target_mcq_count": 14
+          },
+          "learning_objectives": [
+            {
+              "id": "3.1.A",
+              "summary": "Explain how enzymes affect the rate of biological reactions."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "3.1.A.1",
+              "summary": "Enzymes, which are proteins, act as biological catalysts that speed up chemical reactions in cells by lowering the activation energy required."
+            },
+            {
+              "id": "3.1.A.2",
+              "summary": "For an enzyme-mediated reaction to occur, the substrate's shape and charge must be compatible with the enzyme's active site, as described by the enzyme-substrate complex model."
+            }
+          ]
+        },
+        {
+          "topic_number": "3.2",
+          "topic_title": "Environmental Impacts on Enzyme Function",
+          "ced_topic_title": "Environmental Impacts on Enzyme Function",
+          "topic_overview": "Enzymes are picky about their work environment. This topic explores how environmental factors can affect an enzyme's structure and, consequently, its function. You will learn how changes in temperature and pH can disrupt the chemical bonds that maintain a protein's 3D shape, a process called denaturation. We'll also investigate how the concentrations of the enzyme and its substrate affect the rate of the reaction. You will learn to interpret graphs that show these relationships and understand the concept of an optimal range for enzyme activity.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 35,
+            "learn_minutes": 7,
+            "review_minutes": 7,
+            "practice_minutes": 21,
+            "target_study_guide_words": 1050,
+            "target_flashcards_count": 14,
+            "target_mcq_count": 14
+          },
+          "learning_objectives": [
+            {
+              "id": "3.2.A",
+              "summary": "Explain how changes to an enzyme's structure may affect its function."
+            },
+            {
+              "id": "3.2.B",
+              "summary": "Explain how the cellular environment affects enzyme activity."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "3.2.A.1",
+              "summary": "Structural changes to an enzyme, such as denaturation due to non-optimal temperature or pH, can disrupt its function and catalytic ability."
+            },
+            {
+              "id": "3.2.A.2",
+              "summary": "In some cases, enzyme denaturation is reversible, allowing the enzyme to regain its activity once optimal conditions are restored."
+            },
+            {
+              "id": "3.2.B.1",
+              "summary": "The efficiency of an enzymatic reaction is determined by the relative concentrations of its substrates and products."
+            },
+            {
+              "id": "3.2.B.2",
+              "summary": "Higher environmental temperatures increase molecular movement, leading to more frequent collisions between enzymes and substrates and a faster reaction rate, up to an optimal temperature."
+            },
+            {
+              "id": "3.2.B.3",
+              "summary": "Competitive inhibitors bind reversibly to the active site, while noncompetitive inhibitors bind to allosteric sites, changing the enzyme's activity."
+            }
+          ]
+        },
+        {
+          "topic_number": "3.3",
+          "topic_title": "Cellular Energy",
+          "ced_topic_title": "Cellular Energy",
+          "topic_overview": "How do living things obey the laws of physics? This topic connects biology to the fundamental principles of energy, specifically the laws of thermodynamics. You will learn how energy flows through biological systems and why cells need a constant input of energy to maintain order and fight against entropy. We'll explore how energy-releasing (exergonic) reactions are coupled with energy-requiring (endergonic) reactions, often using ATP. This topic provides the conceptual framework for understanding the major metabolic pathways you'll study next.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 32,
+            "learn_minutes": 6,
+            "review_minutes": 7,
+            "practice_minutes": 19,
+            "target_study_guide_words": 900,
+            "target_flashcards_count": 14,
+            "target_mcq_count": 13
+          },
+          "learning_objectives": [
+            {
+              "id": "3.3.A",
+              "summary": "Describe the role of energy in living organisms."
+            },
+            {
+              "id": "3.3.B",
+              "summary": "Explain how shared, conserved processes and features support the concept of common ancestry for all organisms."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "3.3.A.1",
+              "summary": "All living systems require a constant input of energy to maintain order and power cellular processes."
+            },
+            {
+              "id": "3.3.A.2",
+              "summary": "Life requires a highly ordered system that adheres to the laws of thermodynamics, where energy input must exceed energy loss to maintain order."
+            },
+            {
+              "id": "3.3.A.3",
+              "summary": "Energy-related pathways in biological systems are sequential to allow for a more controlled and efficient transfer of energy."
+            },
+            {
+              "id": "3.3.B.1",
+              "summary": "Core metabolic pathways, such as glycolysis, are conserved across all recognized domains of life, supporting the concept of common ancestry."
+            }
+          ]
+        },
+        {
+          "topic_number": "3.4",
+          "topic_title": "Photosynthesis",
+          "ced_topic_title": "Photosynthesis",
+          "topic_overview": "This is where we explore how life captures energy from the sun! Photosynthesis is the process that converts light energy into chemical energy stored in the bonds of glucose. You'll learn about the two major stages: the light-dependent reactions and the Calvin cycle. The light-dependent reactions capture solar energy in the thylakoid membranes and use it to generate ATP and NADPH. The Calvin cycle then uses the energy from these molecules to convert carbon dioxide into sugar in the stroma of the chloroplast. This essential pathway forms the foundation of nearly all ecosystems on Earth.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 50,
+            "learn_minutes": 11,
+            "review_minutes": 11,
+            "practice_minutes": 28,
+            "target_study_guide_words": 1650,
+            "target_flashcards_count": 22,
+            "target_mcq_count": 19
+          },
+          "learning_objectives": [
+            {
+              "id": "3.4.A",
+              "summary": "Describe the photosynthetic processes and structural features of the chloroplast that allow organisms to capture and store energy."
+            },
+            {
+              "id": "3.4.B",
+              "summary": "Explain how cells capture energy from light and transfer it to biological molecules for storage and use."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "3.4.A.1",
+              "summary": "Photosynthesis uses light energy, carbon dioxide, and water to produce carbohydrates and oxygen, and it first evolved in prokaryotic organisms."
+            },
+            {
+              "id": "3.4.A.2",
+              "summary": "Within the chloroplast, the light-dependent reactions occur in the thylakoid membranes (organized in grana), while the Calvin cycle occurs in the stroma."
+            },
+            {
+              "id": "3.4.A.3",
+              "summary": "The light-dependent reactions capture light energy to produce ATP and NADPH, which power the production of organic molecules in the Calvin cycle."
+            },
+            {
+              "id": "3.4.B.1",
+              "summary": "Electron transport chains (ETCs) are present in chloroplasts and mitochondria. In photosynthesis, electrons are transferred to NADP+ to form NADPH in photosystem I."
+            },
+            {
+              "id": "3.4.B.2",
+              "summary": "During photosynthesis, chlorophylls absorb light energy, exciting electrons in photosystems I and II. Water is split to replace electrons lost from photosystem II."
+            },
+            {
+              "id": "3.4.B.3",
+              "summary": "Photosystems I and II, embedded in the thylakoid membranes, are connected by the transfer of electrons through an ETC."
+            },
+            {
+              "id": "3.4.B.4",
+              "summary": "As electrons pass through the ETC, an electrochemical proton gradient is established across the thylakoid membrane."
+            },
+            {
+              "id": "3.4.B.5",
+              "summary": "The proton gradient drives the synthesis of ATP from ADP and inorganic phosphate via ATP synthase, a process known as photophosphorylation."
+            },
+            {
+              "id": "3.4.B.6",
+              "summary": "The energy captured in ATP and NADPH from the light reactions powers the production of carbohydrates from CO2 in the Calvin cycle, which occurs in the stroma."
+            }
+          ]
+        },
+        {
+          "topic_number": "3.5",
+          "topic_title": "Cellular Respiration",
+          "ced_topic_title": "Cellular Respiration",
+          "topic_overview": "Now let's see how cells cash in their energy chips. Cellular respiration is the process of breaking down glucose and other fuel molecules to produce ATP. You will follow the journey of a glucose molecule through three main stages: glycolysis, the Krebs cycle (or citric acid cycle), and oxidative phosphorylation (the electron transport chain). We will track how the energy stored in glucose is gradually transferred to ATP, with a focus on the role of electron carriers and chemiosmosis. This process is fundamental to nearly all eukaryotic life.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 52,
+            "learn_minutes": 12,
+            "review_minutes": 12,
+            "practice_minutes": 28,
+            "target_study_guide_words": 1800,
+            "target_flashcards_count": 24,
+            "target_mcq_count": 19
+          },
+          "learning_objectives": [
+            {
+              "id": "3.5.A",
+              "summary": "Describe the processes and mitochondrial structures that allow organisms to use energy from biological macromolecules."
+            },
+            {
+              "id": "3.5.B",
+              "summary": "Explain how cells obtain energy from biological macromolecules to power cellular functions."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "3.5.A.1",
+              "summary": "Cellular respiration and fermentation are processes that synthesize ATP from the energy in biological macromolecules and are characteristic of all life forms."
+            },
+            {
+              "id": "3.5.A.2",
+              "summary": "Aerobic respiration in eukaryotes involves a series of enzyme-catalyzed reactions that capture energy from macromolecules."
+            },
+            {
+              "id": "3.5.A.3",
+              "summary": "The ETC transfers electrons from NADH and FADH2 to a terminal electron acceptor (oxygen in aerobic respiration), establishing a proton gradient across the inner mitochondrial membrane that drives ATP synthesis (oxidative phosphorylation)."
+            },
+            {
+              "id": "3.5.B.1",
+              "summary": "Glycolysis is a biochemical pathway that releases energy from glucose to form ATP, NADH, and pyruvate."
+            },
+            {
+              "id": "3.5.B.2",
+              "summary": "Pyruvate is transported to the mitochondrion, where its oxidation in the Krebs cycle releases electrons to form NADH and FADH2, and releases CO2."
+            },
+            {
+              "id": "3.5.B.3",
+              "summary": "The Krebs cycle in the mitochondrial matrix releases CO2, synthesizes ATP, and transfers electrons to NAD+ and FAD."
+            },
+            {
+              "id": "3.5.B.4",
+              "summary": "Electrons from glycolysis and the Krebs cycle are transferred by NADH and FADH2 to the ETC in the inner mitochondrial membrane."
+            },
+            {
+              "id": "3.5.B.5",
+              "summary": "The transfer of electrons through the ETC establishes a proton gradient across the inner mitochondrial membrane."
+            },
+            {
+              "id": "3.5.B.6",
+              "summary": "Fermentation allows glycolysis to continue in the absence of oxygen, producing organic molecules like alcohol or lactic acid."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit_number": 4,
+      "unit_title": "Unit 4: Cell Communication and Cell Cycle",
+      "ced_class_periods": "~12-14 Class Periods",
+      "exam_weight": "10-15%",
+      "unit_overview": {
+        "summary": "This unit explores two of the most fundamental processes for life: how cells talk to each other and how they reproduce. You'll begin by diving into the world of cell communication, learning how cells use chemical signals to coordinate activities. We'll cover the three stages of a signal transduction pathway—reception, transduction, and response. You'll also learn how feedback mechanisms regulate these pathways to maintain homeostasis. Then, the focus shifts to the cell cycle, the highly regulated process of cell division. You'll follow a cell through interphase and the distinct stages of mitosis, which ensures that each new daughter cell receives a complete and identical set of chromosomes. By the end, you will understand how controlled communication and division lead to the development of complex organisms.",
+        "ced_class_periods": "~12-14",
+        "exam_weight": "10-15%",
+        "prepgo_estimated_minutes": 234
+      },
+      "topics": [
+        {
+          "topic_number": "4.1",
+          "topic_title": "Cell Communication",
+          "ced_topic_title": "Cell Communication",
+          "topic_overview": "Cells don't live in isolation; they are constantly communicating! This topic introduces the basics of how cells send, receive, and respond to signals from their environment and from other cells. You'll learn about different types of signaling, such as direct contact, local signaling (like neurotransmitters), and long-distance signaling (like hormones). The key idea is that communication is essential for coordinating the activities of cells within a multicellular organism, allowing them to function as a cohesive whole. This foundational knowledge will set you up to understand the detailed mechanisms of signal pathways.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 28,
+            "learn_minutes": 5,
+            "review_minutes": 6,
+            "practice_minutes": 17,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 12,
+            "target_mcq_count": 11
+          },
+          "learning_objectives": [
+            {
+              "id": "4.1.A",
+              "summary": "Describe the ways that cells can communicate with one another."
+            },
+            {
+              "id": "4.1.B",
+              "summary": "Explain how cells communicate with one another over short and long distances."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "4.1.A.1",
+              "summary": "Cells communicate through direct contact or via chemical signaling from a distance."
+            },
+            {
+              "id": "4.1.B.1",
+              "summary": "Cells communicate over short distances using local regulators that target cells in the immediate vicinity."
+            },
+            {
+              "id": "4.1.B.2",
+              "summary": "Signals released by one cell type can travel long distances to target cells of another type, such as through hormones."
+            }
+          ]
+        },
+        {
+          "topic_number": "4.2",
+          "topic_title": "Introduction to Signal Transduction",
+          "ced_topic_title": "Introduction to Signal Transduction",
+          "topic_overview": "How does a signal from outside a cell cause a change inside? The answer lies in signal transduction pathways. This topic breaks down this process into three main stages: reception, transduction, and response. You will learn how a signaling molecule (ligand) binds to a specific receptor protein. This binding event triggers a chain reaction of molecular interactions inside the cell—the transduction pathway—which ultimately leads to a specific cellular response. We will focus on the general model of this process, providing a framework for understanding the diverse communication systems within cells.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 35,
+            "learn_minutes": 7,
+            "review_minutes": 7,
+            "practice_minutes": 21,
+            "target_study_guide_words": 1050,
+            "target_flashcards_count": 14,
+            "target_mcq_count": 14
+          },
+          "learning_objectives": [
+            {
+              "id": "4.2.A",
+              "summary": "Describe the components of a signal transduction pathway."
+            },
+            {
+              "id": "4.2.B",
+              "summary": "Describe the role of components of a signal transduction pathway in producing a cellular response."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "4.2.A.1",
+              "summary": "Signal transduction pathways connect signal reception with specific cellular responses."
+            },
+            {
+              "id": "4.2.A.2",
+              "summary": "Many signal transduction pathways involve protein modifications, often through phosphorylation cascades."
+            },
+            {
+              "id": "4.2.B.1",
+              "summary": "Signaling begins when a ligand binds to a receptor protein, which can be located on the cell surface or within the cytoplasm or nucleus."
+            },
+            {
+              "id": "4.2.B.2",
+              "summary": "Signaling cascades relay and often amplify signals from receptors to cellular targets, resulting in responses like cell growth, secretion, or gene expression."
+            }
+          ]
+        },
+        {
+          "topic_number": "4.3",
+          "topic_title": "Signal Transduction Pathways",
+          "ced_topic_title": "Signal Transduction Pathways",
+          "topic_overview": "Let's zoom in on the 'transduction' part of the pathway. This topic explores the molecular cascade that amplifies and relays a signal from the receptor to the final cellular target. You'll learn about the critical roles of protein kinases, which activate other proteins by adding phosphate groups (phosphorylation), and second messengers. These molecules act like a series of dominoes, with each step in the pathway activating the next, often amplifying the signal at each step. This allows a small number of initial signal molecules to generate a large and specific cellular response.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 40,
+            "learn_minutes": 8,
+            "review_minutes": 8,
+            "practice_minutes": 24,
+            "target_study_guide_words": 1200,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 16
+          },
+          "learning_objectives": [
+            {
+              "id": "4.3.A",
+              "summary": "Describe the different types of cellular responses elicited by a signal transduction pathway."
+            },
+            {
+              "id": "4.3.B",
+              "summary": "Explain how a change in the structure of any signaling molecule affects the activity of the signaling pathway."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "4.3.A.1",
+              "summary": "Signal transduction can result in changes in gene expression, altered cell function, or programmed cell death (apoptosis)."
+            },
+            {
+              "id": "4.3.B.1",
+              "summary": "Changes or mutations in signal transduction pathways can alter cellular responses by affecting downstream components."
+            },
+            {
+              "id": "4.3.B.2",
+              "summary": "Chemicals that interfere with any component of a signaling pathway can either activate or inhibit it."
+            }
+          ]
+        },
+        {
+          "topic_number": "4.4",
+          "topic_title": "Feedback",
+          "ced_topic_title": "Feedback",
+          "topic_overview": "How do biological systems maintain stability? The answer is feedback. This topic introduces the concepts of negative and positive feedback mechanisms, which are crucial for regulating most biological processes. You'll learn that negative feedback is the most common, acting to stabilize a system by counteracting a change (like a thermostat). Positive feedback, on the other hand, amplifies a response (like in childbirth). Understanding how these control loops work is essential for appreciating how organisms maintain a stable internal environment, or homeostasis.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 33,
+            "learn_minutes": 6,
+            "review_minutes": 8,
+            "practice_minutes": 19,
+            "target_study_guide_words": 900,
+            "target_flashcards_count": 15,
+            "target_mcq_count": 13
+          },
+          "learning_objectives": [
+            {
+              "id": "4.4.A",
+              "summary": "Explain how positive and negative feedback mechanisms help maintain homeostasis."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "4.4.A.1",
+              "summary": "Organisms use feedback mechanisms to maintain internal environments. Negative feedback reduces the initial stimulus to maintain a target set point, while positive feedback amplifies responses, moving the system further from the initial set point."
+            }
+          ]
+        },
+        {
+          "topic_number": "4.5",
+          "topic_title": "Cell Cycle",
+          "ced_topic_title": "Cell Cycle",
+          "topic_overview": "It's time to learn how cells make more cells! This topic covers the life of a cell, known as the cell cycle. You'll learn about the two main phases: Interphase, where the cell grows and duplicates its DNA, and the M phase (mitosis), where the cell divides. We will break down Interphase into its three sub-phases (G1, S, and G2) and then walk through the four distinct stages of mitosis: prophase, metaphase, anaphase, and telophase. Following the chromosomes through this process is key to understanding how genetic information is passed on accurately.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 58,
+            "learn_minutes": 12,
+            "review_minutes": 12,
+            "practice_minutes": 34,
+            "target_study_guide_words": 1800,
+            "target_flashcards_count": 24,
+            "target_mcq_count": 23
+          },
+          "learning_objectives": [
+            {
+              "id": "4.5.A",
+              "summary": "Describe the events that occur in the cell cycle."
+            },
+            {
+              "id": "4.5.B",
+              "summary": "Explain how mitosis results in the transmission of chromosomes from one generation of cells to the next."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "4.5.A.1",
+              "summary": "The eukaryotic cell cycle is a regulated series of events including interphase (G1, S, G2), mitosis, and cytokinesis. A cell can also enter a non-dividing G0 stage."
+            },
+            {
+              "id": "4.5.B.1",
+              "summary": "Mitosis ensures the transfer of a complete genome to two genetically identical daughter cells through sequential steps: prophase, metaphase, anaphase, and telophase, followed by cytokinesis."
+            }
+          ]
+        },
+        {
+          "topic_number": "4.6",
+          "topic_title": "Regulation of Cell Cycle",
+          "ced_topic_title": "Regulation of Cell Cycle",
+          "topic_overview": "Cell division isn't a free-for-all; it's a highly regulated process. This topic explores the internal and external checkpoints that control the cell cycle's progression. You'll learn about the roles of key regulatory proteins, such as cyclins and cyclin-dependent kinases (CDKs), which act as molecular signals to tell the cell when to proceed to the next phase. We will discuss what happens when this regulation fails, leading to uncontrolled cell division—the hallmark of cancer. Understanding these control mechanisms highlights the incredible precision required for normal growth and development.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 40,
+            "learn_minutes": 8,
+            "review_minutes": 8,
+            "practice_minutes": 24,
+            "target_study_guide_words": 1200,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 16
+          },
+          "learning_objectives": [
+            {
+              "id": "4.6.A",
+              "summary": "Describe the role of checkpoints in regulating the cell cycle."
+            },
+            {
+              "id": "4.6.B",
+              "summary": "Describe the effects of disruptions to the cell cycle on the cell or organism."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "4.6.A.1",
+              "summary": "Internal controls known as checkpoints regulate the progression through the cell cycle."
+            },
+            {
+              "id": "4.6.A.2",
+              "summary": "Interactions between cyclins and cyclin-dependent kinases (CdKs) control the cell cycle."
+            },
+            {
+              "id": "4.6.B.1",
+              "summary": "Disruptions to the cell cycle can lead to conditions like cancer or programmed cell death (apoptosis)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit_number": 5,
+      "unit_title": "Unit 5: Heredity",
+      "ced_class_periods": "~8-10 Class Periods",
+      "exam_weight": "8-11%",
+      "unit_overview": {
+        "summary": "This unit unlocks the secrets of heredity and how traits are passed from one generation to the next. You'll start by exploring meiosis, the special type of cell division that creates gametes (sperm and egg cells) with half the number of chromosomes. Understanding how processes like crossing over and independent assortment during meiosis create genetic variation is a central theme. Then, you'll dive into the world of Mendelian genetics, using Punnett squares to predict the inheritance patterns of traits. We'll also explore more complex inheritance patterns that go beyond Mendel's basic rules, and consider how the environment can influence the expression of genes. This unit provides the foundation for understanding the basis of genetic diversity.",
+        "ced_class_periods": "~8-10",
+        "exam_weight": "8-11%",
+        "prepgo_estimated_minutes": 211
+      },
+      "topics": [
+        {
+          "topic_number": "5.1",
+          "topic_title": "Meiosis",
+          "ced_topic_title": "Meiosis",
+          "topic_overview": "Get ready for a special kind of cell division! Meiosis is the process that produces gametes (sperm and eggs) for sexual reproduction. You'll learn how meiosis involves two rounds of division (Meiosis I and Meiosis II) to reduce the chromosome number by half, creating haploid cells from a diploid cell. A key focus will be on the events of Meiosis I, such as the pairing of homologous chromosomes and crossing over, which are distinct from mitosis. Understanding the mechanics of meiosis is crucial because it explains how genetic information is shuffled and passed on to the next generation.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 48,
+            "learn_minutes": 10,
+            "review_minutes": 10,
+            "practice_minutes": 28,
+            "target_study_guide_words": 1500,
+            "target_flashcards_count": 20,
+            "target_mcq_count": 19
+          },
+          "learning_objectives": [
+            {
+              "id": "5.1.A",
+              "summary": "Explain how meiosis results in the transmission of chromosomes from one generation to the next."
+            },
+            {
+              "id": "5.1.B",
+              "summary": "Describe similarities and differences between the phases and outcomes of mitosis and meiosis."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "5.1.A.1",
+              "summary": "Meiosis is a process that produces haploid gamete cells in sexually reproducing diploid organisms."
+            },
+            {
+              "id": "5.1.A.2",
+              "summary": "Meiosis I involves the separation of homologous chromosomes, resulting in two haploid daughter cells."
+            },
+            {
+              "id": "5.1.A.3",
+              "summary": "Meiosis II involves the separation of sister chromatids, resulting in four haploid daughter cells, each with an unduplicated chromatid."
+            },
+            {
+              "id": "5.1.B.1",
+              "summary": "Mitosis and meiosis both use a spindle apparatus but differ in the number of cells produced and the genetic content of the daughter cells."
+            }
+          ]
+        },
+        {
+          "topic_number": "5.2",
+          "topic_title": "Meiosis and Genetic Diversity",
+          "ced_topic_title": "Meiosis and Genetic Diversity",
+          "topic_overview": "Why don't siblings (except identical twins) look exactly alike? This topic explores the mechanisms within meiosis that generate incredible genetic diversity. You'll learn about two key processes: crossing over, where homologous chromosomes exchange genetic material, and independent assortment, which describes how chromosomes line up randomly during metaphase I. Together with random fertilization, these processes ensure that each gamete is genetically unique, providing the raw material for natural selection and evolution. Grasping these concepts is fundamental to understanding the benefits of sexual reproduction.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 38,
+            "learn_minutes": 8,
+            "review_minutes": 8,
+            "practice_minutes": 22,
+            "target_study_guide_words": 1200,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 15
+          },
+          "learning_objectives": [
+            {
+              "id": "5.2.A",
+              "summary": "Explain how the process of meiosis generates genetic diversity."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "5.2.A.1",
+              "summary": "Correct separation of chromosomes in meiosis I and II ensures each gamete receives a haploid set of chromosomes. Incorrect separation (nondisjunction) results in aneuploid gametes."
+            },
+            {
+              "id": "5.2.A.2",
+              "summary": "During prophase I of meiosis, crossing over between non-sister chromatids exchanges genetic material, increasing genetic diversity among gametes."
+            },
+            {
+              "id": "5.2.A.3",
+              "summary": "Sexual reproduction in eukaryotes increases genetic variation through processes like crossing over, random assortment of chromosomes, and the subsequent fertilization of gametes."
+            }
+          ]
+        },
+        {
+          "topic_number": "5.3",
+          "topic_title": "Mendelian Genetics",
+          "ced_topic_title": "Mendelian Genetics",
+          "topic_overview": "Welcome to the foundational principles of heredity, first discovered by Gregor Mendel. In this topic, you'll learn Mendel's laws of segregation and independent assortment. You'll be introduced to key vocabulary like allele, genotype, phenotype, homozygous, and heterozygous. The main skill you'll develop is using Punnett squares to predict the outcomes of monohybrid and dihybrid crosses. These principles provide the basic rules for how traits are inherited and form the cornerstone of classical genetics. Mastering Punnett squares is essential for solving genetics problems.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 55,
+            "learn_minutes": 11,
+            "review_minutes": 12,
+            "practice_minutes": 32,
+            "target_study_guide_words": 1650,
+            "target_flashcards_count": 24,
+            "target_mcq_count": 21
+          },
+          "learning_objectives": [
+            {
+              "id": "5.3.A",
+              "summary": "Explain the inheritance of genes and traits as described by Mendel’s laws."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "5.3.A.1",
+              "summary": "Mendel’s laws of segregation and independent assortment apply to genes located on different chromosomes."
+            },
+            {
+              "id": "5.3.A.2",
+              "summary": "Fertilization involves the fusion of haploid gametes to restore the diploid chromosome number and create new combinations of alleles, increasing genetic variation. Rules of probability can be used to analyze inheritance patterns."
+            }
+          ]
+        },
+        {
+          "topic_number": "5.4",
+          "topic_title": "Non-Mendelian Genetics",
+          "ced_topic_title": "Non-Mendelian Genetics",
+          "topic_overview": "While Mendel's rules are powerful, they don't explain everything. This topic explores inheritance patterns that are more complex than simple dominance. You will learn about incomplete dominance, codominance, multiple alleles (like human blood types), and sex-linked traits, which are located on the X or Y chromosomes. We'll also touch upon polygenic inheritance and gene linkage. These non-Mendelian patterns show that the relationship between genotype and phenotype can be intricate, providing a more complete and realistic picture of heredity.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 50,
+            "learn_minutes": 10,
+            "review_minutes": 10,
+            "practice_minutes": 30,
+            "target_study_guide_words": 1500,
+            "target_flashcards_count": 20,
+            "target_mcq_count": 20
+          },
+          "learning_objectives": [
+            {
+              "id": "5.4.A",
+              "summary": "Explain deviations from Mendel’s model of the inheritance of traits."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "5.4.A.1",
+              "summary": "Many traits do not follow Mendelian ratios due to factors like gene linkage, codominance, and incomplete dominance."
+            },
+            {
+              "id": "5.4.A.2",
+              "summary": "Sex-linked traits are determined by genes on sex chromosomes and show distinct patterns of inheritance."
+            },
+            {
+              "id": "5.4.A.3",
+              "summary": "Pleiotropy occurs when a single gene affects multiple traits, causing them not to segregate independently."
+            },
+            {
+              "id": "5.4.A.4",
+              "summary": "Some traits result from non-nuclear inheritance, where genes in mitochondria and chloroplasts are passed to offspring, typically through maternal inheritance."
+            }
+          ]
+        },
+        {
+          "topic_number": "5.5",
+          "topic_title": "Environmental Effects on Phenotype",
+          "ced_topic_title": "Environmental Effects on Phenotype",
+          "topic_overview": "Is it nature or nurture? The answer is often both! This topic explores how the environment can influence an organism's phenotype, or its observable traits. You will learn the concept of phenotypic plasticity, where the same genotype can result in different phenotypes depending on environmental factors like temperature, sunlight, or pH. Examples like the coat color of Himalayan rabbits or the effect of soil acidity on flower color illustrate this principle. This is a crucial concept because it shows that an organism's traits are not solely determined by its genes, but by a complex interaction between its genetics and its environment.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 20,
+            "learn_minutes": 4,
+            "review_minutes": 4,
+            "practice_minutes": 12,
+            "target_study_guide_words": 600,
+            "target_flashcards_count": 8,
+            "target_mcq_count": 8
+          },
+          "learning_objectives": [
+            {
+              "id": "5.5.A",
+              "summary": "Explain how the same genotype can result in multiple phenotypes under different environmental conditions."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "5.5.A.1",
+              "summary": "Environmental factors can influence gene expression, leading to phenotypic plasticity, where one genotype can produce different phenotypes."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit_number": 6,
+      "unit_title": "Unit 6: Gene Expression and Regulation",
+      "ced_class_periods": "~18-20 Class Periods",
+      "exam_weight": "12-16%",
+      "unit_overview": {
+        "summary": "This unit dives into the heart of molecular biology: how the genetic information stored in DNA is brought to life. You'll explore the central dogma, which outlines the flow of information from DNA to RNA to protein through the processes of transcription and translation. We'll detail how DNA replication ensures the faithful copying of the genetic code. A major focus is on gene regulation—the many ways that cells control which genes are turned on or off. You'll learn about operons in prokaryotes and more complex controls in eukaryotes. Finally, we'll examine how mutations in DNA can alter proteins and explore the powerful tools of biotechnology that allow humans to manipulate genetic material.",
+        "ced_class_periods": "~18-20",
+        "exam_weight": "12-16%",
+        "prepgo_estimated_minutes": 294
+      },
+      "topics": [
+        {
+          "topic_number": "6.1",
+          "topic_title": "DNA and RNA Structure",
+          "ced_topic_title": "DNA and RNA Structure",
+          "topic_overview": "Let's revisit the molecules of heredity with a focus on how their structure relates to their function in gene expression. This topic solidifies your understanding of the components of DNA and RNA, comparing their sugars, nitrogenous bases, and overall structure (double vs. single stranded). The main goal is to appreciate how the double helix structure of DNA provides stability for storing genetic information, while the versatile, single-stranded nature of RNA allows it to function in various roles, such as a messenger (mRNA) and a component of ribosomes (rRNA).",
+          "prepgo_plan": {
+            "total_estimated_minutes": 27,
+            "learn_minutes": 5,
+            "review_minutes": 5,
+            "practice_minutes": 17,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 10,
+            "target_mcq_count": 11
+          },
+          "learning_objectives": [
+            {
+              "id": "6.1.A",
+              "summary": "Describe the structures involved in passing hereditary information from one generation to the next."
+            },
+            {
+              "id": "6.1.B",
+              "summary": "Describe the characteristics of DNA that allow it to be used as hereditary material."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "6.1.A.1",
+              "summary": "Genetic information is stored in and passed on through DNA molecules (and in some cases, RNA). Prokaryotes typically have circular chromosomes, while eukaryotes have multiple linear chromosomes."
+            },
+            {
+              "id": "6.1.A.2",
+              "summary": "Both prokaryotes and eukaryotes can contain plasmids, which are small, extrachromosomal, circular DNA molecules."
+            },
+            {
+              "id": "6.1.B.1",
+              "summary": "Nucleic acids exhibit conserved base-pairing rules: purines (double-ringed A, G) pair with pyrimidines (single-ringed C, T, U)."
+            }
+          ]
+        },
+        {
+          "topic_number": "6.2",
+          "topic_title": "DNA Replication",
+          "ced_topic_title": "DNA Replication",
+          "topic_overview": "How does a cell make a perfect copy of its DNA before dividing? This topic covers the process of DNA replication. You will learn about the semi-conservative model, where each new DNA molecule consists of one old strand and one new strand. We'll introduce the key enzymes involved, such as helicase and DNA polymerase, and explain the difference between the leading and lagging strands. Understanding this precise and complex process is fundamental to how life perpetuates itself.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 40,
+            "learn_minutes": 8,
+            "review_minutes": 8,
+            "practice_minutes": 24,
+            "target_study_guide_words": 1200,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 16
+          },
+          "learning_objectives": [
+            {
+              "id": "6.2.A",
+              "summary": "Describe the mechanisms by which genetic information is copied for transmission between generations."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "6.2.A.1",
+              "summary": "DNA replication ensures the continuity of genetic information. It is a semiconservative process where DNA is synthesized in the 5' to 3' direction, involving enzymes like helicase, topoisomerase, DNA polymerase, and ligase."
+            }
+          ]
+        },
+        {
+          "topic_number": "6.3",
+          "topic_title": "Transcription and RNA Processing",
+          "ced_topic_title": "Transcription and RNA Processing",
+          "topic_overview": "The first step in expressing a gene is transcription: copying the DNA message into a molecule of messenger RNA (mRNA). You'll learn how RNA polymerase builds a complementary RNA strand. In eukaryotic cells, this initial transcript isn't ready yet. We'll cover RNA processing, which includes adding a protective cap and tail, and splicing, where non-coding sections (introns) are removed and coding sections (exons) are joined together. This processing step is crucial for producing a mature mRNA molecule that can be translated.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 43,
+            "learn_minutes": 9,
+            "review_minutes": 9,
+            "practice_minutes": 25,
+            "target_study_guide_words": 1350,
+            "target_flashcards_count": 18,
+            "target_mcq_count": 17
+          },
+          "learning_objectives": [
+            {
+              "id": "6.3.A",
+              "summary": "Describe the mechanisms by which genetic information flows from DNA to RNA to protein."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "6.3.A.1",
+              "summary": "The sequence and structure of an RNA molecule determine its function. This includes mRNA (carries genetic info), tRNA (transfers amino acids), and rRNA (forms ribosomes)."
+            },
+            {
+              "id": "6.3.A.2",
+              "summary": "In transcription, RNA polymerases use a DNA template strand to synthesize a complementary RNA molecule."
+            },
+            {
+              "id": "6.3.A.3",
+              "summary": "RNA polymerase synthesizes mRNA in the 5' to 3' direction by reading the DNA template strand from 3' to 5'."
+            },
+            {
+              "id": "6.3.A.4",
+              "summary": "In eukaryotes, mRNA transcripts undergo modifications including the addition of a poly-A tail and a GTP cap, and the splicing of introns to generate a mature mRNA molecule."
+            }
+          ]
+        },
+        {
+          "topic_number": "6.4",
+          "topic_title": "Translation",
+          "ced_topic_title": "Translation",
+          "topic_overview": "Now it's time to build a protein! Translation is the process where the genetic code carried by mRNA is read by a ribosome to synthesize a polypeptide chain. You will learn how the ribosome moves along the mRNA, reading it in three-letter 'words' called codons. We'll explore the role of transfer RNA (tRNA), which acts as the interpreter, matching each codon with the correct amino acid. You'll follow the three stages of translation—initiation, elongation, and termination—to see how a protein is built from start to finish.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 48,
+            "learn_minutes": 10,
+            "review_minutes": 10,
+            "practice_minutes": 28,
+            "target_study_guide_words": 1500,
+            "target_flashcards_count": 20,
+            "target_mcq_count": 19
+          },
+          "learning_objectives": [
+            {
+              "id": "6.4.A",
+              "summary": "Explain how the phenotype of an organism is determined by its genotype."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "6.4.A.1",
+              "summary": "Translation, the synthesis of a polypeptide from mRNA, occurs on ribosomes in the cytoplasm and on the rough ER."
+            },
+            {
+              "id": "6.4.A.2",
+              "summary": "In prokaryotes, translation of an mRNA molecule can occur simultaneously with its transcription."
+            },
+            {
+              "id": "6.4.A.3",
+              "summary": "Translation involves initiation, elongation, and termination. The mRNA is read in codons, and tRNA molecules bring the corresponding amino acids to the ribosome to build the polypeptide chain."
+            },
+            {
+              "id": "6.4.A.4",
+              "summary": "Retroviruses have an alternative flow of information from RNA to DNA, using the enzyme reverse transcriptase."
+            }
+          ]
+        },
+        {
+          "topic_number": "6.5",
+          "topic_title": "Regulation of Gene Expression",
+          "ced_topic_title": "Regulation of Gene Expression",
+          "topic_overview": "Not all genes are turned on all the time. This topic introduces the critical concept of gene regulation. You'll learn how cells precisely control which genes are expressed and when, allowing them to specialize and respond to their environment. We will focus on the operon model in prokaryotes, such as the famous lac operon, as a classic example of how cells can turn genes on and off in response to metabolic needs. The key takeaway is that gene regulation is essential for cellular function and differentiation.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 38,
+            "learn_minutes": 8,
+            "review_minutes": 8,
+            "practice_minutes": 22,
+            "target_study_guide_words": 1200,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 15
+          },
+          "learning_objectives": [
+            {
+              "id": "6.5.A",
+              "summary": "Describe the types of interactions that regulate gene expression."
+            },
+            {
+              "id": "6.5.B",
+              "summary": "Explain how the location of regulatory sequences relates to their function."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "6.5.A.1",
+              "summary": "Regulatory sequences are stretches of DNA that interact with regulatory proteins to control transcription."
+            },
+            {
+              "id": "6.5.A.2",
+              "summary": "Epigenetic changes, such as reversible modifications of DNA or histones, can affect gene expression."
+            },
+            {
+              "id": "6.5.A.3",
+              "summary": "The phenotype of a cell is determined by the combination and expression levels of its genes, leading to cell differentiation."
+            },
+            {
+              "id": "6.5.B.1",
+              "summary": "Both prokaryotes and eukaryotes have groups of genes that are coordinately regulated, such as through operons in prokaryotes or shared transcription factors in eukaryotes."
+            }
+          ]
+        },
+        {
+          "topic_number": "6.6",
+          "topic_title": "Gene Expression and Cell Specialization",
+          "ced_topic_title": "Gene Expression and Cell Specialization",
+          "topic_overview": "How does a single fertilized egg develop into a complex organism with many different cell types? The answer is differential gene expression. Although all cells in an organism have the same DNA, different cell types express different sets of genes. This topic explores the mechanisms of gene regulation in eukaryotes, which are more complex than in prokaryotes. You'll learn about transcription factors and how the structure of chromatin can control access to genes. This is the molecular basis for cell specialization and the development of an organism.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 32,
+            "learn_minutes": 6,
+            "review_minutes": 7,
+            "practice_minutes": 19,
+            "target_study_guide_words": 900,
+            "target_flashcards_count": 14,
+            "target_mcq_count": 13
+          },
+          "learning_objectives": [
+            {
+              "id": "6.6.A",
+              "summary": "Explain how the binding of transcription factors to promoter regions affects gene expression and the organism's phenotype."
+            },
+            {
+              "id": "6.6.B",
+              "summary": "Explain the connection between the regulation of gene expression and phenotypic differences in cells and organisms."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "6.6.A.1",
+              "summary": "Transcription factors and RNA polymerase bind to promoter or enhancer DNA sequences to initiate transcription."
+            },
+            {
+              "id": "6.6.A.2",
+              "summary": "Negative regulatory molecules can inhibit gene expression by binding to DNA and blocking transcription."
+            },
+            {
+              "id": "6.6.B.1",
+              "summary": "Gene regulation leads to differential gene expression, which in turn influences cell products and functions."
+            },
+            {
+              "id": "6.6.B.2",
+              "summary": "Certain small RNA molecules play roles in regulating gene expression."
+            }
+          ]
+        },
+        {
+          "topic_number": "6.7",
+          "topic_title": "Mutations",
+          "ced_topic_title": "Mutations",
+          "topic_overview": "Mistakes can happen. This topic covers mutations, which are changes in the DNA sequence. You'll learn about different types of mutations, from small-scale point mutations (like substitutions, insertions, and deletions) to large-scale chromosomal changes. We will analyze how these changes can affect the resulting protein and the phenotype of the organism. Some mutations can be harmful, some neutral, and some can even be beneficial, providing the genetic variation that is the raw material for evolution.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 27,
+            "learn_minutes": 5,
+            "review_minutes": 5,
+            "practice_minutes": 17,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 10,
+            "target_mcq_count": 11
+          },
+          "learning_objectives": [
+            {
+              "id": "6.7.A",
+              "summary": "Describe the various types of mutation."
+            },
+            {
+              "id": "6.7.B",
+              "summary": "Explain how changes in genotype may result in changes in phenotype."
+            },
+            {
+              "id": "6.7.C",
+              "summary": "Explain how alterations in DNA sequences contribute to variation that can be subject to natural selection."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "6.7.A.1",
+              "summary": "Mutations are alterations in a DNA sequence that can change the protein produced and the resulting phenotype. They can be beneficial, neutral, or detrimental."
+            },
+            {
+              "id": "6.7.B.1",
+              "summary": "Random mutations can be caused by errors in DNA replication or repair, or by external factors. They are a primary source of genetic variation."
+            },
+            {
+              "id": "6.7.B.2",
+              "summary": "Errors in mitosis or meiosis, such as nondisjunction, can result in changes in chromosome number and phenotype."
+            },
+            {
+              "id": "6.7.C.1",
+              "summary": "Changes in genotype can affect phenotypes, which are then subject to natural selection. Genetic changes that enhance survival can be selected for by environmental pressures."
+            }
+          ]
+        },
+        {
+          "topic_number": "6.8",
+          "topic_title": "Biotechnology",
+          "ced_topic_title": "Biotechnology",
+          "topic_overview": "This topic explores the exciting world of biotechnology. You will learn about key tools and techniques like polymerase chain reaction (PCR) for amplifying DNA, gel electrophoresis for separating DNA fragments, and bacterial transformation for introducing new genes into cells. We will discuss the applications of these technologies in medicine, agriculture, and research. Understanding these fundamental techniques will help you appreciate many modern scientific advancements and their ethical considerations.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 39,
+            "learn_minutes": 8,
+            "review_minutes": 8,
+            "practice_minutes": 23,
+            "target_study_guide_words": 1200,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 15
+          },
+          "learning_objectives": [
+            {
+              "id": "6.8.A",
+              "summary": "Explain the use of genetic engineering techniques in analyzing or manipulating DNA."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "6.8.A.1",
+              "summary": "Genetic engineering techniques such as gel electrophoresis, polymerase chain reaction (PCR), bacterial transformation, and DNA sequencing are used to analyze and manipulate DNA and RNA."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit_number": 7,
+      "unit_title": "Unit 7: Natural Selection",
+      "ced_class_periods": "~19-21 Class Periods",
+      "exam_weight": "13-20%",
+      "unit_overview": {
+        "summary": "This unit is dedicated to the central organizing principle of all biology: evolution by natural selection. You'll begin by exploring Darwin's groundbreaking theory and its core components. We will examine the vast body of evidence for evolution, drawn from fossils, anatomy, and molecular biology. You'll learn how to construct and interpret phylogenetic trees to visualize evolutionary relationships. A major focus will be on the mechanisms that drive evolutionary change in populations, including the Hardy-Weinberg model for non-evolving populations. Finally, you'll explore speciation, the process by which new species arise, and the origins of life on Earth. This unit provides the framework for understanding the incredible diversity and unity of life.",
+        "ced_class_periods": "~19-21",
+        "exam_weight": "13-20%",
+        "prepgo_estimated_minutes": 319
+      },
+      "topics": [
+        {
+          "topic_number": "7.1",
+          "topic_title": "Introduction to Natural Selection",
+          "ced_topic_title": "Introduction to Natural Selection",
+          "topic_overview": "Let's dive into the core mechanism of evolution. This topic introduces the concept of natural selection, first proposed by Charles Darwin. You will learn that natural selection is a process in which individuals with certain inherited traits are more likely to survive and reproduce than individuals without those traits. The key idea is that the environment 'selects' for advantageous traits, leading to adaptations over time. This is not a random process; it acts on existing variation within a population to shape its future genetic makeup.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 25,
+            "learn_minutes": 5,
+            "review_minutes": 5,
+            "practice_minutes": 15,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 10,
+            "target_mcq_count": 10
+          },
+          "learning_objectives": [
+            {
+              "id": "7.1.A",
+              "summary": "Describe the causes of natural selection."
+            },
+            {
+              "id": "7.1.B",
+              "summary": "Explain how natural selection affects populations."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.1.A.1",
+              "summary": "Natural selection is a major mechanism of evolution."
+            },
+            {
+              "id": "7.1.A.2",
+              "summary": "According to Darwin's theory, competition for resources leads to differential survival, where individuals with favorable phenotypes are more likely to survive and reproduce."
+            },
+            {
+              "id": "7.1.B.1",
+              "summary": "Evolutionary fitness is measured by an organism's reproductive success."
+            },
+            {
+              "id": "7.1.B.2",
+              "summary": "Fluctuations in biotic and abiotic environments can affect the rate and direction of evolution, selecting for different genetic variations in each generation."
+            }
+          ]
+        },
+        {
+          "topic_number": "7.2",
+          "topic_title": "Natural Selection",
+          "ced_topic_title": "Natural Selection",
+          "topic_overview": "Building on the introduction, this topic delves deeper into the mechanism of natural selection. You will explore Darwin's key observations: competition for limited resources, heritable variation among individuals, and the overproduction of offspring. The central idea is that these factors lead to differential survival and reproduction, which is the essence of natural selection. Favorable traits accumulate in a population over generations, resulting in adaptation to the environment. We'll look at classic examples to illustrate how this process works in the real world.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 28,
+            "learn_minutes": 5,
+            "review_minutes": 6,
+            "practice_minutes": 17,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 12,
+            "target_mcq_count": 11
+          },
+          "learning_objectives": [
+            {
+              "id": "7.2.A",
+              "summary": "Describe the importance of phenotypic variation in a population."
+            },
+            {
+              "id": "7.2.B",
+              "summary": "Explain how variation in molecules within cells connects to the fitness of an organism."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.2.A.1",
+              "summary": "Natural selection acts on the phenotypic variations present in populations."
+            },
+            {
+              "id": "7.2.A.2",
+              "summary": "Changing environments apply selective pressures to populations."
+            },
+            {
+              "id": "7.2.A.3",
+              "summary": "Some phenotypic variations can increase or decrease an organism's fitness in specific environments."
+            },
+            {
+              "id": "7.2.B.1",
+              "summary": "Variation in the number and types of molecules within cells can enhance a population's ability to survive and reproduce in diverse environments."
+            }
+          ]
+        },
+        {
+          "topic_number": "7.3",
+          "topic_title": "Artificial Selection",
+          "ced_topic_title": "Artificial Selection",
+          "topic_overview": "How have we created so many different breeds of dogs from a single ancestral wolf? The answer is artificial selection. In this topic, you'll learn how humans act as the 'selective agent,' choosing which individuals get to reproduce based on desired traits. By studying artificial selection, we can see a parallel to natural selection, but on a much faster timescale. This process provides powerful evidence for the potential of selection to cause significant evolutionary change and was a key piece of inspiration for Darwin's theory.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 22,
+            "learn_minutes": 4,
+            "review_minutes": 4,
+            "practice_minutes": 14,
+            "target_study_guide_words": 600,
+            "target_flashcards_count": 8,
+            "target_mcq_count": 9
+          },
+          "learning_objectives": [
+            {
+              "id": "7.3.A",
+              "summary": "Explain how humans can affect diversity within a population."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.3.A.1",
+              "summary": "Through artificial selection, humans intentionally select for certain traits, thereby affecting the genetic variation in other species."
+            }
+          ]
+        },
+        {
+          "topic_number": "7.4",
+          "topic_title": "Population Genetics",
+          "ced_topic_title": "Population Genetics",
+          "topic_overview": "This topic introduces population genetics, which studies how the genetic makeup of populations changes over time. You will learn about gene pools, allele frequencies, and the five main drivers of evolution: mutation, gene flow, genetic drift, non-random mating, and natural selection. Understanding these mechanisms is key to analyzing evolution on a micro-scale and provides the mathematical foundation for studying evolutionary processes. This sets the stage for the Hardy-Weinberg principle.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 30,
+            "learn_minutes": 6,
+            "review_minutes": 6,
+            "practice_minutes": 18,
+            "target_study_guide_words": 900,
+            "target_flashcards_count": 12,
+            "target_mcq_count": 12
+          },
+          "learning_objectives": [
+            {
+              "id": "7.4.A",
+              "summary": "Explain how random occurrences affect the genetic makeup of a population."
+            },
+            {
+              "id": "7.4.B",
+              "summary": "Describe the role of random processes in the evolution of specific populations."
+            },
+            {
+              "id": "7.4.C",
+              "summary": "Describe the change in the genetic makeup of a population over time."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.4.A.1",
+              "summary": "Evolution is also driven by random events such as mutation, genetic drift (including bottleneck and founder effects), and migration/gene flow."
+            },
+            {
+              "id": "7.4.B.1",
+              "summary": "Random processes like mutation provide new genetic variation, genetic drift can cause small populations to diverge, and gene flow can prevent divergence."
+            },
+            {
+              "id": "7.4.C.1",
+              "summary": "Changes in allele frequencies over time provide direct evidence for the occurrence of evolution in a population."
+            }
+          ]
+        },
+        {
+          "topic_number": "7.5",
+          "topic_title": "Hardy-Weinberg Equilibrium",
+          "ced_topic_title": "Hardy-Weinberg Equilibrium",
+          "topic_overview": "How can we tell if a population is evolving? To answer that, we first need a baseline for a population that is *not* evolving. This is the Hardy-Weinberg equilibrium. In this topic, you will learn the five conditions that must be met for a population to remain in this non-evolving state. We will then introduce the two Hardy-Weinberg equations, which allow you to calculate allele and genotype frequencies. This model is a crucial tool for population geneticists to test whether evolutionary agents are acting on a population.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 45,
+            "learn_minutes": 9,
+            "review_minutes": 10,
+            "practice_minutes": 26,
+            "target_study_guide_words": 1350,
+            "target_flashcards_count": 20,
+            "target_mcq_count": 17
+          },
+          "learning_objectives": [
+            {
+              "id": "7.5.A",
+              "summary": "Describe the conditions under which allele and genotype frequencies will change in populations."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.5.A.1",
+              "summary": "The Hardy-Weinberg equilibrium is a model describing allele frequencies in a non-evolving population, requiring conditions like large population size, no migration, no mutation, random mating, and no natural selection."
+            },
+            {
+              "id": "7.5.A.2",
+              "summary": "In a non-evolving population, allele frequencies can be calculated from genotype frequencies using the Hardy-Weinberg equations."
+            }
+          ]
+        },
+        {
+          "topic_number": "7.6",
+          "topic_title": "Evidence of Evolution",
+          "ced_topic_title": "Evidence of Evolution",
+          "topic_overview": "What is the evidence that evolution has occurred? This topic presents the overwhelming and diverse lines of evidence that support the theory of evolution. You will explore evidence from several fields: comparative anatomy (homologous and vestigial structures), biogeography (the distribution of species), the fossil record, and, most powerfully, molecular biology. We'll see how similarities in DNA and protein sequences provide strong evidence for common ancestry. This body of evidence, drawn from many different scientific disciplines, makes evolution one of the most robust and well-supported theories in all of science.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 40,
+            "learn_minutes": 8,
+            "review_minutes": 8,
+            "practice_minutes": 24,
+            "target_study_guide_words": 1200,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 16
+          },
+          "learning_objectives": [
+            {
+              "id": "7.6.A",
+              "summary": "Describe the types of data that provide evidence for evolution."
+            },
+            {
+              "id": "7.6.B",
+              "summary": "Explain how morphological, biochemical, and geological data provide evidence that organisms have changed over time."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.6.A.1",
+              "summary": "Evolution is supported by a wide range of scientific evidence from disciplines like geography, geology, physics, biochemistry, and mathematics."
+            },
+            {
+              "id": "7.6.B.1",
+              "summary": "Molecular, morphological, and genetic evidence from both living and extinct organisms enhances our understanding of evolution, including fossil dating and homologous structures."
+            },
+            {
+              "id": "7.6.B.2",
+              "summary": "Comparisons of DNA nucleotide sequences and protein amino acid sequences provide strong evidence for evolution and common ancestry."
+            }
+          ]
+        },
+        {
+          "topic_number": "7.7",
+          "topic_title": "Common Ancestry",
+          "ced_topic_title": "Common Ancestry",
+          "topic_overview": "One of the most profound ideas in biology is that all life on Earth shares a common ancestor. This topic explores the fundamental molecular and cellular features that are conserved across all domains of life, providing strong evidence for this shared ancestry. We will look at universal features like the use of DNA as genetic material, a largely universal genetic code, and the presence of ribosomes for protein synthesis. These shared characteristics are best explained by descent from a common ancestor that had these traits, linking all living things into a single family tree.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 27,
+            "learn_minutes": 5,
+            "review_minutes": 5,
+            "practice_minutes": 17,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 10,
+            "target_mcq_count": 11
+          },
+          "learning_objectives": [
+            {
+              "id": "7.7.A",
+              "summary": "Describe structural and functional evidence on cellular and molecular levels that provides evidence for the common ancestry of all eukaryotes."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.7.A.1",
+              "summary": "Evidence for the common ancestry of all eukaryotes includes the presence of membrane-bound organelles, linear chromosomes, and genes containing introns."
+            }
+          ]
+        },
+        {
+          "topic_number": "7.8",
+          "topic_title": "Continuing Evolution",
+          "ced_topic_title": "Continuing Evolution",
+          "topic_overview": "Evolution is not just something that happened in the distant past; it is an ongoing process. In this topic, you will examine evidence that populations continue to evolve today. We will look at compelling contemporary examples, such as the evolution of antibiotic resistance in bacteria, pesticide resistance in insects, and rapid changes in viral genomes like influenza. These examples demonstrate natural selection in action and highlight the importance of evolutionary thinking for medicine, agriculture, and conservation. They are a powerful reminder that evolution is a dynamic and observable force.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 28,
+            "learn_minutes": 5,
+            "review_minutes": 6,
+            "practice_minutes": 17,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 12,
+            "target_mcq_count": 11
+          },
+          "learning_objectives": [
+            {
+              "id": "7.8.A",
+              "summary": "Explain how evolution is an ongoing process in all living organisms."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.8.A.1",
+              "summary": "All species continue to evolve, as evidenced by genomic changes over time, the fossil record, and the evolution of resistance to antibiotics, pesticides, and other drugs."
+            }
+          ]
+        },
+        {
+          "topic_number": "7.9",
+          "topic_title": "Phylogeny",
+          "ced_topic_title": "Phylogeny",
+          "topic_overview": "How do we map the tree of life? This topic introduces phylogeny, the study of the evolutionary history and relationships among organisms. You will learn to read and interpret phylogenetic trees and cladograms, which are branching diagrams that represent these relationships. We will cover key vocabulary like branch points, sister taxa, and common ancestors. The main skill is to understand that these trees are hypotheses about evolutionary history based on available evidence, such as anatomical features or molecular data.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 35,
+            "learn_minutes": 7,
+            "review_minutes": 7,
+            "practice_minutes": 21,
+            "target_study_guide_words": 1050,
+            "target_flashcards_count": 14,
+            "target_mcq_count": 14
+          },
+          "learning_objectives": [
+            {
+              "id": "7.9.A",
+              "summary": "Describe the types of evidence that can be used to infer an evolutionary relationship."
+            },
+            {
+              "id": "7.9.B",
+              "summary": "Explain how phylogenetic trees and cladograms can be used to infer evolutionary relatedness."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.9.A.1",
+              "summary": "Phylogenetic trees and cladograms are testable hypotheses illustrating evolutionary relationships among lineages."
+            },
+            {
+              "id": "7.9.A.2",
+              "summary": "Phylogenetic trees show the amount of change over time, whereas cladograms do not show a time scale."
+            },
+            {
+              "id": "7.9.A.3",
+              "summary": "Traits that are gained or lost during evolution, particularly shared derived characters, are used to construct phylogenetic trees and cladograms."
+            },
+            {
+              "id": "7.9.B.1",
+              "summary": "Phylogenetic trees and cladograms can illustrate speciation events, with nodes representing the most recent common ancestor of descendant lineages."
+            },
+            {
+              "id": "7.9.B.2",
+              "summary": "These trees can be constructed using morphological similarities (from living or fossil species) and molecular sequence similarities."
+            },
+            {
+              "id": "7.9.B.3",
+              "summary": "Phylogenetic trees and cladograms are dynamic hypotheses that are constantly revised based on new evidence."
+            }
+          ]
+        },
+        {
+          "topic_number": "7.1",
+          "topic_title": "Introduction to Natural Selection",
+          "ced_topic_title": "Speciation",
+          "topic_overview": "This topic addresses one of evolution's biggest questions: how do new species form? Speciation is the evolutionary process by which one species splits into two or more distinct species. You'll learn that the key to speciation is the evolution of reproductive isolation, which prevents gene flow between populations. We will explore different types of reproductive barriers (prezygotic and postzygotic) and the main modes of speciation: allopatric (geographic barrier) and sympatric (no geographic barrier). This topic helps explain the vast diversity of life on our planet.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 38,
+            "learn_minutes": 8,
+            "review_minutes": 8,
+            "practice_minutes": 22,
+            "target_study_guide_words": 1200,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 15
+          },
+          "learning_objectives": [
+            {
+              "id": "7.1.A",
+              "summary": "Describe the causes of natural selection."
+            },
+            {
+              "id": "7.1.B",
+              "summary": "Explain how natural selection affects populations."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.1.A.1",
+              "summary": "Natural selection is a major mechanism of evolution."
+            },
+            {
+              "id": "7.1.A.2",
+              "summary": "According to Darwin's theory, competition for resources leads to differential survival, where individuals with favorable phenotypes are more likely to survive and reproduce."
+            },
+            {
+              "id": "7.1.B.1",
+              "summary": "Evolutionary fitness is measured by an organism's reproductive success."
+            },
+            {
+              "id": "7.1.B.2",
+              "summary": "Fluctuations in biotic and abiotic environments can affect the rate and direction of evolution, selecting for different genetic variations in each generation."
+            }
+          ]
+        },
+        {
+          "topic_number": "7.11",
+          "topic_title": "Variations in Populations",
+          "ced_topic_title": "Variations in Populations",
+          "topic_overview": "This topic circles back to a key ingredient for evolution: variation. You'll learn that phenotypic variation within a population is a prerequisite for natural selection to act. We'll explore the various sources of this genetic variation, with mutation and sexual reproduction being the most important drivers. This variation is the raw material that allows populations to respond to changing environmental conditions. Without it, populations would be unable to adapt and would be more vulnerable to extinction.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 22,
+            "learn_minutes": 4,
+            "review_minutes": 4,
+            "practice_minutes": 14,
+            "target_study_guide_words": 600,
+            "target_flashcards_count": 8,
+            "target_mcq_count": 9
+          },
+          "learning_objectives": [
+            {
+              "id": "7.11.A",
+              "summary": "Explain how the genetic diversity of a species or population affects its ability to withstand environmental pressures."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.11.A.1",
+              "summary": "The level of genetic variation in a population influences its dynamics. Genetically diverse populations are more resilient to environmental changes and less at risk of extinction."
+            }
+          ]
+        },
+        {
+          "topic_number": "7.12",
+          "topic_title": "Origins of Life on Earth",
+          "ced_topic_title": "Origins of Life on Earth",
+          "topic_overview": "How did life begin? This fascinating topic explores the scientific hypotheses about the origin of life on Earth. You will learn about the proposed sequence of events, starting with the synthesis of simple organic molecules in the early Earth's environment. We'll then discuss how these monomers could have joined to form polymers. A key step is the packaging of these molecules into 'protocells' with membranes. Finally, we'll cover the 'RNA world' hypothesis, which suggests that RNA, not DNA, was the first genetic material. This topic pieces together the puzzle of life's earliest moments.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 29,
+            "learn_minutes": 6,
+            "review_minutes": 6,
+            "practice_minutes": 17,
+            "target_study_guide_words": 900,
+            "target_flashcards_count": 12,
+            "target_mcq_count": 11
+          },
+          "learning_objectives": [
+            {
+              "id": "7.12.A",
+              "summary": "Describe the scientific evidence that supports models of the origin of life on Earth."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "7.12.A.1",
+              "summary": "Geological evidence provides a plausible time frame for the origin of life on Earth, between approximately 3.9 and 3.5 billion years ago."
+            },
+            {
+              "id": "7.12.A.2",
+              "summary": "The RNA world hypothesis proposes that RNA was the earliest genetic material, capable of self-replication and assuring genetic continuity before the evolution of DNA and proteins."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit_number": 8,
+      "unit_title": "Unit 8: Ecology",
+      "ced_class_periods": "~19-21 Class Periods",
+      "exam_weight": "10-15%",
+      "unit_overview": {
+        "summary": "In our final unit, we zoom out to study the grandest scale of biology: ecology. You'll explore how organisms interact with each other and with their physical environment. We'll start by examining how energy flows through ecosystems, from producers to consumers. You'll learn about population ecology, analyzing the factors that affect population size and growth. Then, we'll look at community ecology, studying the complex web of interactions between different species. You will also learn about biodiversity, its importance to ecosystem stability, and the significant impact that human activities have on ecosystems and the biosphere. This unit synthesizes many concepts from earlier in the course to explain the intricate systems that make up the living world.",
+        "ced_class_periods": "~19-21",
+        "exam_weight": "10-15%",
+        "prepgo_estimated_minutes": 232
+      },
+      "topics": [
+        {
+          "topic_number": "8.1",
+          "topic_title": "Responses to the Environment",
+          "ced_topic_title": "Responses to the Environment",
+          "topic_overview": "How do organisms deal with changes in their environment? This topic explores the range of physiological and behavioral responses that individuals can have. You'll learn how organisms use various mechanisms to communicate with each other, such as visual, audible, tactile, and chemical signals. These responses and communication strategies can increase the fitness of individuals by improving their chances of survival and reproduction. We will look at how these behaviors are shaped by natural selection, ensuring that organisms are well-suited to their environment.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 30,
+            "learn_minutes": 6,
+            "review_minutes": 6,
+            "practice_minutes": 18,
+            "target_study_guide_words": 900,
+            "target_flashcards_count": 12,
+            "target_mcq_count": 12
+          },
+          "learning_objectives": [
+            {
+              "id": "8.1.A",
+              "summary": "Explain how an organism's behavioral and physiological responses are related to changes in its internal or external environment."
+            },
+            {
+              "id": "8.1.B",
+              "summary": "Explain how the behavioral responses of organisms affect their overall fitness and may contribute to the success of a population."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "8.1.A.1",
+              "summary": "Organisms respond to environmental changes through behavioral and physiological mechanisms."
+            },
+            {
+              "id": "8.1.A.2",
+              "summary": "Organisms exchange information in response to internal and external cues, which can alter their behavior."
+            },
+            {
+              "id": "8.1.B.1",
+              "summary": "Organisms communicate using visual, audible, tactile, electrical, and chemical signals, which can lead to changes in behavior and differential reproductive success."
+            },
+            {
+              "id": "8.1.B.2",
+              "summary": "Responses to information are vital to natural selection. Both innate and learned behaviors that increase survival and reproduction are favored, and cooperative behaviors can increase individual and population fitness."
+            }
+          ]
+        },
+        {
+          "topic_number": "8.2",
+          "topic_title": "Energy Flow Through Ecosystems",
+          "ced_topic_title": "Energy Flow Through Ecosystems",
+          "topic_overview": "Follow the energy! This topic examines how energy flows through an ecosystem. You'll learn that nearly all ecosystems are powered by sunlight, which is captured by producers (like plants) during photosynthesis. We will trace this energy as it is transferred through different trophic levels, from producers to consumers. A crucial concept is the 10% rule, which states that only about 10% of the energy from one trophic level is incorporated into the next. This principle explains why food chains are typically limited in length and why there is less biomass at higher trophic levels.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 35,
+            "learn_minutes": 7,
+            "review_minutes": 7,
+            "practice_minutes": 21,
+            "target_study_guide_words": 1050,
+            "target_flashcards_count": 14,
+            "target_mcq_count": 14
+          },
+          "learning_objectives": [
+            {
+              "id": "8.2.A",
+              "summary": "Describe the strategies organisms use to acquire and use energy."
+            },
+            {
+              "id": "8.2.B",
+              "summary": "Explain how energy flows and matter cycles through trophic levels."
+            },
+            {
+              "id": "8.2.C",
+              "summary": "Explain how changes in energy availability affect populations, communities, and ecosystems."
+            },
+            {
+              "id": "8.2.D",
+              "summary": "Explain how the activities of autotrophs and heterotrophs enable the flow of energy within an ecosystem."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "8.2.A.1",
+              "summary": "Organisms use energy for organization, growth, reproduction, and homeostasis. A net gain in energy supports growth and reproduction, while a net loss leads to decline."
+            },
+            {
+              "id": "8.2.A.2",
+              "summary": "Organisms employ various reproductive strategies in response to energy availability."
+            },
+            {
+              "id": "8.2.B.1",
+              "summary": "Ecological organization includes populations, communities, ecosystems, and biomes."
+            },
+            {
+              "id": "8.2.B.2",
+              "summary": "Energy flows through ecosystems, while matter and nutrients are cycled via biogeochemical cycles."
+            },
+            {
+              "id": "8.2.B.3",
+              "summary": "Biogeochemical cycles feature both abiotic and biotic reservoirs and processes that move matter between them."
+            },
+            {
+              "id": "8.2.B.4",
+              "summary": "The hydrologic (water) cycle involves the movement and storage of water through evaporation, condensation, precipitation, and transpiration."
+            },
+            {
+              "id": "8.2.B.5",
+              "summary": "The carbon cycle involves the recycling of carbon through photosynthesis, respiration, decomposition, and combustion."
+            },
+            {
+              "id": "8.2.B.6",
+              "summary": "The nitrogen cycle involves microbial processes like nitrogen fixation, nitrification, and denitrification, with the atmosphere as the largest reservoir."
+            },
+            {
+              "id": "8.2.B.7",
+              "summary": "The phosphorus cycle involves the release of phosphate from weathered rocks, its uptake by producers, transfer to consumers, and return to the soil through decomposition."
+            },
+            {
+              "id": "8.2.C.1",
+              "summary": "Changes in energy availability can lead to changes in population size."
+            },
+            {
+              "id": "8.2.C.2",
+              "summary": "Changes in energy availability, such as sunlight or producer biomass, can disrupt an ecosystem and affect the number and size of all trophic levels."
+            },
+            {
+              "id": "8.2.D.1",
+              "summary": "Autotrophs capture energy from physical (photosynthesis) or chemical (chemosynthesis) sources in the environment."
+            },
+            {
+              "id": "8.2.D.2",
+              "summary": "Heterotrophs capture energy by consuming organic matter derived from autotrophs."
+            }
+          ]
+        },
+        {
+          "topic_number": "8.3",
+          "topic_title": "Population Ecology",
+          "ced_topic_title": "Population Ecology",
+          "topic_overview": "This topic focuses on the study of populations. You will learn how to describe a population in terms of its size, density, and dispersion. A major focus will be on the factors that regulate population growth. We will explore mathematical models for both exponential growth (unlimited, J-shaped curve) and logistic growth (limited by carrying capacity, S-shaped curve). Understanding these dynamics is essential for managing wildlife, controlling pests, and assessing human population growth.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 42,
+            "learn_minutes": 8,
+            "review_minutes": 9,
+            "practice_minutes": 25,
+            "target_study_guide_words": 1200,
+            "target_flashcards_count": 18,
+            "target_mcq_count": 17
+          },
+          "learning_objectives": [
+            {
+              "id": "8.3.A",
+              "summary": "Describe factors that influence the growth dynamics of populations."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "8.3.A.1",
+              "summary": "Populations are groups of individuals of the same species that interact with each other and their environment."
+            },
+            {
+              "id": "8.3.A.2",
+              "summary": "Population growth dynamics depend on birth rates, death rates, and population size. Unconstrained reproduction leads to exponential growth."
+            }
+          ]
+        },
+        {
+          "topic_number": "8.4",
+          "topic_title": "Effect of Density on Populations",
+          "ced_topic_title": "Effect of Density on Populations",
+          "topic_overview": "Let's take a closer look at the factors that limit population growth. This topic dives into the difference between density-dependent and density-independent limiting factors. You will learn that density-dependent factors, such as competition for resources, predation, and disease, have a greater effect as population density increases. In contrast, density-independent factors, like natural disasters, affect populations regardless of their density. Understanding this distinction is key to predicting how a population will respond to different types of environmental pressures.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 28,
+            "learn_minutes": 5,
+            "review_minutes": 6,
+            "practice_minutes": 17,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 12,
+            "target_mcq_count": 11
+          },
+          "learning_objectives": [
+            {
+              "id": "8.4.A",
+              "summary": "Explain how the density of a population affects and is determined by resource availability in the environment."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "8.4.A.1",
+              "summary": "Carrying capacity (K) is the maximum population size an ecosystem's resources can sustainably support."
+            },
+            {
+              "id": "8.4.A.2",
+              "summary": "Density-dependent and density-independent factors impose limits on growth, leading to a logistic growth model as a population approaches its carrying capacity."
+            }
+          ]
+        },
+        {
+          "topic_number": "8.5",
+          "topic_title": "Community Ecology",
+          "ced_topic_title": "Community Ecology",
+          "topic_overview": "No species lives in isolation. This topic explores community ecology, the study of interactions between different species in an area. You will learn about the different types of interspecific interactions, including competition, predation, herbivory, and symbiosis (parasitism, mutualism, and commensalism). These interactions structure the community and can have profound effects on the population dynamics and evolution of the species involved. Understanding these relationships is vital for predicting how communities will respond to disturbances.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 40,
+            "learn_minutes": 8,
+            "review_minutes": 8,
+            "practice_minutes": 24,
+            "target_study_guide_words": 1200,
+            "target_flashcards_count": 16,
+            "target_mcq_count": 16
+          },
+          "learning_objectives": [
+            {
+              "id": "8.5.A",
+              "summary": "Describe the structure of a community according to its species composition and diversity."
+            },
+            {
+              "id": "8.5.B",
+              "summary": "Explain how interactions within and among populations influence community structure."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "8.5.A.1",
+              "summary": "Community structure is measured by its species composition and species diversity."
+            },
+            {
+              "id": "8.5.B.1",
+              "summary": "Communities are dynamic groups of interacting populations that change over time based on their interactions."
+            },
+            {
+              "id": "8.5.B.2",
+              "summary": "Interactions among populations dictate how they access energy and matter within a community."
+            },
+            {
+              "id": "8.5.B.3",
+              "summary": "Relationships between interacting populations can be modeled and are characterized by positive and negative effects."
+            },
+            {
+              "id": "8.5.B.4",
+              "summary": "Competition, predation, and various forms of symbiosis (parasitism, mutualism, commensalism) drive population dynamics within a community."
+            }
+          ]
+        },
+        {
+          "topic_number": "8.6",
+          "topic_title": "Biodiversity",
+          "ced_topic_title": "Biodiversity",
+          "topic_overview": "What makes an ecosystem healthy and resilient? A big part of the answer is biodiversity. This topic introduces the concept of biodiversity, which includes genetic, species, and ecosystem diversity. You'll learn why biodiversity is crucial for the stability of communities and ecosystems. We'll explore the role of keystone species, which have a disproportionately large effect on their environment relative to their abundance. The main takeaway is that ecosystems with higher biodiversity are generally more productive and better able to withstand and recover from disturbances.",
+          "prepgo_plan": {
+            "total_estimated_minutes": 28,
+            "learn_minutes": 5,
+            "review_minutes": 6,
+            "practice_minutes": 17,
+            "target_study_guide_words": 750,
+            "target_flashcards_count": 12,
+            "target_mcq_count": 11
+          },
+          "learning_objectives": [
+            {
+              "id": "8.6.A",
+              "summary": "Describe the relationship between ecosystem diversity and its resilience to changes in the environment."
+            },
+            {
+              "id": "8.6.B",
+              "summary": "Explain how the addition or removal of any component of an ecosystem will affect its overall short-term and long-term structure."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "8.6.A.1",
+              "summary": "Ecosystems with fewer components and less diversity are often less resilient to environmental changes."
+            },
+            {
+              "id": "8.6.A.2",
+              "summary": "Keystone species, producers, and essential abiotic and biotic factors are critical for maintaining ecosystem diversity."
+            },
+            {
+              "id": "8.6.B.1",
+              "summary": "Keystone species have a disproportionately large effect on their ecosystem relative to their abundance; their removal often leads to ecosystem collapse."
+            }
+          ]
+        },
+        {
+          "topic_number": "8.7",
+          "topic_title": "Disruptions in Ecosystems",
+          "ced_topic_title": "Disruptions to Ecosystems",
+          "topic_overview": "Ecosystems are constantly changing. This topic examines how natural and human-caused disruptions can affect the dynamics and stability of an ecosystem. You'll learn how events like climate change or the introduction of invasive species can alter resource availability and species interactions. The focus will be on understanding that when a disruption occurs, it can have cascading effects throughout the food web, potentially leading to a decrease in biodiversity and overall ecosystem health. Resilience is a key concept here - how well can an ecosystem bounce back?",
+          "prepgo_plan": {
+            "total_estimated_minutes": 29,
+            "learn_minutes": 6,
+            "review_minutes": 6,
+            "practice_minutes": 17,
+            "target_study_guide_words": 900,
+            "target_flashcards_count": 12,
+            "target_mcq_count": 11
+          },
+          "learning_objectives": [
+            {
+              "id": "8.7.A",
+              "summary": "Explain the interaction between the environment and random or preexisting variations in populations."
+            },
+            {
+              "id": "8.7.B",
+              "summary": "Explain how invasive species affect ecosystem dynamics."
+            },
+            {
+              "id": "8.7.C",
+              "summary": "Describe human activities that lead to changes in ecosystem structure and dynamics."
+            },
+            {
+              "id": "8.7.D",
+              "summary": "Explain how geological and meteorological activity leads to changes in ecosystem structure and dynamics."
+            }
+          ],
+          "essential_knowledge": [
+            {
+              "id": "8.7.A.1",
+              "summary": "An adaptation is a genetic variation favored by selection that provides an advantage in a particular environment."
+            },
+            {
+              "id": "8.7.A.2",
+              "summary": "Heterozygote advantage occurs when the heterozygous genotype has higher relative fitness than either homozygous genotype."
+            },
+            {
+              "id": "8.7.A.3",
+              "summary": "Mutations are random and are not directed by specific environmental pressures."
+            },
+            {
+              "id": "8.7.B.1",
+              "summary": "The introduction of invasive species can disrupt ecosystems as they exploit new niches, outcompete native species, or lack natural predators."
+            },
+            {
+              "id": "8.7.C.1",
+              "summary": "Human impacts, such as pollution leading to biomagnification and eutrophication, can accelerate ecosystem changes and drive extinctions."
+            },
+            {
+              "id": "8.7.D.1",
+              "summary": "Major geological and meteorological events affect habitat change and the distribution of ecosystems over time."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
