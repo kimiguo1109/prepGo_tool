@@ -151,9 +151,14 @@ export class CourseGenerator {
       // 如果输入已有unit_overview（新格式），则保留summary并更新时间
       // 如果没有（旧格式），则创建新的unit_overview
       const existingOverview = (unit as any).unit_overview;
+      
+      // v12.8.13: 格式化 ced_class_periods（移除波浪线，标准化大小写）
+      const rawCedPeriods = existingOverview?.ced_class_periods || unit.ced_class_periods || '';
+      const formattedCedPeriods = this.formatCedClassPeriods(rawCedPeriods);
+      
       (unit as any).unit_overview = {
         summary: existingOverview?.summary || '',  // 优先使用输入中的summary
-        ced_class_periods: existingOverview?.ced_class_periods || unit.ced_class_periods || '',
+        ced_class_periods: formattedCedPeriods,
         exam_weight: existingOverview?.exam_weight || unit.exam_weight || '',
         prepgo_estimated_minutes: existingOverview?.prepgo_estimated_minutes || unitTotalMinutes  // 优先使用输入中的时间
       };
@@ -683,6 +688,27 @@ STUDY GUIDE STRUCTURE (${targetWordCount} words total):
           flashcards,
           quiz
         };
+  }
+
+  /**
+   * 格式化 ced_class_periods
+   * v12.8.13: 移除波浪线，标准化大小写（首字母大写，其他小写）
+   * 输入: "~17-23 CLASS PERIODS" 或 "~17-23 Class Periods"
+   * 输出: "17-23 Class Periods"
+   */
+  private formatCedClassPeriods(rawPeriods: string): string {
+    if (!rawPeriods) return '';
+    
+    // 移除开头的波浪线
+    let formatted = rawPeriods.replace(/^~\s*/, '');
+    
+    // 标准化 "Class Periods" 的大小写（不区分输入格式）
+    formatted = formatted.replace(
+      /(class\s+periods)/gi,
+      'Class Periods'
+    );
+    
+    return formatted;
   }
 
   /**

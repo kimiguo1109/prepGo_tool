@@ -39,7 +39,8 @@ export const APUnitSchema = z.object({
   // - "~13–14 AB~9–10 BC" (AB/BC 标注)
   // - "~22–23 AB~13–14 BC"
   // - "~8–9 CLASS PERIODS (BC)"
-  ced_class_periods: z.string().regex(/^~\d+[–\-]?\d*\s*(Class\s+Periods|CLASS\s+PERIODS)(\s*\(?(AB|BC)\)?)?(\s*~\d+[–\-]\d+\s*(AB|BC))?$|^~\d+[–\-]\d+\s+(AB)?~?\d+[–\-]\d+\s+(BC)?$/i),
+  // v12.8.13: 也接受不带波浪线的格式 "17-23 Class Periods"
+  ced_class_periods: z.string().regex(/^~?\d+[–\-]?\d*\s*(Class\s+Periods|CLASS\s+PERIODS)(\s*\(?(AB|BC)\)?)?(\s*~?\d+[–\-]\d+\s*(AB|BC))?$|^~?\d+[–\-]\d+\s+(AB)?~?\d+[–\-]\d+\s+(BC)?$/i),
   // 支持多种格式:
   // - "4-6%" 或 "10-17%" 或 "8-11%"
   // - "10-12% AB / 4-7% BC" (分AB/BC，带斜杠)
