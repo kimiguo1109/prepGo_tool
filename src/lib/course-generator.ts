@@ -336,11 +336,14 @@ export class CourseGenerator {
     const ekSummaries = topic.essential_knowledge.map((ek: any) => ek.summary).join('; ');
     const flashcardCount = (topic as any).review?.flashcards_count || 3;
     const quizCount = (topic as any).practice?.quiz_count || 8;
-    const targetWordCount = (topic as any).learn?.study_guide_words || 100;
+    // v12.8.12: 设置合理的默认字数（1500），避免 AI 过度生成
+    const targetWordCount = (topic as any).learn?.study_guide_words || 1500;
 
     const prompt = `You are an AP course content generator. Create high-quality educational content for the following topic.
 
-⚠️ CRITICAL: The study guide MUST be ${targetWordCount} words (minimum ${Math.floor(targetWordCount * 0.85)} words). This is NOT optional.
+🔴 ABSOLUTE REQUIREMENT: Study guide MUST be EXACTLY ${targetWordCount} words (acceptable range: ${Math.floor(targetWordCount * 0.85)}-${Math.floor(targetWordCount * 1.15)} words).
+⚠️ Generating more than ${Math.floor(targetWordCount * 1.2)} words will cause JSON truncation and system failure.
+⚠️ Write concisely and densely - quality over verbosity.
 
 TOPIC: ${topic.topic_title}
 
@@ -369,18 +372,18 @@ Generate the following content in strict JSON format:
   ]
 }
 
-CRITICAL REQUIREMENTS (PRIORITY ORDER):
-1. ⚠️ JSON COMPLETENESS IS THE TOP PRIORITY:
+CRITICAL REQUIREMENTS (STRICT PRIORITY ORDER):
+1. ⚠️ JSON COMPLETENESS - HIGHEST PRIORITY:
    - The ENTIRE JSON MUST be complete with proper closing brackets
-   - If approaching output token limit, reduce study_guide length to ensure valid JSON
-   - NEVER let the response end mid-sentence or with incomplete JSON structure
-   - A complete JSON with slightly shorter study_guide is better than truncated JSON
+   - If approaching output token limit (~20000 tokens), STOP writing and close JSON properly
+   - A complete JSON with shorter study_guide is better than truncated JSON
    
-2. 🔴 STUDY GUIDE WORD COUNT TARGET: 
-   - Aim for ${Math.floor(targetWordCount * 0.85)} to ${Math.floor(targetWordCount * 1.15)} words
-   - Target: ${targetWordCount} words
-   - Write in rich detail with extensive explanations, examples, and analysis
-   - BUT: If you sense you're running low on tokens, prioritize completing all flashcards and quiz, then write study_guide as detailed as possible within remaining tokens
+2. 🔴 WORD COUNT DISCIPLINE - SECOND PRIORITY:
+   - Study guide: EXACTLY ${targetWordCount} words (range: ${Math.floor(targetWordCount * 0.85)}-${Math.floor(targetWordCount * 1.15)})
+   - Exceeding ${Math.floor(targetWordCount * 1.2)} words will cause system failure
+   - Write DENSELY: every sentence must convey essential information
+   - NO repetitive phrases, NO redundant explanations
+   - Quality and precision over length and verbosity
    
 3. ALL content MUST be in ENGLISH only
 4. Generate EXACTLY ${flashcardCount} flashcards (not more, not less)
@@ -447,27 +450,27 @@ FLASHCARD DIVERSIFICATION: MUST include a MIX of all three card types:
     - "Scenario/Question-Answer": Application questions or scenarios
     Each flashcard MUST have a "card_type" field with one of these exact values
 
-STUDY GUIDE WRITING STRATEGY (Target ${targetWordCount} words):
-    - Aim for ${Math.floor(targetWordCount * 0.85)}-${Math.floor(targetWordCount * 1.15)} words
-    - Write flashcards and quiz FIRST (keep explanations concise, 50-100 words each)
-    - Then write study_guide as detailed as possible with remaining tokens
-    - CRITICAL: Monitor your output length and ensure you can complete ALL three sections with proper JSON closing
+WRITING ORDER & STRATEGY:
+    1. Generate flashcards FIRST (keep each under 50 words total)
+    2. Generate quiz questions SECOND (explanations: 30-60 words each, NO MORE)
+    3. Generate study_guide LAST (target ${targetWordCount} words, NOT MORE than ${Math.floor(targetWordCount * 1.2)} words)
+    4. Close JSON properly
 
-RECOMMENDED STUDY GUIDE STRUCTURE FOR ${targetWordCount} WORDS:
-    Try to include the following elements (adjust if needed to fit token limits):
+STUDY GUIDE STRUCTURE (${targetWordCount} words total):
+    Write ${Math.ceil(targetWordCount / 150)}-${Math.ceil(targetWordCount / 120)} focused paragraphs (120-150 words each).
     
-    ✓ Introduction (100-150 words): Topic significance and context
-    ✓ Key Terms: Define important terms with examples (50-80 words each)
-    ✓ Concept Explanations: Cover each learning objective with:
-       - Step-by-step reasoning
-       - Concrete examples
-       - Cause-and-effect relationships
-    ✓ Real-World Applications: 2-3 detailed examples (50+ words each)
-    ✓ Connections: How this relates to other concepts (80-100 words)
-    ✓ Common Misconceptions: Address 2-3 (40+ words each)
-    ✓ Conclusion: Synthesize key ideas (80-100 words)
+    Include:
+    - Brief intro (what and why - 100 words)
+    - Core concepts (70% of content - clear, direct explanations with ONE example per concept)
+    - Brief conclusion (key takeaways - 80 words)
     
-    BALANCE: Aim for ${Math.ceil(targetWordCount / 120)}-${Math.ceil(targetWordCount / 100)} paragraphs of 100-150 words each, BUT prioritize JSON completeness over exact word count.`;
+    AVOID:
+    - Repetitive phrasing or restating the same idea
+    - Overly long introductions or conclusions
+    - Multiple examples for the same concept
+    - Flowery or verbose language
+    
+    WRITE DENSELY: Pack maximum information into minimum words.`;
 
     // 调用 Gemini API
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
@@ -481,14 +484,14 @@ RECOMMENDED STUDY GUIDE STRUCTURE FOR ${targetWordCount} WORDS:
       ],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 24000,  // v12.8.10: 增加到24000，防止 JSON 截断
+        maxOutputTokens: 28000,  // v12.8.12: 增加到28000，但要求 AI 严格控制字数
       }
     }, {
       headers: {
         'Content-Type': 'application/json',
       },
       ...(httpsAgent ? { httpsAgent, proxy: false } : {}),
-      timeout: 60000
+      timeout: 90000  // v12.8.12: 增加到90秒，减少超时
     });
 
     const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -498,7 +501,7 @@ RECOMMENDED STUDY GUIDE STRUCTURE FOR ${targetWordCount} WORDS:
     }
 
     let content: any;
-    
+
     try {
       const jsonText = this.extractJSON(text);
       content = JSON.parse(jsonText);
@@ -596,43 +599,43 @@ RECOMMENDED STUDY GUIDE STRUCTURE FOR ${targetWordCount} WORDS:
     
     // ========== 统一的字段转换逻辑 (v12.8.4) ==========
     // 无论是第一次解析成功还是修复后成功，都执行此转换
-    
-    // v12.6: 结合 AI 判断和 checkRequiresImage 规则（取并集）
-    // v12.8: 添加所有新字段
+        
+        // v12.6: 结合 AI 判断和 checkRequiresImage 规则（取并集）
+        // v12.8: 添加所有新字段
     // v12.8.4: 使用正确的字段名 front_content/back_content，并添加 card_id 和 topic_id
     const topicId = `ap_us_history_${topic.topic_number.replace('.', '_')}`;
     const flashcards = (content.flashcards || []).map((card: any, cardIdx: number) => {
-      const imageNeeded = card.requires_image || this.checkRequiresImage('flashcard', card.front, card.back);
-      const difficulty = card.difficulty || this.calculateDifficultyLevel({
-        question: card.front,
-        options: [],
-        explanation: card.back
-      });
+          const imageNeeded = card.requires_image || this.checkRequiresImage('flashcard', card.front, card.back);
+          const difficulty = card.difficulty || this.calculateDifficultyLevel({
+            question: card.front,
+            options: [],
+            explanation: card.back
+          });
       
       // Map card_type to correct format
       let mappedCardType = card.card_type || 'Concept-Explanation';
       if (mappedCardType === 'Term-Definition') mappedCardType = 'definition';
       else if (mappedCardType === 'Concept-Explanation') mappedCardType = 'concept';
       else if (mappedCardType === 'Scenario/Question-Answer') mappedCardType = 'application';
-      
-      // v12.8.3: 只保留 image_suggested，移除 requires_image
+          
+          // v12.8.3: 只保留 image_suggested，移除 requires_image
       // v12.8.8: 移除 card_id 和 topic_id（不需要在 complete JSON 中）
-      return {
+        return {
         card_type: mappedCardType,
         front_content: card.front,
         back_content: card.back,
-        difficulty: difficulty,
-        image_suggested: imageNeeded,
-        image_suggestion_description: null,
-        version: '1.0.0',
-        status: 'draft'
-      };
-    });
-    
+            difficulty: difficulty,
+            image_suggested: imageNeeded,
+            image_suggestion_description: null,
+            version: '1.0.0',
+            status: 'draft'
+          };
+        });
+        
     // v12.8.4: 修改 quiz 格式，添加 quiz_id 和 topic_id，使用 question_text，options 改为对象格式
     const quiz = (content.quiz || []).map((q: any, qIdx: number) => {
-      const imageNeeded = q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation);
-      const difficultyLevel = q.difficulty_level || this.calculateDifficultyLevel(q);
+          const imageNeeded = q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation);
+          const difficultyLevel = q.difficulty_level || this.calculateDifficultyLevel(q);
       
       // Convert options from array to object format {A, B, C, D}
       let optionsObj: { A: string; B: string; C: string; D: string };
@@ -646,40 +649,40 @@ RECOMMENDED STUDY GUIDE STRUCTURE FOR ${targetWordCount} WORDS:
       } else {
         optionsObj = q.options || { A: '', B: '', C: '', D: '' };
       }
-      
-      // v12.8.3: 只保留 image_suggested，移除 requires_image
+          
+          // v12.8.3: 只保留 image_suggested，移除 requires_image
       // v12.8.8: 移除 quiz_id 和 topic_id（不需要在 complete JSON 中）
-      return {
+          return {
         difficulty_level: difficultyLevel,
         question_text: q.question,
         options: optionsObj,
-        correct_answer: q.correct_answer,
-        explanation: q.explanation,
-        image_suggested: imageNeeded,
-        image_suggestion_description: null,
-        version: '1.0.0',
-        status: 'draft'
-      };
-    });
-    
-    // v12.8.3: study_guide 改为对象格式，包含完整的元数据
+            correct_answer: q.correct_answer,
+            explanation: q.explanation,
+            image_suggested: imageNeeded,
+            image_suggestion_description: null,
+            version: '1.0.0',
+            status: 'draft'
+          };
+        });
+        
+        // v12.8.3: study_guide 改为对象格式，包含完整的元数据
     // v12.8.4: 添加 study_guide_id 和 topic_id
     // v12.8.8: 移除 study_guide_id 和 topic_id（不需要在 complete JSON 中）
-    const studyGuideText = content.study_guide || '';
-    const wordCount = this.calculateWordCount(studyGuideText);
-    const studyGuide = studyGuideText ? {
-      content_markdown: studyGuideText,
-      word_count: wordCount,
-      reading_minutes: this.calculateReadingMinutes(wordCount),
-      version: '1.0',
-      status: 'draft'
-    } : null;
-    
-    return {
-      study_guide: studyGuide,
-      flashcards,
-      quiz
-    };
+        const studyGuideText = content.study_guide || '';
+        const wordCount = this.calculateWordCount(studyGuideText);
+        const studyGuide = studyGuideText ? {
+          content_markdown: studyGuideText,
+          word_count: wordCount,
+          reading_minutes: this.calculateReadingMinutes(wordCount),
+          version: '1.0',
+          status: 'draft'
+        } : null;
+        
+        return {
+          study_guide: studyGuide,
+          flashcards,
+          quiz
+        };
   }
 
   /**
@@ -1124,16 +1127,16 @@ RECOMMENDED STUDY GUIDE STRUCTURE FOR ${targetWordCount} WORDS:
           
           // 根据题型添加对应字段
           if (questionType === 'mcq') {
-            // MCQ 特有字段
+          // MCQ 特有字段
             questionObjForCombined.question_text = q.question_text || q.question;
             questionObjForCombined.options = Array.isArray(q.options) ? {
-              A: q.options[0] || '',
-              B: q.options[1] || '',
-              C: q.options[2] || '',
-              D: q.options[3] || ''
+            A: q.options[0] || '',
+            B: q.options[1] || '',
+            C: q.options[2] || '',
+            D: q.options[3] || ''
             } : q.options;
-            questionObjForCombined.correct_answer = q.correct_answer;
-            questionObjForCombined.explanation = q.explanation;
+          questionObjForCombined.correct_answer = q.correct_answer;
+          questionObjForCombined.explanation = q.explanation;
           } else if (questionType === 'saq' || questionType === 'frq') {
             // SAQ/FRQ 特有字段
             if (q.stimulus_type) questionObjForCombined.stimulus_type = q.stimulus_type;
