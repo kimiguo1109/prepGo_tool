@@ -348,29 +348,36 @@ export class CourseGenerator {
 
     const prompt = `You are an AP course content generator. Create high-quality educational content for the following topic.
 
-🚨 CRITICAL WORD COUNT REQUIREMENT 🚨
-Study guide MUST be ${targetWordCount} words ± 10%
-- Minimum: ${Math.floor(targetWordCount * 0.9)} words
-- Maximum: ${Math.floor(targetWordCount * 1.1)} words
-- Exceeding maximum will cause SYSTEM FAILURE
-- STOP WRITING when you reach ~${Math.floor(targetWordCount * 1.05)} words
-
-Writing style: CONCISE, DENSE, EFFICIENT
-- No redundancy, no repetition
-- One example per concept (not multiple)
-- Short, direct sentences
-- Skip unnecessary transitions
+🚨 CRITICAL REQUIREMENTS 🚨
+1. WORD COUNT: ${targetWordCount} words (tolerance: ±50-100 words)
+   - Target: ${targetWordCount} words
+   - Acceptable: ${targetWordCount - 100} to ${targetWordCount + 100} words
+   - STOP at ${targetWordCount + 50} words
+   
+2. READABILITY:
+   - Use clear paragraph breaks (separate concepts)
+   - Write short, focused sentences (15-20 words max per sentence)
+   - One idea per sentence
+   - Use simple, direct language
+   
+3. CONTENT ALIGNMENT:
+   - STRICTLY follow the Learning Objectives below
+   - Address EVERY point in Essential Knowledge
+   - No additional content beyond CED requirements
+   - Stay focused on specified learning goals
 
 TOPIC: ${topic.topic_title}
 
-LEARNING OBJECTIVES: ${loSummaries}
+LEARNING OBJECTIVES (MUST address ALL):
+${loSummaries}
 
-ESSENTIAL KNOWLEDGE: ${ekSummaries}
+ESSENTIAL KNOWLEDGE (MUST cover ALL):
+${ekSummaries}
 
 Generate the following content in strict JSON format:
 
 {
-  "study_guide": "REQUIRED LENGTH: ${targetWordCount} words (MINIMUM ${Math.floor(targetWordCount * 0.85)} words). Write a comprehensive, detailed study guide in academic English. Cover ALL learning objectives with thorough explanations, multiple examples, and deep analysis. Use complete paragraphs with rich detail.",
+  "study_guide": "TARGET: ${targetWordCount} words (±50-100 words). Write a clear, well-structured study guide that DIRECTLY addresses each Learning Objective and Essential Knowledge point. Use paragraph breaks to separate major concepts. Keep sentences SHORT (15-20 words max). Write in simple, direct language suitable for AP students. Focus ONLY on CED-specified content.",
   "flashcards": [
     {
       "front": "Clear question or concept",
@@ -393,18 +400,24 @@ CRITICAL REQUIREMENTS (STRICT PRIORITY ORDER):
    - The ENTIRE JSON MUST be complete with proper closing brackets
    - If approaching output token limit (~20000 tokens), STOP writing and close JSON properly
    
-2. 🔴 WORD COUNT DISCIPLINE - MANDATORY:
-   - Study guide: ${targetWordCount} words (strict range: ${Math.floor(targetWordCount * 0.9)}-${Math.floor(targetWordCount * 1.1)})
-   - STOP at ${Math.floor(targetWordCount * 1.05)} words - DO NOT CONTINUE
-   - Count words as you write: track your progress
-   - If you reach ${Math.floor(targetWordCount * 0.95)} words, START CONCLUDING
+2. 🔴 WORD COUNT CONTROL:
+   - Study guide: ${targetWordCount} words (acceptable: ${targetWordCount - 100} to ${targetWordCount + 100})
+   - STOP at ${targetWordCount + 50} words
+   - Track your progress and plan accordingly
    
-3. WRITING EFFICIENCY:
-   - DENSE writing: maximum information, minimum words
-   - ONE example per concept (never 2 or 3)
-   - NO repetitive introductions or conclusions
-   - NO transitional phrases like "furthermore", "additionally", "moreover"
-   - Direct statements only
+3. 📖 READABILITY & STRUCTURE:
+   - Use paragraph breaks: Start new paragraph for each major concept/Learning Objective
+   - Short sentences: 15-20 words maximum per sentence
+   - One clear idea per sentence
+   - Simple, direct language (avoid jargon unless necessary)
+   - Natural flow: concept → explanation → example → application
+   
+4. 🎯 CONTENT ALIGNMENT (CED-FOCUSED):
+   - Address EVERY Learning Objective explicitly
+   - Cover ALL Essential Knowledge points
+   - No extra content beyond CED requirements
+   - Use CED terminology consistently
+   - Connect concepts to specified learning goals
    
 3. ALL content MUST be in ENGLISH only
 4. Generate EXACTLY ${flashcardCount} flashcards (not more, not less)
@@ -472,40 +485,78 @@ FLASHCARD DIVERSIFICATION: MUST include a MIX of all three card types:
     Each flashcard MUST have a "card_type" field with one of these exact values
 
 WRITING ORDER & STRATEGY:
-    1. Generate flashcards FIRST (each card: 30-40 words total, not 50+)
-    2. Generate quiz SECOND (each explanation: 35-50 words, not 60+)
-    3. Generate study_guide LAST - TRACK WORD COUNT AS YOU WRITE
-    4. STOP at ${Math.floor(targetWordCount * 1.05)} words and close JSON
+    1. Generate flashcards FIRST (each card: 30-40 words total)
+    2. Generate quiz SECOND (each explanation: 35-50 words)
+    3. Generate study_guide LAST - ORGANIZE BY LEARNING OBJECTIVES
+    4. STOP at ${targetWordCount + 50} words and close JSON
 
-STUDY GUIDE WORD BUDGET (${targetWordCount} words TOTAL):
+STUDY GUIDE STRUCTURE (${targetWordCount} words, ±50-100 tolerance):
+
+    Format with CLEAR PARAGRAPHS:
     
     ${targetWordCount <= 1000 ? `
-    For ${targetWordCount} words:
-    - Introduction: 80-100 words (define topic, explain importance)
-    - Section 1: 200-250 words (first learning objective + 1 example)
-    - Section 2: 200-250 words (second learning objective + 1 example)
-    - Section 3: 200-250 words (third learning objective + 1 example)
-    - Conclusion: 80-100 words (summarize key points)
+    For ${targetWordCount} words - Organize into 5-6 SHORT PARAGRAPHS:
+    
+    Paragraph 1 (80-100 words): Brief introduction
+    - Define the topic in one sentence
+    - Explain why it matters (2-3 sentences)
+    - Preview main points
+    
+    Paragraphs 2-4 (200-250 words each): One paragraph per Learning Objective
+    - Start with the learning objective concept
+    - Explain core idea (3-4 SHORT sentences)
+    - Provide ONE concrete example
+    - Connect to Essential Knowledge point
+    
+    Paragraph 5 (80-100 words): Brief conclusion
+    - Summarize key takeaways (3-4 sentences)
+    - Link concepts together
     ` : targetWordCount <= 1500 ? `
-    For ${targetWordCount} words:
-    - Introduction: 100-120 words
-    - Core Concept 1: 300-350 words (theory + 1 example)
-    - Core Concept 2: 300-350 words (theory + 1 example)
-    - Core Concept 3: 300-350 words (theory + 1 example)
-    - Conclusion: 100-120 words
+    For ${targetWordCount} words - Organize into 6-8 CLEAR PARAGRAPHS:
+    
+    Paragraph 1 (100-120 words): Introduction
+    - Define topic and context
+    - State importance
+    - Preview structure
+    
+    Paragraphs 2-4 (300-350 words each): One per major Learning Objective
+    Each paragraph should:
+    - Begin with clear topic sentence
+    - Explain concept in 4-5 SHORT sentences (15-20 words each)
+    - Include ONE specific example
+    - Reference relevant Essential Knowledge
+    - Use paragraph break before next concept
+    
+    Paragraph 5 (100-120 words): Conclusion
+    - Recap main concepts
+    - Synthesize connections
     ` : `
-    For ${targetWordCount} words:
-    - Introduction: 120-150 words
-    - Main concepts: ${Math.floor((targetWordCount - 270) / 3)} words each (3-4 sections)
-    - Conclusion: 120-150 words
+    For ${targetWordCount} words - Organize into 8-10 READABLE PARAGRAPHS:
+    
+    Introduction paragraph (120-150 words)
+    
+    3-4 main concept paragraphs (~${Math.floor((targetWordCount - 270) / 3)} words each):
+    - Each paragraph = one Learning Objective
+    - Short sentences throughout
+    - Clear paragraph breaks between concepts
+    
+    Conclusion paragraph (120-150 words)
     `}
     
-    STRICT RULES:
-    - Each section: ONE example only (not 2-3)
-    - NO redundant explanations
-    - NO flowery language ("it is important to note that", "furthermore", etc.)
-    - Direct, efficient writing
-    - STOP when you reach ${Math.floor(targetWordCount * 1.05)} words`;
+    READABILITY RULES:
+    ✓ Paragraph break before each new Learning Objective
+    ✓ Sentences: 15-20 words maximum (split long sentences)
+    ✓ One idea per sentence
+    ✓ Simple vocabulary (AP student level)
+    ✓ Active voice preferred
+    ✓ Concrete examples over abstract theory
+    
+    CED ALIGNMENT:
+    ✓ Reference Learning Objectives by concept (not by number)
+    ✓ Cover ALL Essential Knowledge points
+    ✓ Use CED terminology exactly
+    ✓ No content beyond CED scope
+    ✓ Connect each paragraph to specific learning goal`;
 
     // 调用 Gemini API
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
