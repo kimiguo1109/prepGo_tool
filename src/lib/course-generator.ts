@@ -225,8 +225,8 @@ export class CourseGenerator {
         onProgress?.(`📄 处理 Topic ${topic.topic_number} [${progress}]`, 45 + Math.round((taskIndex / totalTopics) * 45));
         
         try {
-          // 带重试的内容生成（4次重试）
-          const content = await this.generateTopicContentWithRetry(topic, 4, onProgress, totalTopics);
+          // 带重试的内容生成（v12.8.14: 6次重试）
+          const content = await this.generateTopicContentWithRetry(topic, 6, onProgress, totalTopics);
           
           // 更新原始数据
           Object.assign(enhancedData.units[unitIndex].topics[topicIndex], content);
@@ -280,19 +280,20 @@ export class CourseGenerator {
   }
 
   /**
-   * 带重试机制的 Topic 内容生成（4次重试 + 快速重试）
+   * 带重试机制的 Topic 内容生成（6次重试 + 指数退避）
+   * v12.8.14: 增加重试次数到6次，使用更长的延迟
    */
   private async generateTopicContentWithRetry(
     topic: any, 
-    maxRetries: number = 4,
+    maxRetries: number = 6,  // v12.8.14: 从4次增加到6次
     onProgress?: (message: string, percent?: number) => void,
     _totalTopics?: number
   ): Promise<any> {
     let lastError: any;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      // 超时设置：60秒
-      const timeout = 60000;
+      // v12.8.14: 超时设置：90秒（与 axios timeout 一致）
+      const timeout = 90000;
       
       try {
         const timeoutPromise = new Promise((_, reject) => 
@@ -312,8 +313,9 @@ export class CourseGenerator {
         lastError = error;
         
         if (attempt < maxRetries) {
-          // 快速重试：200ms, 300ms, 400ms
-          const delay = 200 + (attempt - 1) * 100;
+          // v12.8.14: 指数退避策略：200ms, 500ms, 1000ms, 2000ms, 3000ms, 5000ms
+          const delays = [200, 500, 1000, 2000, 3000, 5000];
+          const delay = delays[Math.min(attempt - 1, delays.length - 1)];
           console.warn(`    ⚠️  Topic ${topic.topic_number} 第 ${attempt} 次失败: ${lastError?.message}，${delay}ms 后重试...`);
           onProgress?.(`⚠️  Topic ${topic.topic_number} 第 ${attempt} 次失败，${delay}ms 后重试...`);
           await new Promise(resolve => setTimeout(resolve, delay));
