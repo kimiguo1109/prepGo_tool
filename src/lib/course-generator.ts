@@ -181,7 +181,7 @@ export class CourseGenerator {
    * 为每个 Topic 生成 Study Guide、Flashcards、Quiz
    */
   async generateLearningContent(courseData: APCourse, onProgress?: (message: string, percent?: number) => void): Promise<APCourse> {
-    console.log('📝 步骤 3/3: 生成具体学习内容（工作池模式，5个worker）...');
+    console.log('📝 步骤 3/3: 生成具体学习内容（工作池模式，8个worker）...');
 
     // 统计总 Topic 数量
     const totalTopics = courseData.units.reduce((sum, unit) => sum + unit.topics.length, 0);
@@ -395,6 +395,45 @@ Generate the following content in strict JSON format:
   ]
 }
 
+FORMULA-BASED QUESTIONS (v12.8.19 - for Math/Statistics/Science courses):
+   ⚠️ CRITICAL for courses like: AP Statistics, AP Calculus, AP Physics, AP Chemistry
+   
+   IF the topic content includes:
+   - Mathematical formulas (mean, median, standard deviation, z-score, etc.)
+   - Statistical calculations (probability, confidence intervals, hypothesis tests, etc.)
+   - Chemical equations or quantitative analysis
+   - Physics formulas (force, energy, momentum, etc.)
+   
+   THEN you MUST include formula-based calculation questions:
+   
+   a) Question Distribution for Math/Statistics Topics:
+      - 40-60% of quiz questions SHOULD involve calculations or formula application
+      - Include worked-out numerical examples in questions
+      - Provide specific data for students to calculate
+   
+   b) Formula Question Format:
+      "question": "A dataset has values: 12, 15, 18, 20, 25. Calculate the mean and standard deviation. Which is closest to the mean?",
+      "options": ["14.5", "16.0", "18.0", "20.5"],
+      "correct_answer": "C",
+      "explanation": "Mean = (12+15+18+20+25)/5 = 90/5 = 18.0. The standard deviation is approximately 4.7."
+   
+   c) Examples of Formula-Based Questions:
+      - Statistics: "Given p-hat = 0.45 and n = 100, calculate the standard error..."
+      - Statistics: "If z-score = 1.96, what percentile does this represent?"
+      - Chemistry: "If 2.0 mol of H2 reacts with 1.0 mol of O2, how many grams of H2O..."
+      - Physics: "A 5 kg object accelerates at 3 m/s^2. What is the net force?"
+   
+   d) Formula Writing Guidelines:
+      - Write formulas in plain text: "mean = sum of values / n"
+      - Show step-by-step calculation in explanation
+      - Use actual numbers from the topic's Essential Knowledge
+      - Make sure calculations are correct and verifiable
+   
+   e) Balance with Conceptual Questions:
+      - 40-60%: Calculation/formula questions
+      - 40-60%: Conceptual understanding questions
+      - Mix both types to test comprehensive understanding
+
 CRITICAL REQUIREMENTS (STRICT PRIORITY ORDER):
 1. ⚠️ JSON COMPLETENESS - HIGHEST PRIORITY:
    - The ENTIRE JSON MUST be complete with proper closing brackets
@@ -483,6 +522,17 @@ FLASHCARD DIVERSIFICATION: MUST include a MIX of all three card types:
     - "Concept-Explanation": Explaining principles or processes
     - "Scenario/Question-Answer": Application questions or scenarios
     Each flashcard MUST have a "card_type" field with one of these exact values
+    
+FORMULA FLASHCARDS (v12.8.19 - for Math/Statistics/Science courses):
+    For courses with mathematical/statistical/scientific content:
+    - 30-40% of flashcards SHOULD test formula knowledge and calculation
+    - Include formula definition cards: 
+      Front: "What is the formula for standard error of a sample proportion?"
+      Back: "SE(p-hat) = sqrt(p(1-p)/n), where p is the proportion and n is the sample size"
+    - Include calculation practice cards:
+      Front: "Calculate the z-score for x=85, mean=75, SD=5"
+      Back: "z = (x - mean)/SD = (85-75)/5 = 2.0. This value is 2 standard deviations above the mean."
+    - Show step-by-step work in the answer
 
 WRITING ORDER & STRATEGY:
     1. Generate flashcards FIRST (each card: 30-40 words total)
