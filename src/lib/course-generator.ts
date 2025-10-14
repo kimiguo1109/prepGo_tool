@@ -369,19 +369,25 @@ Generate the following content in strict JSON format:
   ]
 }
 
-CRITICAL REQUIREMENTS:
-1. 🔴 STUDY GUIDE WORD COUNT IS MANDATORY: 
-   - MUST be between ${Math.floor(targetWordCount * 0.85)} and ${Math.floor(targetWordCount * 1.15)} words
-   - Target: ${targetWordCount} words
-   - Anything below ${Math.floor(targetWordCount * 0.85)} words will be REJECTED
-   - Write in rich detail with extensive explanations, examples, and analysis
+CRITICAL REQUIREMENTS (PRIORITY ORDER):
+1. ⚠️ JSON COMPLETENESS IS THE TOP PRIORITY:
+   - The ENTIRE JSON MUST be complete with proper closing brackets
+   - If approaching output token limit, reduce study_guide length to ensure valid JSON
+   - NEVER let the response end mid-sentence or with incomplete JSON structure
+   - A complete JSON with slightly shorter study_guide is better than truncated JSON
    
-2. ALL content MUST be in ENGLISH only
-3. Generate EXACTLY ${flashcardCount} flashcards (not more, not less)
-4. Generate EXACTLY ${quizCount} quiz questions (not more, not less)
-5. Use academic but clear language suitable for AP students
-6. Return ONLY valid JSON - NO comments, NO markdown backticks, NO extra text before or after
-7. Do NOT use Chinese or any other non-English languages
+2. 🔴 STUDY GUIDE WORD COUNT TARGET: 
+   - Aim for ${Math.floor(targetWordCount * 0.85)} to ${Math.floor(targetWordCount * 1.15)} words
+   - Target: ${targetWordCount} words
+   - Write in rich detail with extensive explanations, examples, and analysis
+   - BUT: If you sense you're running low on tokens, prioritize completing all flashcards and quiz, then write study_guide as detailed as possible within remaining tokens
+   
+3. ALL content MUST be in ENGLISH only
+4. Generate EXACTLY ${flashcardCount} flashcards (not more, not less)
+5. Generate EXACTLY ${quizCount} quiz questions (not more, not less)
+6. Use academic but clear language suitable for AP students
+7. Return ONLY valid JSON - NO comments, NO markdown backticks, NO extra text before or after
+8. Do NOT use Chinese or any other non-English languages
 
 8. SPECIAL CHARACTERS HANDLING (CRITICAL for Chemistry, Math, Physics):
    - Chemical formulas: Use plain text (H2O not $H_2O$, CO2 not $CO_2$)
@@ -425,30 +431,27 @@ CRITICAL REQUIREMENTS:
     - "Scenario/Question-Answer": Application questions or scenarios
     Each flashcard MUST have a "card_type" field with one of these exact values
 
-11. WORD COUNT IS THE TOP PRIORITY FOR STUDY GUIDE:
-    - The study guide MUST reach ${Math.floor(targetWordCount * 0.85)}-${Math.floor(targetWordCount * 1.15)} words
-    - Flashcards and quiz questions should be complete BUT keep them concise
-    - Allocate MOST of your output tokens to the study guide
-    - If approaching token limit, shorten quiz explanations but NEVER shorten study guide below minimum
+11. STUDY GUIDE WRITING STRATEGY (Target ${targetWordCount} words):
+    - Aim for ${Math.floor(targetWordCount * 0.85)}-${Math.floor(targetWordCount * 1.15)} words
+    - Write flashcards and quiz FIRST (keep explanations concise, 50-100 words each)
+    - Then write study_guide as detailed as possible with remaining tokens
+    - CRITICAL: Monitor your output length and ensure you can complete ALL three sections with proper JSON closing
 
-12. MANDATORY STRATEGIES TO REACH ${targetWordCount} WORDS:
-    You MUST include ALL of the following in your study guide:
+12. RECOMMENDED STUDY GUIDE STRUCTURE FOR ${targetWordCount} WORDS:
+    Try to include the following elements (adjust if needed to fit token limits):
     
-    ✓ Introduction (100-150 words): Explain the topic's significance and context
-    ✓ Key Terms Section: Define EACH important term with 50-80 word explanations and examples
-    ✓ Concept Deep-Dive: Explain EACH learning objective with:
-       - Step-by-step reasoning (not just statements)
-       - Multiple concrete examples for each concept
+    ✓ Introduction (100-150 words): Topic significance and context
+    ✓ Key Terms: Define important terms with examples (50-80 words each)
+    ✓ Concept Explanations: Cover each learning objective with:
+       - Step-by-step reasoning
+       - Concrete examples
        - Cause-and-effect relationships
-       - Comparisons and contrasts where applicable
     ✓ Real-World Applications: 2-3 detailed examples (50+ words each)
-    ✓ Connections: How this topic relates to other concepts (80-100 words)
-    ✓ Common Misconceptions: Address 2-3 with explanations (40+ words each)
-    ✓ Conclusion/Summary: Synthesize the key ideas (80-100 words)
+    ✓ Connections: How this relates to other concepts (80-100 words)
+    ✓ Common Misconceptions: Address 2-3 (40+ words each)
+    ✓ Conclusion: Synthesize key ideas (80-100 words)
     
-    PARAGRAPH REQUIREMENT: Write ${Math.ceil(targetWordCount / 120)}-${Math.ceil(targetWordCount / 100)} substantial paragraphs of 100-150 words EACH.
-    
-    DO NOT write brief summaries. EXPAND every point with thorough analysis and detailed examples.`;
+    BALANCE: Aim for ${Math.ceil(targetWordCount / 120)}-${Math.ceil(targetWordCount / 100)} paragraphs of 100-150 words each, BUT prioritize JSON completeness over exact word count.`;
 
     // 调用 Gemini API
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
@@ -462,7 +465,7 @@ CRITICAL REQUIREMENTS:
       ],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 16000,  // v12.8.6: 增加到16000，支持更长的 study guide
+        maxOutputTokens: 24000,  // v12.8.10: 增加到24000，防止 JSON 截断
       }
     }, {
       headers: {
