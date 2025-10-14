@@ -588,9 +588,8 @@ CRITICAL REQUIREMENTS:
       else if (mappedCardType === 'Scenario/Question-Answer') mappedCardType = 'application';
       
       // v12.8.3: 只保留 image_suggested，移除 requires_image
+      // v12.8.8: 移除 card_id 和 topic_id（不需要在 complete JSON 中）
       return {
-        card_id: `${topicId}_fc_${String(cardIdx + 1).padStart(3, '0')}`,
-        topic_id: topicId,
         card_type: mappedCardType,
         front_content: card.front,
         back_content: card.back,
@@ -621,9 +620,8 @@ CRITICAL REQUIREMENTS:
       }
       
       // v12.8.3: 只保留 image_suggested，移除 requires_image
+      // v12.8.8: 移除 quiz_id 和 topic_id（不需要在 complete JSON 中）
       return {
-        quiz_id: `${topicId}_q_${String(qIdx + 1).padStart(3, '0')}`,
-        topic_id: topicId,
         difficulty_level: difficultyLevel,
         question_text: q.question,
         options: optionsObj,
@@ -638,11 +636,10 @@ CRITICAL REQUIREMENTS:
     
     // v12.8.3: study_guide 改为对象格式，包含完整的元数据
     // v12.8.4: 添加 study_guide_id 和 topic_id
+    // v12.8.8: 移除 study_guide_id 和 topic_id（不需要在 complete JSON 中）
     const studyGuideText = content.study_guide || '';
     const wordCount = this.calculateWordCount(studyGuideText);
     const studyGuide = studyGuideText ? {
-      study_guide_id: `${topicId}_learn`,
-      topic_id: topicId,
       content_markdown: studyGuideText,
       word_count: wordCount,
       reading_minutes: this.calculateReadingMinutes(wordCount),

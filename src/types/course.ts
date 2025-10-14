@@ -134,17 +134,13 @@ export interface APTopic {
     quiz_count: number;
   };
   study_guide?: {
-    study_guide_id: string;  // v12.8.4: 添加 study_guide_id (格式: ap_us_history_1_1_learn)
-    topic_id: string;  // v12.8.4: 添加 topic_id (格式: ap_us_history_1_1)
     content_markdown: string;
     word_count: number;
     reading_minutes: number;
     version: string;
     status: string;
-  } | null;  // v12.8.3: 改为对象格式，包含元数据
+  } | null;  // v12.8.3: 改为对象格式，包含元数据; v12.8.8: 移除 ID 字段
   flashcards?: Array<{
-    card_id: string;  // v12.8.4: 添加 card_id (格式: ap_us_history_1_1_fc_001)
-    topic_id: string;  // v12.8.4: 添加 topic_id (格式: ap_us_history_1_1)
     card_type: 'definition' | 'concept' | 'application' | 'person_event';  // v12.8.4: 更新类型名称
     front_content: string;  // v12.8.4: front → front_content
     back_content: string;  // v12.8.4: back → back_content
@@ -153,10 +149,8 @@ export interface APTopic {
     image_suggestion_description: string | null;  // v12.8: 配图建议描述
     version: string;  // v12.8: 版本号
     status: string;  // v12.8: 状态（draft/published）
-  }>;
+  }>;  // v12.8.8: 移除 card_id 和 topic_id
   quiz?: Array<{
-    quiz_id: string;  // v12.8.4: 添加 quiz_id (格式: ap_us_history_1_1_q_001)
-    topic_id: string;  // v12.8.4: 添加 topic_id (格式: ap_us_history_1_1)
     difficulty_level: number;  // v12.8: 难度等级1-10
     question_text: string;  // v12.8.4: question → question_text
     options: { A: string; B: string; C: string; D: string };  // v12.8.4: 改为对象格式
@@ -166,7 +160,7 @@ export interface APTopic {
     image_suggestion_description: string | null;  // v12.8: 配图建议描述
     version: string;  // v12.8: 版本号
     status: string;  // v12.8: 状态（draft/published）
-  }>;
+  }>;  // v12.8.8: 移除 quiz_id 和 topic_id
 }
 
 /**

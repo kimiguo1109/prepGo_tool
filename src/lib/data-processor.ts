@@ -25,15 +25,9 @@ export async function processAPCourseData(
   const statistics = calculateStatistics(courseData);
 
   // 步骤3: 为每个单元初始化学习内容结构
+  // v12.8.8: 移除 learning_content（不需要在 complete JSON 中）
   const enrichedUnits = courseData.units.map(unit => ({
-    ...unit,
-    learning_content: {
-      generation_status: {
-        study_guide: 'pending' as const,
-        flashcards: 'pending' as const,
-        quiz: 'pending' as const,
-      }
-    }
+    ...unit
   }));
 
   // 步骤3: 合并数据
