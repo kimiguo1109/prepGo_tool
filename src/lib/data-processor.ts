@@ -66,27 +66,28 @@ function calculateStatistics(courseData: APCourse): CourseStatistics {
     0
   );
 
+  // v12.8.9: 暂时注释掉，前端还未使用
   // 单元统计详情
-  const unit_statistics = courseData.units.map(unit => 
-    calculateUnitStatistics(unit)
-  );
+  // const unit_statistics = courseData.units.map(unit => 
+  //   calculateUnitStatistics(unit)
+  // );
 
   // 知识点层级分布
-  const knowledge_hierarchy = calculateKnowledgeHierarchy(courseData);
+  // const knowledge_hierarchy = calculateKnowledgeHierarchy(courseData);
 
   // 考试权重分析
-  const exam_weight_distribution = courseData.units.map(unit => 
-    calculateExamWeight(unit)
-  );
+  // const exam_weight_distribution = courseData.units.map(unit => 
+  //   calculateExamWeight(unit)
+  // );
 
   return {
     total_units,
     total_topics,
     total_learning_objectives,
     total_essential_knowledge,
-    unit_statistics,
-    knowledge_hierarchy,
-    exam_weight_distribution,
+    // unit_statistics,
+    // knowledge_hierarchy,
+    // exam_weight_distribution,
   };
 }
 

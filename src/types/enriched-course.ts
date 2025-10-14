@@ -97,14 +97,14 @@ export interface CourseStatistics {
   total_learning_objectives: number;
   total_essential_knowledge: number;
   
-  // 单元统计详情
-  unit_statistics: UnitStatistics[];
+  // 单元统计详情（v12.8.9: 暂时注释，前端还未使用）
+  unit_statistics?: UnitStatistics[];
   
-  // 知识点层级分布
-  knowledge_hierarchy: KnowledgeHierarchy;
+  // 知识点层级分布（v12.8.9: 暂时注释，前端还未使用）
+  knowledge_hierarchy?: KnowledgeHierarchy;
   
-  // 考试权重分析
-  exam_weight_distribution: ExamWeightDistribution[];
+  // 考试权重分析（v12.8.9: 暂时注释，前端还未使用）
+  exam_weight_distribution?: ExamWeightDistribution[];
 }
 
 /**
