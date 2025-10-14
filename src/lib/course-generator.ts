@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import type { 
   APCourse,
   DualJSONOutput,
@@ -13,11 +12,6 @@ import type {
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
-const PROXY_URL = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || '';
-
-// 创建代理 agent（仅在本地开发且配置了代理时使用）
-const IS_VERCEL = process.env.VERCEL === '1';
-const httpsAgent = !IS_VERCEL && PROXY_URL ? new HttpsProxyAgent(PROXY_URL) : undefined;
 
 /**
  * PrepGo 课程生成器 - 完整的工作流
@@ -343,270 +337,86 @@ export class CourseGenerator {
     const ekSummaries = topic.essential_knowledge.map((ek: any) => ek.summary).join('; ');
     const flashcardCount = (topic as any).review?.flashcards_count || 3;
     const quizCount = (topic as any).practice?.quiz_count || 8;
-    // v12.8.12: 设置合理的默认字数（1500），避免 AI 过度生成
-    const targetWordCount = (topic as any).learn?.study_guide_words || 1500;
+    // 根据 topic 内容复杂度动态设置字数（800-1500）
+    const rawWordCount = (topic as any).learn?.study_guide_words || 1000;
+    const targetWordCount = Math.max(800, Math.min(rawWordCount, 1500));
 
-    const prompt = `You are an AP course content generator. Create high-quality educational content for the following topic.
+    const prompt = `Generate AP content for: ${topic.topic_title}
 
-🚨 CRITICAL REQUIREMENTS 🚨
-1. WORD COUNT: ${targetWordCount} words (tolerance: ±50-100 words)
-   - Target: ${targetWordCount} words
-   - Acceptable: ${targetWordCount - 100} to ${targetWordCount + 100} words
-   - STOP at ${targetWordCount + 50} words
-   
-2. READABILITY:
-   - Use clear paragraph breaks (separate concepts)
-   - Write short, focused sentences (15-20 words max per sentence)
-   - One idea per sentence
-   - Use simple, direct language
-   
-3. CONTENT ALIGNMENT:
-   - STRICTLY follow the Learning Objectives below
-   - Address EVERY point in Essential Knowledge
-   - No additional content beyond CED requirements
-   - Stay focused on specified learning goals
+LEARNING OBJECTIVES: ${loSummaries}
+ESSENTIAL KNOWLEDGE: ${ekSummaries}
 
-TOPIC: ${topic.topic_title}
+REQUIREMENTS:
+- Study guide: ${targetWordCount} words (±100 tolerance)
+- Flashcards: EXACTLY ${flashcardCount} cards
+- Quiz: EXACTLY ${quizCount} MCQ questions
+- Address ALL Learning Objectives and Essential Knowledge points
+- English only
 
-LEARNING OBJECTIVES (MUST address ALL):
-${loSummaries}
-
-ESSENTIAL KNOWLEDGE (MUST cover ALL):
-${ekSummaries}
-
-Generate the following content in strict JSON format:
+JSON format:
 
 {
-  "study_guide": "TARGET: ${targetWordCount} words (±50-100 words). Write a clear, well-structured study guide that DIRECTLY addresses each Learning Objective and Essential Knowledge point. Use paragraph breaks to separate major concepts. Keep sentences SHORT (15-20 words max). Write in simple, direct language suitable for AP students. Focus ONLY on CED-specified content.",
-  "flashcards": [
-    {
-      "front": "Clear question or concept",
-      "back": "Concise answer or explanation",
-      "card_type": "Term-Definition" | "Concept-Explanation" | "Scenario/Question-Answer"
-    }
-  ],
-  "quiz": [
-    {
-      "question": "Multiple choice question",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correct_answer": "A",
-      "explanation": "Detailed explanation of the correct answer"
-    }
-  ]
+  "study_guide": "Write ${targetWordCount}-word comprehensive guide in MARKDOWN format with excellent readability.",
+  "flashcards": [{"front": "Q", "back": "A", "card_type": "Term-Definition|Concept-Explanation|Scenario/Question-Answer"}],
+  "quiz": [{"question": "Q", "options": ["A","B","C","D"], "correct_answer": "A", "explanation": "Why"}]
 }
 
-FORMULA-BASED QUESTIONS (v12.8.19 - for Math/Statistics/Science courses):
-   ⚠️ CRITICAL for courses like: AP Statistics, AP Calculus, AP Physics, AP Chemistry
-   
-   IF the topic content includes:
-   - Mathematical formulas (mean, median, standard deviation, z-score, etc.)
-   - Statistical calculations (probability, confidence intervals, hypothesis tests, etc.)
-   - Chemical equations or quantitative analysis
-   - Physics formulas (force, energy, momentum, etc.)
-   
-   THEN you MUST include formula-based calculation questions:
-   
-   a) Question Distribution for Math/Statistics Topics:
-      - 40-60% of quiz questions SHOULD involve calculations or formula application
-      - Include worked-out numerical examples in questions
-      - Provide specific data for students to calculate
-   
-   b) Formula Question Format:
-      "question": "A dataset has values: 12, 15, 18, 20, 25. Calculate the mean and standard deviation. Which is closest to the mean?",
-      "options": ["14.5", "16.0", "18.0", "20.5"],
-      "correct_answer": "C",
-      "explanation": "Mean = (12+15+18+20+25)/5 = 90/5 = 18.0. The standard deviation is approximately 4.7."
-   
-   c) Examples of Formula-Based Questions:
-      - Statistics: "Given p-hat = 0.45 and n = 100, calculate the standard error..."
-      - Statistics: "If z-score = 1.96, what percentile does this represent?"
-      - Chemistry: "If 2.0 mol of H2 reacts with 1.0 mol of O2, how many grams of H2O..."
-      - Physics: "A 5 kg object accelerates at 3 m/s^2. What is the net force?"
-   
-   d) Formula Writing Guidelines:
-      - Write formulas in plain text: "mean = sum of values / n"
-      - Show step-by-step calculation in explanation
-      - Use actual numbers from the topic's Essential Knowledge
-      - Make sure calculations are correct and verifiable
-   
-   e) Balance with Conceptual Questions:
-      - 40-60%: Calculation/formula questions
-      - 40-60%: Conceptual understanding questions
-      - Mix both types to test comprehensive understanding
+STUDY GUIDE MARKDOWN FORMAT (CRITICAL):
+- Use markdown headings: ## for main sections, ### for subsections
+- Use **bold** for key terms and important concepts
+- Use bullet points (- ) or numbered lists (1. ) where appropriate
+- Use double line breaks (\\n\\n) between paragraphs
+- Write short, clear sentences (15-20 words max)
+- One main idea per sentence
+- Structure: Introduction → Body sections (one per LO with ## headings) → Conclusion
+- Make it professional, well-formatted, and easy to read
 
-CRITICAL REQUIREMENTS (STRICT PRIORITY ORDER):
-1. ⚠️ JSON COMPLETENESS - HIGHEST PRIORITY:
-   - The ENTIRE JSON MUST be complete with proper closing brackets
-   - If approaching output token limit (~20000 tokens), STOP writing and close JSON properly
-   
-2. 🔴 WORD COUNT CONTROL:
-   - Study guide: ${targetWordCount} words (acceptable: ${targetWordCount - 100} to ${targetWordCount + 100})
-   - STOP at ${targetWordCount + 50} words
-   - Track your progress and plan accordingly
-   
-3. 📖 READABILITY & STRUCTURE:
-   - Use paragraph breaks: Start new paragraph for each major concept/Learning Objective
-   - Short sentences: 15-20 words maximum per sentence
-   - One clear idea per sentence
-   - Simple, direct language (avoid jargon unless necessary)
-   - Natural flow: concept → explanation → example → application
-   
-4. 🎯 CONTENT ALIGNMENT (CED-FOCUSED):
-   - Address EVERY Learning Objective explicitly
-   - Cover ALL Essential Knowledge points
-   - No extra content beyond CED requirements
-   - Use CED terminology consistently
-   - Connect concepts to specified learning goals
-   
-3. ALL content MUST be in ENGLISH only
-4. Generate EXACTLY ${flashcardCount} flashcards (not more, not less)
-5. Generate EXACTLY ${quizCount} quiz questions (not more, not less)
-6. Use academic but clear language suitable for AP students
-7. Return ONLY valid JSON - NO comments, NO markdown backticks, NO extra text before or after
-8. Do NOT use Chinese or any other non-English languages
+FORMULA QUESTIONS (for Math/Science courses):
+- 40-60% of quiz questions should involve calculations with specific numbers
+- Example: "Dataset: 12,15,18,20,25. Calculate the mean. Which is closest?" Options: ["14.5","16.0","18.0","20.5"]
+- Flashcards: Include formula definition cards and calculation practice cards
+- Use plain text for formulas: "mean = sum/n" or "z = (x - mean)/SD"
 
-SPECIAL CHARACTERS HANDLING (CRITICAL for Chemistry, Math, Physics):
-   - Chemical formulas: Use plain text (H2O not $H_2O$, CO2 not $CO_2$)
-   - Greek letters: Use full names (Delta-H not ΔH, Delta-S not ΔS, theta not θ)
-   - Superscripts/subscripts: Use plain text with parentheses (H2O, CO2, x^2, H+ ion)
-   - Math expressions: Use plain text (2x + 3 not $2x + 3$)
-   - Degrees: Use word "degrees" not ° symbol
-   - NO LaTeX formatting ($...$)
-   - NO special Unicode symbols
+CRITICAL RULES:
+1. Complete JSON with proper closing brackets (HIGHEST PRIORITY)
+2. English only, NO Chinese or other languages
+3. Plain text for special characters:
+   - Chemical formulas: H2O, CO2 (not $H_2O$)
+   - Greek letters: Delta-H, theta (not ΔH, θ)
+   - Math: x^2, 2x+3 (not LaTeX $x^2$)
+4. NO double quotes inside string values - use single quotes instead
+5. NO fancy punctuation (", ", —) - use standard ASCII only
+6. Card types must be: Term-Definition, Concept-Explanation, or Scenario/Question-Answer
+7. Write study_guide as one continuous string (use \\n\\n for paragraph breaks)
+8. Generation order: flashcards → quiz → study_guide
 
-IMAGE FLAGGING - MARK requires_image CORRECTLY:
-   For EACH flashcard and quiz question, set requires_image flag:
-   
-   A. General Rule (All Courses):
-      - TRUE if question is unintelligible or impossible to answer without visual
-      - Example: "Which labeled structure (A/B/C) is the cerebellum?"
-   
-   B. History/Social Science Rule (CRITICAL for this course):
-      - TRUE if question is a STIMULUS-BASED question requiring PRIMARY or SECONDARY source analysis
-      - Include: political cartoons, historical maps, photographs, propaganda posters, charts/graphs
-      - Example: "Based on the political cartoon from 1898, what does the cartoonist suggest about..."
-      - Example: "The map above shows territorial expansion. Which acquisition..."
-      - These are ANALYSIS questions where the source material is ESSENTIAL
-   
-   C. Exclusion Rule:
-      - FALSE if question only mentions a visualizable object but asks about function/definition
-      - Example: "What was the purpose of the Monroe Doctrine?" (no image needed)
+STUDY GUIDE STRUCTURE (${targetWordCount} words in MARKDOWN):
+- Introduction section (${Math.floor(targetWordCount * 0.1)} words): Define topic, explain importance, preview main points
+- Body sections (${Math.ceil(loSummaries.split(';').length)} sections with ## headings, ${Math.floor(targetWordCount * 0.7 / Math.max(1, loSummaries.split(';').length))} words each):
+  * Each section starts with ## Section Title
+  * One section per Learning Objective
+  * Use **bold** for key terms
+  * Include examples and explanations
+  * Use bullet points or lists where helpful
+- Conclusion section (${Math.floor(targetWordCount * 0.1)} words): Summarize with ## Conclusion heading
+- Use \\n\\n between all sections and paragraphs
+- Cover all Essential Knowledge points
+- Professional markdown formatting throughout
 
-JSON SYNTAX - CRITICAL FOR PARSING SUCCESS:
-   ⚠️ The following rules are MANDATORY to prevent JSON parsing errors:
-   
-   a) String Content Rules:
-      - NEVER use double quotes (") inside string values
-      - Use single quotes (') or apostrophes for possessives (it's, don't, can't)
-      - Replace any internal quotes with apostrophes: "the 'concept' is" NOT "the \"concept\" is"
-      - For emphasis or terminology, use single quotes: 'key term' NOT "key term"
-   
-   b) Formatting Rules:
-      - In study_guide: Write as ONE continuous line (no line breaks)
-      - Replace all newlines with spaces in long text
-      - NO trailing commas after last array/object item
-      - Use ONLY standard ASCII punctuation
-   
-   c) Special Characters:
-      - Avoid fancy quotes (", ", ', ') - use standard quotes only
-      - Avoid em dashes (—) - use regular hyphens (-)
-      - Avoid ellipsis character (…) - use three periods (...)
-   
-   d) Validation:
-      - Every opening bracket must have closing bracket: { }, [ ]
-      - Every key must have quoted value: "key": "value"
-      - Commas between items but NOT before closing bracket
+MARKDOWN EXAMPLE:
+## Introduction
+This topic explores... **Key concept** is important because...
 
-FLASHCARD DIVERSIFICATION: MUST include a MIX of all three card types:
-    - "Term-Definition": Simple vocabulary or terminology
-    - "Concept-Explanation": Explaining principles or processes
-    - "Scenario/Question-Answer": Application questions or scenarios
-    Each flashcard MUST have a "card_type" field with one of these exact values
-    
-FORMULA FLASHCARDS (v12.8.19 - for Math/Statistics/Science courses):
-    For courses with mathematical/statistical/scientific content:
-    - 30-40% of flashcards SHOULD test formula knowledge and calculation
-    - Include formula definition cards: 
-      Front: "What is the formula for standard error of a sample proportion?"
-      Back: "SE(p-hat) = sqrt(p(1-p)/n), where p is the proportion and n is the sample size"
-    - Include calculation practice cards:
-      Front: "Calculate the z-score for x=85, mean=75, SD=5"
-      Back: "z = (x - mean)/SD = (85-75)/5 = 2.0. This value is 2 standard deviations above the mean."
-    - Show step-by-step work in the answer
+## Main Concept 1
+**Term**: Definition here. Short sentences explain the idea.
 
-WRITING ORDER & STRATEGY:
-    1. Generate flashcards FIRST (each card: 30-40 words total)
-    2. Generate quiz SECOND (each explanation: 35-50 words)
-    3. Generate study_guide LAST - ORGANIZE BY LEARNING OBJECTIVES
-    4. STOP at ${targetWordCount + 50} words and close JSON
+- Important point 1
+- Important point 2
 
-STUDY GUIDE STRUCTURE (${targetWordCount} words, ±50-100 tolerance):
+Example: Specific case showing the concept.
 
-    Format with CLEAR PARAGRAPHS:
-    
-    ${targetWordCount <= 1000 ? `
-    For ${targetWordCount} words - Organize into 5-6 SHORT PARAGRAPHS:
-    
-    Paragraph 1 (80-100 words): Brief introduction
-    - Define the topic in one sentence
-    - Explain why it matters (2-3 sentences)
-    - Preview main points
-    
-    Paragraphs 2-4 (200-250 words each): One paragraph per Learning Objective
-    - Start with the learning objective concept
-    - Explain core idea (3-4 SHORT sentences)
-    - Provide ONE concrete example
-    - Connect to Essential Knowledge point
-    
-    Paragraph 5 (80-100 words): Brief conclusion
-    - Summarize key takeaways (3-4 sentences)
-    - Link concepts together
-    ` : targetWordCount <= 1500 ? `
-    For ${targetWordCount} words - Organize into 6-8 CLEAR PARAGRAPHS:
-    
-    Paragraph 1 (100-120 words): Introduction
-    - Define topic and context
-    - State importance
-    - Preview structure
-    
-    Paragraphs 2-4 (300-350 words each): One per major Learning Objective
-    Each paragraph should:
-    - Begin with clear topic sentence
-    - Explain concept in 4-5 SHORT sentences (15-20 words each)
-    - Include ONE specific example
-    - Reference relevant Essential Knowledge
-    - Use paragraph break before next concept
-    
-    Paragraph 5 (100-120 words): Conclusion
-    - Recap main concepts
-    - Synthesize connections
-    ` : `
-    For ${targetWordCount} words - Organize into 8-10 READABLE PARAGRAPHS:
-    
-    Introduction paragraph (120-150 words)
-    
-    3-4 main concept paragraphs (~${Math.floor((targetWordCount - 270) / 3)} words each):
-    - Each paragraph = one Learning Objective
-    - Short sentences throughout
-    - Clear paragraph breaks between concepts
-    
-    Conclusion paragraph (120-150 words)
-    `}
-    
-    READABILITY RULES:
-    ✓ Paragraph break before each new Learning Objective
-    ✓ Sentences: 15-20 words maximum (split long sentences)
-    ✓ One idea per sentence
-    ✓ Simple vocabulary (AP student level)
-    ✓ Active voice preferred
-    ✓ Concrete examples over abstract theory
-    
-    CED ALIGNMENT:
-    ✓ Reference Learning Objectives by concept (not by number)
-    ✓ Cover ALL Essential Knowledge points
-    ✓ Use CED terminology exactly
-    ✓ No content beyond CED scope
-    ✓ Connect each paragraph to specific learning goal`;
+## Conclusion
+Summary of key takeaways. Connections between concepts.`;
 
     // 调用 Gemini API
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
@@ -619,15 +429,15 @@ STUDY GUIDE STRUCTURE (${targetWordCount} words, ±50-100 tolerance):
         }
       ],
       generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 28000,  // v12.8.12: 增加到28000，但要求 AI 严格控制字数
+        temperature: 0.3,
+        maxOutputTokens: 8192,  // Gemini 2.5 Flash Lite 限制
+        topP: 0.95
       }
     }, {
       headers: {
         'Content-Type': 'application/json',
       },
-      ...(httpsAgent ? { httpsAgent, proxy: false } : {}),
-      timeout: 120000  // v12.8.18: 增加到120秒（2分钟），提高稳定性
+      timeout: 120000
     });
 
     const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
