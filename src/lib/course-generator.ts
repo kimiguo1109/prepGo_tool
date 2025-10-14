@@ -348,9 +348,18 @@ export class CourseGenerator {
 
     const prompt = `You are an AP course content generator. Create high-quality educational content for the following topic.
 
-🔴 ABSOLUTE REQUIREMENT: Study guide MUST be EXACTLY ${targetWordCount} words (acceptable range: ${Math.floor(targetWordCount * 0.85)}-${Math.floor(targetWordCount * 1.15)} words).
-⚠️ Generating more than ${Math.floor(targetWordCount * 1.2)} words will cause JSON truncation and system failure.
-⚠️ Write concisely and densely - quality over verbosity.
+🚨 CRITICAL WORD COUNT REQUIREMENT 🚨
+Study guide MUST be ${targetWordCount} words ± 10%
+- Minimum: ${Math.floor(targetWordCount * 0.9)} words
+- Maximum: ${Math.floor(targetWordCount * 1.1)} words
+- Exceeding maximum will cause SYSTEM FAILURE
+- STOP WRITING when you reach ~${Math.floor(targetWordCount * 1.05)} words
+
+Writing style: CONCISE, DENSE, EFFICIENT
+- No redundancy, no repetition
+- One example per concept (not multiple)
+- Short, direct sentences
+- Skip unnecessary transitions
 
 TOPIC: ${topic.topic_title}
 
@@ -383,14 +392,19 @@ CRITICAL REQUIREMENTS (STRICT PRIORITY ORDER):
 1. ⚠️ JSON COMPLETENESS - HIGHEST PRIORITY:
    - The ENTIRE JSON MUST be complete with proper closing brackets
    - If approaching output token limit (~20000 tokens), STOP writing and close JSON properly
-   - A complete JSON with shorter study_guide is better than truncated JSON
    
-2. 🔴 WORD COUNT DISCIPLINE - SECOND PRIORITY:
-   - Study guide: EXACTLY ${targetWordCount} words (range: ${Math.floor(targetWordCount * 0.85)}-${Math.floor(targetWordCount * 1.15)})
-   - Exceeding ${Math.floor(targetWordCount * 1.2)} words will cause system failure
-   - Write DENSELY: every sentence must convey essential information
-   - NO repetitive phrases, NO redundant explanations
-   - Quality and precision over length and verbosity
+2. 🔴 WORD COUNT DISCIPLINE - MANDATORY:
+   - Study guide: ${targetWordCount} words (strict range: ${Math.floor(targetWordCount * 0.9)}-${Math.floor(targetWordCount * 1.1)})
+   - STOP at ${Math.floor(targetWordCount * 1.05)} words - DO NOT CONTINUE
+   - Count words as you write: track your progress
+   - If you reach ${Math.floor(targetWordCount * 0.95)} words, START CONCLUDING
+   
+3. WRITING EFFICIENCY:
+   - DENSE writing: maximum information, minimum words
+   - ONE example per concept (never 2 or 3)
+   - NO repetitive introductions or conclusions
+   - NO transitional phrases like "furthermore", "additionally", "moreover"
+   - Direct statements only
    
 3. ALL content MUST be in ENGLISH only
 4. Generate EXACTLY ${flashcardCount} flashcards (not more, not less)
@@ -458,26 +472,40 @@ FLASHCARD DIVERSIFICATION: MUST include a MIX of all three card types:
     Each flashcard MUST have a "card_type" field with one of these exact values
 
 WRITING ORDER & STRATEGY:
-    1. Generate flashcards FIRST (keep each under 50 words total)
-    2. Generate quiz questions SECOND (explanations: 30-60 words each, NO MORE)
-    3. Generate study_guide LAST (target ${targetWordCount} words, NOT MORE than ${Math.floor(targetWordCount * 1.2)} words)
-    4. Close JSON properly
+    1. Generate flashcards FIRST (each card: 30-40 words total, not 50+)
+    2. Generate quiz SECOND (each explanation: 35-50 words, not 60+)
+    3. Generate study_guide LAST - TRACK WORD COUNT AS YOU WRITE
+    4. STOP at ${Math.floor(targetWordCount * 1.05)} words and close JSON
 
-STUDY GUIDE STRUCTURE (${targetWordCount} words total):
-    Write ${Math.ceil(targetWordCount / 150)}-${Math.ceil(targetWordCount / 120)} focused paragraphs (120-150 words each).
+STUDY GUIDE WORD BUDGET (${targetWordCount} words TOTAL):
     
-    Include:
-    - Brief intro (what and why - 100 words)
-    - Core concepts (70% of content - clear, direct explanations with ONE example per concept)
-    - Brief conclusion (key takeaways - 80 words)
+    ${targetWordCount <= 1000 ? `
+    For ${targetWordCount} words:
+    - Introduction: 80-100 words (define topic, explain importance)
+    - Section 1: 200-250 words (first learning objective + 1 example)
+    - Section 2: 200-250 words (second learning objective + 1 example)
+    - Section 3: 200-250 words (third learning objective + 1 example)
+    - Conclusion: 80-100 words (summarize key points)
+    ` : targetWordCount <= 1500 ? `
+    For ${targetWordCount} words:
+    - Introduction: 100-120 words
+    - Core Concept 1: 300-350 words (theory + 1 example)
+    - Core Concept 2: 300-350 words (theory + 1 example)
+    - Core Concept 3: 300-350 words (theory + 1 example)
+    - Conclusion: 100-120 words
+    ` : `
+    For ${targetWordCount} words:
+    - Introduction: 120-150 words
+    - Main concepts: ${Math.floor((targetWordCount - 270) / 3)} words each (3-4 sections)
+    - Conclusion: 120-150 words
+    `}
     
-    AVOID:
-    - Repetitive phrasing or restating the same idea
-    - Overly long introductions or conclusions
-    - Multiple examples for the same concept
-    - Flowery or verbose language
-    
-    WRITE DENSELY: Pack maximum information into minimum words.`;
+    STRICT RULES:
+    - Each section: ONE example only (not 2-3)
+    - NO redundant explanations
+    - NO flowery language ("it is important to note that", "furthermore", etc.)
+    - Direct, efficient writing
+    - STOP when you reach ${Math.floor(targetWordCount * 1.05)} words`;
 
     // 调用 Gemini API
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/${this.model}:generateContent?key=${this.apiKey}`;
