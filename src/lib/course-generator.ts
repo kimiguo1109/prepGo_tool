@@ -261,7 +261,7 @@ export class CourseGenerator {
       }
     };
 
-    // 启动5个并发worker
+    // 启动8个并发worker
     await Promise.all(Array(CONCURRENCY).fill(0).map(() => worker()));
 
     const successCount = processedCount - failedCount;
@@ -280,20 +280,20 @@ export class CourseGenerator {
   }
 
   /**
-   * 带重试机制的 Topic 内容生成（6次重试 + 指数退避）
-   * v12.8.14: 增加重试次数到6次，使用更长的延迟
+   * 带重试机制的 Topic 内容生成（8次重试 + 指数退避）
+   * v12.8.18: 增加重试次数到8次，延长超时时间到120秒，使用更激进的退避策略
    */
   private async generateTopicContentWithRetry(
     topic: any, 
-    maxRetries: number = 6,  // v12.8.14: 从4次增加到6次
+    maxRetries: number = 8,  // v12.8.18: 从6次增加到8次
     onProgress?: (message: string, percent?: number) => void,
     _totalTopics?: number
   ): Promise<any> {
     let lastError: any;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      // v12.8.14: 超时设置：90秒（与 axios timeout 一致）
-      const timeout = 90000;
+      // v12.8.18: 超时设置：120秒（增加到2分钟）
+      const timeout = 120000;
       
       try {
         const timeoutPromise = new Promise((_, reject) => 
@@ -313,8 +313,8 @@ export class CourseGenerator {
         lastError = error;
         
         if (attempt < maxRetries) {
-          // v12.8.14: 指数退避策略：200ms, 500ms, 1000ms, 2000ms, 3000ms, 5000ms
-          const delays = [200, 500, 1000, 2000, 3000, 5000];
+          // v12.8.18: 更激进的指数退避：500ms, 1s, 2s, 4s, 6s, 8s, 10s, 12s
+          const delays = [500, 1000, 2000, 4000, 6000, 8000, 10000, 12000];
           const delay = delays[Math.min(attempt - 1, delays.length - 1)];
           console.warn(`    ⚠️  Topic ${topic.topic_number} 第 ${attempt} 次失败: ${lastError?.message}，${delay}ms 后重试...`);
           onProgress?.(`⚠️  Topic ${topic.topic_number} 第 ${attempt} 次失败，${delay}ms 后重试...`);
@@ -577,7 +577,7 @@ STUDY GUIDE STRUCTURE (${targetWordCount} words, ±50-100 tolerance):
         'Content-Type': 'application/json',
       },
       ...(httpsAgent ? { httpsAgent, proxy: false } : {}),
-      timeout: 90000  // v12.8.12: 增加到90秒，减少超时
+      timeout: 120000  // v12.8.18: 增加到120秒（2分钟），提高稳定性
     });
 
     const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -1696,6 +1696,11 @@ REQUIREMENTS:
           temperature: 0.7,
           maxOutputTokens: 8000,
         }
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 120000  // v12.8.18: 添加120秒超时配置
       });
 
       const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -1879,6 +1884,11 @@ EXAMPLE FRQ FORMAT:
           temperature: 0.7,
           maxOutputTokens: 4096,
         }
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 120000  // v12.8.18: 添加120秒超时配置
       });
 
       const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text;

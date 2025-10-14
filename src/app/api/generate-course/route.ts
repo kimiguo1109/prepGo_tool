@@ -9,8 +9,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { CourseGenerator } from '@/lib/course-generator';
 import type { APCourse } from '@/types/course';
 
-// Vercel 函数配置：设置最大执行时间为 60 秒
-export const maxDuration = 60;
+// Vercel 函数配置：设置最大执行时间（v12.8.18: 增加到 900 秒 = 15 分钟）
+// 大型课程（80+ topics）需要更长时间
+export const maxDuration = 900;
 
 export async function POST(request: NextRequest) {
   try {
