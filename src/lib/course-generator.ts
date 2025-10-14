@@ -1285,6 +1285,18 @@ STUDY GUIDE WORD BUDGET (${targetWordCount} words TOTAL):
       courseData.mock_exam = mockExam;
     }
 
+    // v12.8.16: 在输出前格式化所有 ced_class_periods
+    courseData.units.forEach(unit => {
+      // 格式化 unit 级别的 ced_class_periods
+      if (unit.ced_class_periods) {
+        unit.ced_class_periods = this.formatCedClassPeriods(unit.ced_class_periods);
+      }
+      // 格式化 unit_overview 中的 ced_class_periods
+      if (unit.unit_overview?.ced_class_periods) {
+        unit.unit_overview.ced_class_periods = this.formatCedClassPeriods(unit.unit_overview.ced_class_periods);
+      }
+    });
+
     // 返回双 JSON 输出
     return {
       // separated: 扁平化的新内容（用于数据库导入）
