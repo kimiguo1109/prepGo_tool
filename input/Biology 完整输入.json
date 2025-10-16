@@ -608,8 +608,8 @@
           ]
         },
         {
-          "topic_number": "2.1",
-          "topic_title": "Cell Structure and Function",
+          "topic_number": "2.10",
+          "topic_title": "Origins of Cell Compartmentalization",
           "ced_topic_title": "Origins of Cell Compartmentalization",
           "topic_overview": "Where did complex eukaryotic cells come from? This topic introduces the widely accepted theory of endosymbiosis. You will learn the evidence supporting the idea that mitochondria and chloroplasts were once free-living prokaryotic cells that were engulfed by a larger ancestral cell. We'll examine the key pieces of evidence for this theory, such as the fact that these organelles have their own DNA, ribosomes, and a double membrane. Understanding endosymbiosis provides a fascinating glimpse into the evolutionary history of life and explains the origin of the compartmentalization that makes eukaryotic life so complex and successful.",
           "prepgo_plan": {
@@ -2012,7 +2012,7 @@
           ]
         },
         {
-          "topic_number": "7.1",
+          "topic_number": "7.10",
           "topic_title": "Introduction to Natural Selection",
           "ced_topic_title": "Speciation",
           "topic_overview": "This topic addresses one of evolution's biggest questions: how do new species form? Speciation is the evolutionary process by which one species splits into two or more distinct species. You'll learn that the key to speciation is the evolution of reproductive isolation, which prevents gene flow between populations. We will explore different types of reproductive barriers (prezygotic and postzygotic) and the main modes of speciation: allopatric (geographic barrier) and sympatric (no geographic barrier). This topic helps explain the vast diversity of life on our planet.",

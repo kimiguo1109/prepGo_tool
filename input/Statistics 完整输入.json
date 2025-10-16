@@ -429,8 +429,8 @@
           ]
         },
         {
-          "topic_number": "1.1",
-          "topic_title": "Introducing Statistics: What Can We Learn from Data?",
+          "topic_number": "1.10",
+          "topic_title": "The Normal Distribution",
           "ced_topic_title": "The Normal Distribution",
           "topic_overview": "This topic introduces the most important and frequently used distribution in statistics: the Normal distribution. You'll learn about its unique bell shape, its properties of symmetry, and how it is defined by its mean and standard deviation. We'll explore the Empirical Rule (68-95-99.7 rule) as a way to quickly understand the spread of data in a Normal model. You'll also learn how to calculate and interpret z-scores to find the relative standing of any observation within a distribution. This powerful model serves as the foundation for statistical inference that we will build upon throughout the rest of the course.",
           "prepgo_plan": {
@@ -1585,8 +1585,8 @@
           ]
         },
         {
-          "topic_number": "4.1",
-          "topic_title": "Introducing Statistics: Random and Non-Random Patterns?",
+          "topic_number": "4.10",
+          "topic_title": "Introduction to the Binomial Distribution",
           "ced_topic_title": "Introduction to the Binomial Distribution",
           "topic_overview": "This topic introduces a very common and important type of discrete random variable: the binomial random variable. You will learn to identify a binomial setting, which has four conditions: a fixed number of trials, each trial is independent, there are only two outcomes (success or failure) for each trial, and the probability of success is the same for each trial. A binomial random variable counts the number of successes in a fixed number of trials. We will learn how to use the binomial probability formula to calculate the probability of getting a specific number of successes.",
           "prepgo_plan": {
@@ -2569,8 +2569,8 @@
           ]
         },
         {
-          "topic_number": "6.1",
-          "topic_title": "Introducing Statistics: Why Be Normal?",
+          "topic_number": "6.10",
+          "topic_title": "Setting Up a Test for the Difference of Two Population Proportions",
           "ced_topic_title": "Setting Up a Test for the Difference of Two Population Proportions",
           "topic_overview": "This topic introduces the significance test for comparing two population proportions. You will learn how to write the null and alternative hypotheses for a two-sample z-test for a difference between proportions. The null hypothesis is typically that there is no difference (p1 - p2 = 0). You will also learn the conditions for this test, which are similar to those for the confidence interval but include a special way of calculating the standard error by 'pooling' or combining the two samples, based on the assumption that the null hypothesis is true.",
           "prepgo_plan": {
@@ -3120,8 +3120,8 @@
           ]
         },
         {
-          "topic_number": "7.1",
-          "topic_title": "Introducing Statistics: Should I Worry About Error?",
+          "topic_number": "7.10",
+          "topic_title": "Skills Focus: Selecting, Implementing, and Communicating Inference Procedures",
           "ced_topic_title": "Skills Focus: Selecting, Implementing, and Communicating Inference Procedures",
           "topic_overview": "This topic is a capstone for inference on means and proportions. You have now learned a variety of inference procedures. The goal here is to practice selecting the *correct* procedure for a given problem. You will learn to ask the key questions: Is this a problem about means or proportions? Is it one sample, two samples, or matched pairs? Are we estimating with a confidence interval or testing a claim with a significance test? This topic provides crucial practice in integrating your knowledge and making the right choices, which is a key skill for success in AP Statistics.",
           "prepgo_plan": {

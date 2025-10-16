@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import 'katex/dist/katex.min.css';
 
 export const metadata: Metadata = {
   title: 'PrepGo AP 课程处理工具',

@@ -1,5 +1,5 @@
 /**
- * 合并 US History 原始内容.json 和 Gemini-US History step 1.json
+ * 合并 Statistics 原始内容.json 和 Gemini-AP Statistics step 1.json
  * 创建一个包含所有字段的完整输入文件
  */
 
@@ -7,8 +7,8 @@ const fs = require('fs');
 const path = require('path');
 
 // 读取两个文件
-const originalPath = path.join(__dirname, 'output', 'US History 原始内容.json');
-const geminiPath = path.join(__dirname, 'output', 'Gemini-US History step 1.json');
+const originalPath = path.join(__dirname, 'input', 'Statistics 原始内容.json');
+const geminiPath = path.join(__dirname, 'input', 'Gemini-AP Statistics step 1.json');
 
 const originalData = JSON.parse(fs.readFileSync(originalPath, 'utf8'));
 const geminiData = JSON.parse(fs.readFileSync(geminiPath, 'utf8'));
@@ -36,10 +36,14 @@ const mergedData = {
       unit_overview: geminiUnit.unit_overview,
       topics: geminiUnit.topics.map(geminiTopic => {
         // 查找对应的原始topic
-        const originalTopic = originalTopicMap[geminiTopic.topic_number.toString()];
+        // ⚠️ 修复: 确保 topic_number 作为字符串处理，避免 2.10 变成 "2.1"
+        const topicKey = typeof geminiTopic.topic_number === 'string' 
+          ? geminiTopic.topic_number 
+          : String(geminiTopic.topic_number);
+        const originalTopic = originalTopicMap[topicKey];
         
         if (!originalTopic) {
-          console.warn(`⚠️  找不到 topic ${geminiTopic.topic_number} 的原始数据`);
+          console.warn(`⚠️  找不到 topic ${topicKey} 的原始数据`);
           return geminiTopic;
         }
         
@@ -59,10 +63,10 @@ const mergedData = {
 };
 
 // 输出合并后的文件
-const outputPath = path.join(__dirname, 'output', 'US History 完整输入.json');
+const outputPath = path.join(__dirname, 'Statistics 完整输入.json');
 fs.writeFileSync(outputPath, JSON.stringify(mergedData, null, 2), 'utf8');
 
-console.log('✅ 合并完成！');
+console.log('✅ Statistics 合并完成！');
 console.log(`📄 输出文件: ${outputPath}`);
 console.log(`\n📊 统计信息:`);
 console.log(`   - Units 数量: ${mergedData.units.length}`);

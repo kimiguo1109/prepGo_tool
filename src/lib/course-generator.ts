@@ -219,8 +219,8 @@ export class CourseGenerator {
         onProgress?.(`📄 处理 Topic ${topic.topic_number} [${progress}]`, 45 + Math.round((taskIndex / totalTopics) * 45));
         
         try {
-          // 带重试的内容生成（v12.8.14: 6次重试）
-          const content = await this.generateTopicContentWithRetry(topic, 6, onProgress, totalTopics);
+          // 带重试的内容生成（v12.8.20: 10次重试）
+          const content = await this.generateTopicContentWithRetry(topic, 10, onProgress, totalTopics);
           
           // 更新原始数据
           Object.assign(enhancedData.units[unitIndex].topics[topicIndex], content);
@@ -274,12 +274,12 @@ export class CourseGenerator {
   }
 
   /**
-   * 带重试机制的 Topic 内容生成（8次重试 + 指数退避）
-   * v12.8.18: 增加重试次数到8次，延长超时时间到120秒，使用更激进的退避策略
+   * 带重试机制的 Topic 内容生成（10次重试 + 指数退避）
+   * v12.8.20: 增加重试次数到10次，改进JSON截断修复，确保高成功率
    */
   private async generateTopicContentWithRetry(
     topic: any, 
-    maxRetries: number = 8,  // v12.8.18: 从6次增加到8次
+    maxRetries: number = 10,  // v12.8.20: 从8次增加到10次
     onProgress?: (message: string, percent?: number) => void,
     _totalTopics?: number
   ): Promise<any> {
@@ -307,8 +307,8 @@ export class CourseGenerator {
         lastError = error;
         
         if (attempt < maxRetries) {
-          // v12.8.18: 更激进的指数退避：500ms, 1s, 2s, 4s, 6s, 8s, 10s, 12s
-          const delays = [500, 1000, 2000, 4000, 6000, 8000, 10000, 12000];
+          // v12.8.20: 扩展到10次重试的延迟策略
+          const delays = [500, 1000, 2000, 3000, 5000, 7000, 9000, 11000, 13000, 15000];
           const delay = delays[Math.min(attempt - 1, delays.length - 1)];
           console.warn(`    ⚠️  Topic ${topic.topic_number} 第 ${attempt} 次失败: ${lastError?.message}，${delay}ms 后重试...`);
           onProgress?.(`⚠️  Topic ${topic.topic_number} 第 ${attempt} 次失败，${delay}ms 后重试...`);
@@ -341,25 +341,46 @@ export class CourseGenerator {
     const rawWordCount = (topic as any).learn?.study_guide_words || 1000;
     const targetWordCount = Math.max(800, Math.min(rawWordCount, 1500));
 
-    const prompt = `Generate AP content for: ${topic.topic_title}
+    const prompt = `⚠️ CRITICAL: You MUST generate COMPLETE and VALID JSON. If approaching token limit, REDUCE study_guide length to ensure ALL arrays are properly closed.
+
+Generate AP content for: ${topic.topic_title}
 
 LEARNING OBJECTIVES: ${loSummaries}
 ESSENTIAL KNOWLEDGE: ${ekSummaries}
 
 REQUIREMENTS:
-- Study guide: ${targetWordCount} words (±100 tolerance)
-- Flashcards: EXACTLY ${flashcardCount} cards
-- Quiz: EXACTLY ${quizCount} MCQ questions
+- Study guide: ${targetWordCount} words (±100 tolerance, but CAN BE SHORTER if needed to complete JSON)
+- Flashcards: EXACTLY ${flashcardCount} cards (MUST be complete)
+- Quiz: EXACTLY ${quizCount} MCQ questions (MUST be complete)
 - Address ALL Learning Objectives and Essential Knowledge points
 - English only
 
-JSON format:
+JSON format (MUST be complete and valid):
 
 {
   "study_guide": "Write ${targetWordCount}-word comprehensive guide in MARKDOWN format with excellent readability.",
   "flashcards": [{"front": "Q", "back": "A", "card_type": "Term-Definition|Concept-Explanation|Scenario/Question-Answer"}],
-  "quiz": [{"question": "Q", "options": ["A","B","C","D"], "correct_answer": "A", "explanation": "Why"}]
+  "quiz": [{"question": "Q", "options": ["A","B","C","D"], "correct_answer": "A", "explanation": "Why", "difficulty_level": 1-5}]
 }
+
+⚠️ REMINDER: Complete JSON is MORE important than hitting exact word count. If study_guide must be 800 words instead of ${targetWordCount} to ensure valid JSON, that's acceptable.
+
+QUIZ FORMAT REQUIREMENTS (CRITICAL):
+1. correct_answer MUST be a single letter: "A", "B", "C", or "D"
+   - DO NOT include the full option text in correct_answer
+   - Example: correct_answer: "B" (CORRECT) vs "A variable" (WRONG)
+
+2. difficulty_level MUST be assigned to EACH question based on cognitive demand:
+   - Level 1-2 (Recall/Recognition): Direct definition or fact from a single EK
+     * Example: "What is the definition of heritability?"
+   - Level 3 (Concept Application): Apply a concept to a clear, simple scenario
+     * Example: "Which neurotransmitter is involved in this scenario?"
+   - Level 4 (Analysis/Differentiation): Compare/contrast concepts or analyze complex scenarios
+     * Example: "How does classical conditioning differ from operant conditioning?"
+   - Level 5 (Synthesis/Evaluation): Synthesize multiple EKs or evaluate complex situations
+     * Example: "Which research method would best address all these confounding variables?"
+   
+   IMPORTANT: Vary difficulty levels across questions - DO NOT assign the same level to all questions
 
 STUDY GUIDE MARKDOWN FORMAT (CRITICAL):
 - Use markdown headings: ## for main sections, ### for subsections
@@ -371,24 +392,90 @@ STUDY GUIDE MARKDOWN FORMAT (CRITICAL):
 - Structure: Introduction → Body sections (one per LO with ## headings) → Conclusion
 - Make it professional, well-formatted, and easy to read
 
-FORMULA QUESTIONS (for Math/Science courses):
-- 40-60% of quiz questions should involve calculations with specific numbers
-- Example: "Dataset: 12,15,18,20,25. Calculate the mean. Which is closest?" Options: ["14.5","16.0","18.0","20.5"]
-- Flashcards: Include formula definition cards and calculation practice cards
-- Use plain text for formulas: "mean = sum/n" or "z = (x - mean)/SD"
+FORMULA & CALCULATION QUESTIONS (CRITICAL for Math/Science/Statistics courses):
+
+**When Topic involves formulas/calculations** (statistics, physics, chemistry, biology energetics):
+1. QUANTITY REQUIREMENT (MINIMUM ENFORCED):
+   - Statistics/Math: 70-90% of quiz questions MUST involve calculations (minimum 8-10 questions per 12-question quiz)
+   - Biology/Chemistry: 50-70% should involve quantitative problems (minimum 6-8 questions per 12-question quiz)
+   - Physics: 80-90% must involve calculations or formula applications (minimum 9-10 questions per 12-question quiz)
+   - **ABSOLUTE MINIMUM**: Even if topic seems conceptual, include AT LEAST 5 calculation/formula questions if course is STEM
+   - Include both conceptual formula questions AND numerical calculation questions
+
+2. QUESTION TYPES TO INCLUDE (MUST have diverse types):
+   
+   Type A - Direct Calculation (40% of formula questions, MINIMUM 3-4 questions):
+   - Provide data → student calculates answer
+   - **Statistics Examples**:
+     * "Dataset: 12, 15, 18, 20, 25. Calculate the mean."
+       Options: {"A": "16.0", "B": "18.0", "C": "19.0", "D": "20.0"}
+       Correct: B, Explanation: "mean = (12+15+18+20+25)/5 = 90/5 = 18.0"
+     
+     * "Data: 5, 8, 10, 12, 15. Find Q1 (first quartile)."
+       Options: {"A": "5", "B": "6.5", "C": "8", "D": "10"}
+       Correct: C, Explanation: "Lower half is 5, 8. Median of lower half is 8."
+     
+     * "Dataset has mean = 50, SD = 10. What is the z-score for value 70?"
+       Options: {"A": "1.0", "B": "2.0", "C": "3.0", "D": "0.5"}
+       Correct: B, Explanation: "z = (70-50)/10 = 20/10 = 2.0"
+   
+   - **Chemistry Example**: "If 2.5 moles of H2O are present, how many molecules is this? (Avogadro = 6.02 x 10^23)"
+     Options: ["1.5 x 10^24", "2.4 x 10^23", "1.2 x 10^24", "6.0 x 10^23"]
+   
+   - **Biology Example**: "A cell with surface area 300 μm^2 and volume 500 μm^3. What is the SA:V ratio?"
+     Options: ["0.6", "1.67", "0.3", "2.0"]
+   
+   Type B - Interpretation with Numbers (30% of formula questions, MINIMUM 2-3 questions):
+   - Give calculated result → student interprets
+   - Example: "A dataset has mean = 50 and SD = 5. A value of 60 has z-score of 2. What does this indicate?"
+     Options: ["Value is 2 SDs above mean", "Value is 2 units above mean", ...]
+   
+   Type C - Formula Application (20% of formula questions, MINIMUM 1-2 questions):
+   - Scenario → student selects correct formula/approach
+   - Example: "To find how unusual a data point is in a Normal distribution, which should you calculate?"
+     Options: ["z-score", "mean", "median", "IQR"]
+   
+   Type D - Multi-step Problems (10% of formula questions, MINIMUM 1 question):
+   - Requires 2+ calculation steps
+   - Example: "Data: 10, 15, 20, 25, 30. Find IQR (Q3 - Q1)."
+     Options: ["10", "15", "20", "5"]
+
+3. FORMULA REPRESENTATION (use LaTeX with delimiters):
+   - **ALWAYS wrap mathematical formulas with $$ delimiters** for proper KaTeX/MathJax rendering
+   - Inline formulas: $$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$
+   - Statistics: $$\\text{mean} = \\frac{\\sum x}{n}$$, $$\\text{SD} = \\sqrt{\\frac{\\sum(x - \\bar{x})^2}{n}}$$, $$z = \\frac{x - \\mu}{\\sigma}$$
+   - Chemistry (use \\ce{} for reactions): $$\\ce{6CO2 + 6H2O -> C6H12O6 + 6O2}$$, $$\\text{pH} = -\\log[\\ce{H+}]$$
+   - Biology: $$\\ce{C6H12O6 + 6O2 -> 6CO2 + 6H2O + ATP}$$
+   - Physics: $$F = ma$$, $$\\text{KE} = \\frac{1}{2}mv^2$$
+   - Use Greek letters directly: $$\\Delta H$$, $$\\theta$$, $$\\pi$$, $$\\mu$$, $$\\sigma$$
+
+4. FLASHCARD REQUIREMENTS:
+   - Formula Definition cards: Front: "What is the formula for mean?" Back: "$$\\text{mean} = \\frac{\\sum x}{n}$$"
+   - Calculation Practice cards: Front: "Calculate mean of: 5, 10, 15" Back: "10 ($$\\bar{x} = \\frac{5+10+15}{3} = 10$$)"
+   - Interpretation cards: Front: "What does $$z = 2$$ mean?" Back: "2 standard deviations above the mean"
 
 CRITICAL RULES:
-1. Complete JSON with proper closing brackets (HIGHEST PRIORITY)
+1. **COMPLETE JSON IS MANDATORY** - Always close all brackets/braces properly (HIGHEST PRIORITY)
+   - If approaching token limit, REDUCE study_guide length to ensure JSON completion
+   - Minimum acceptable: flashcards array complete + quiz array complete + study_guide (even if shortened)
+   - NEVER leave arrays or objects unclosed
 2. English only, NO Chinese or other languages
-3. Plain text for special characters:
-   - Chemical formulas: H2O, CO2 (not $H_2O$)
-   - Greek letters: Delta-H, theta (not ΔH, θ)
-   - Math: x^2, 2x+3 (not LaTeX $x^2$)
+3. **ALWAYS use LaTeX format with $$ delimiters for formulas**:
+   - Mathematical expressions: $$x^2$$, $$2x+3$$, $$\\frac{a}{b}$$
+   - Chemical formulas: $$\\ce{H2O}$$, $$\\ce{CO2}$$ (use \\ce{} command)
+   - Greek letters: $$\\Delta H$$, $$\\theta$$, $$\\pi$$ (use LaTeX symbols)
+   - Properly escape backslashes in JSON strings: use \\\\ for LaTeX commands
 4. NO double quotes inside string values - use single quotes instead
 5. NO fancy punctuation (", ", —) - use standard ASCII only
-6. Card types must be: Term-Definition, Concept-Explanation, or Scenario/Question-Answer
-7. Write study_guide as one continuous string (use \\n\\n for paragraph breaks)
-8. Generation order: flashcards → quiz → study_guide
+6. **CRITICAL: When creating calculation questions**:
+   - Generate simple, straightforward questions with small datasets (5-8 numbers max)
+   - Do NOT second-guess your calculations
+   - Do NOT add meta-commentary like "Let me assume...", "If the question..."
+   - Provide ONE correct calculation and move on
+   - Keep explanations concise (1-2 sentences max)
+7. Card types must be: Term-Definition, Concept-Explanation, or Scenario/Question-Answer
+8. Write study_guide as one continuous string (use \\n\\n for paragraph breaks)
+9. **Generation order: flashcards → quiz → study_guide** (prioritize flashcards/quiz completion)
 
 STUDY GUIDE STRUCTURE (${targetWordCount} words in MARKDOWN):
 - Introduction section (${Math.floor(targetWordCount * 0.1)} words): Define topic, explain importance, preview main points
@@ -430,7 +517,7 @@ Summary of key takeaways. Connections between concepts.`;
       ],
       generationConfig: {
         temperature: 0.3,
-        maxOutputTokens: 8192,  // Gemini 2.5 Flash Lite 限制
+        maxOutputTokens: 16384,  // v13.0: 增加到 16384 以支持复杂内容（Statistics 等）
         topP: 0.95
       }
     }, {
@@ -452,11 +539,11 @@ Summary of key takeaways. Connections between concepts.`;
       const jsonText = this.extractJSON(text);
       content = JSON.parse(jsonText);
       
-      // 验证内容数量是否符合要求（允许 ±2 的误差）
+      // v13.0: 放宽内容数量验证（允许 -3 的误差，因为复杂内容可能被截断）
       const actualFlashcards = content.flashcards?.length || 0;
       const actualQuiz = content.quiz?.length || 0;
       
-      if (actualFlashcards < flashcardCount - 2 || actualQuiz < quizCount - 2) {
+      if (actualFlashcards < Math.max(1, flashcardCount - 3) || actualQuiz < Math.max(1, quizCount - 3)) {
         console.warn(`   ⚠️  内容数量不足: flashcards ${actualFlashcards}/${flashcardCount}, quiz ${actualQuiz}/${quizCount}`);
         throw new Error(`内容被截断（flashcards: ${actualFlashcards}/${flashcardCount}, quiz: ${actualQuiz}/${quizCount}）`);
       }
@@ -524,11 +611,11 @@ Summary of key takeaways. Connections between concepts.`;
         
         content = JSON.parse(fixedJson);
         
-        // 再次验证数量
+        // v13.0: 放宽内容数量验证（允许 -3 的误差）
         const actualFlashcards = content.flashcards?.length || 0;
         const actualQuiz = content.quiz?.length || 0;
         
-        if (actualFlashcards < flashcardCount - 2 || actualQuiz < quizCount - 2) {
+        if (actualFlashcards < Math.max(1, flashcardCount - 3) || actualQuiz < Math.max(1, quizCount - 3)) {
           console.warn(`   ⚠️  修复后内容数量仍不足: flashcards ${actualFlashcards}/${flashcardCount}, quiz ${actualQuiz}/${quizCount}`);
           throw new Error(`内容被截断（flashcards: ${actualFlashcards}/${flashcardCount}, quiz: ${actualQuiz}/${quizCount}）`);
         }
@@ -549,9 +636,10 @@ Summary of key takeaways. Connections between concepts.`;
         // v12.6: 结合 AI 判断和 checkRequiresImage 规则（取并集）
         // v12.8: 添加所有新字段
     // v12.8.4: 使用正确的字段名 front_content/back_content，并添加 card_id 和 topic_id
+    // v12.8.19: 传递topic标题以支持学科自适应配图规则
     const topicId = `ap_us_history_${topic.topic_number.replace('.', '_')}`;
     const flashcards = (content.flashcards || []).map((card: any, cardIdx: number) => {
-          const imageNeeded = card.requires_image || this.checkRequiresImage('flashcard', card.front, card.back);
+          const imageNeeded = card.requires_image || this.checkRequiresImage('flashcard', card.front, card.back, topic.topic_title);
           const difficulty = card.difficulty || this.calculateDifficultyLevel({
             question: card.front,
             options: [],
@@ -579,8 +667,9 @@ Summary of key takeaways. Connections between concepts.`;
         });
         
     // v12.8.4: 修改 quiz 格式，添加 quiz_id 和 topic_id，使用 question_text，options 改为对象格式
+    // v12.8.19: 传递topic标题以支持学科自适应配图规则
     const quiz = (content.quiz || []).map((q: any, qIdx: number) => {
-          const imageNeeded = q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation);
+          const imageNeeded = q.requires_image || this.checkRequiresImage('quiz', q.question, q.explanation, topic.topic_title);
           const difficultyLevel = q.difficulty_level || this.calculateDifficultyLevel(q);
       
       // Convert options from array to object format {A, B, C, D}
@@ -595,6 +684,9 @@ Summary of key takeaways. Connections between concepts.`;
       } else {
         optionsObj = q.options || { A: '', B: '', C: '', D: '' };
       }
+      
+      // v12.8.19: 规范化 correct_answer，确保只包含字母 A/B/C/D
+      const normalizedAnswer = this.normalizeCorrectAnswer(q.correct_answer, optionsObj);
           
           // v12.8.3: 只保留 image_suggested，移除 requires_image
       // v12.8.8: 移除 quiz_id 和 topic_id（不需要在 complete JSON 中）
@@ -602,7 +694,7 @@ Summary of key takeaways. Connections between concepts.`;
         difficulty_level: difficultyLevel,
         question_text: q.question,
         options: optionsObj,
-            correct_answer: q.correct_answer,
+            correct_answer: normalizedAnswer,
             explanation: q.explanation,
             image_suggested: imageNeeded,
             image_suggestion_description: null,
@@ -654,83 +746,40 @@ Summary of key takeaways. Connections between concepts.`;
 
   /**
    * 辅助函数：清理特殊字符（Chemistry, Physics, Math）
-   * v12.3: 处理LaTeX公式、希腊字母、特殊符号
+   * v14.0: 保留 LaTeX 格式和特殊字符，仅清理引号和控制字符
    */
   private cleanSpecialCharacters(jsonText: string): string {
     let cleaned = jsonText;
     
-    // 1. 移除LaTeX格式标记 ($...$)
-    cleaned = cleaned.replace(/\$([^$]+)\$/g, '$1');
+    // ⚠️ v14.0: 不再移除 LaTeX 标记，保留 $$...$$ 以便 KaTeX/MathJax 渲染
+    // cleaned = cleaned.replace(/\$([^$]+)\$/g, '$1');  // DISABLED
     
-    // 2. 替换常见的希腊字母和特殊符号
+    // ⚠️ v14.0: 不再替换希腊字母和数学符号，保留它们以便 LaTeX 渲染
+    // 仅清理引号和某些会导致 JSON 解析错误的字符
     const replacements: Record<string, string> = {
-      // 希腊字母
-      'Δ': 'Delta-',
-      'δ': 'delta-',
-      'θ': 'theta',
-      'Θ': 'Theta',
-      'π': 'pi',
-      'Π': 'Pi',
-      'σ': 'sigma',
-      'Σ': 'Sigma',
-      'μ': 'mu',
-      'λ': 'lambda',
-      'ω': 'omega',
-      'Ω': 'Omega',
-      'α': 'alpha',
-      'β': 'beta',
-      'γ': 'gamma',
-      
-      // 特殊符号
-      '°': ' degrees',
-      '±': '+/-',
-      '≈': 'approximately',
-      '≠': 'not equal to',
-      '≤': 'less than or equal to',
-      '≥': 'greater than or equal to',
-      '→': '->',
-      '←': '<-',
-      '⇌': '<->',
-      '∞': 'infinity',
-      '√': 'sqrt',
-      '∫': 'integral',
-      '∑': 'sum',
-      '∏': 'product',
-      
-      // 上标/下标（常见）
-      '²': '^2',
-      '³': '^3',
-      '⁰': '^0',
-      '¹': '^1',
-      '⁴': '^4',
-      '⁵': '^5',
-      '⁶': '^6',
-      '⁷': '^7',
-      '⁸': '^8',
-      '⁹': '^9',
-      
       // 引号（使用转义）
       '\u201C': '"',  // "
       '\u201D': '"',  // "
       '\u2018': "'",  // '
       '\u2019': "'",  // '
       
-      // 其他
+      // 破折号（可能导致 JSON 问题）
       '—': '-',
       '–': '-',
       '…': '...',
-      '×': 'x',
-      '÷': '/',
     };
     
-    // 应用所有替换
+    // 应用替换
     for (const [symbol, replacement] of Object.entries(replacements)) {
       cleaned = cleaned.split(symbol).join(replacement);
     }
     
-    // 3. 清理残留的特殊Unicode字符（替换为空格）
-    // 保留ASCII字符 (32-126) 和基本标点
-    cleaned = cleaned.replace(/[^\x20-\x7E\n\r\t]/g, ' ');
+    // ⚠️ v14.0: 不再清理 Unicode 字符，保留它们以便 LaTeX 渲染
+    // cleaned = cleaned.replace(/[^\x20-\x7E\n\r\t]/g, ' ');  // DISABLED
+    
+    // v13.0: 清理控制字符（除了 \n \r \t）
+    // 移除所有其他控制字符（\x00-\x1F，除了 \n=0x0A, \r=0x0D, \t=0x09）
+    cleaned = cleaned.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F]/g, '');
     
     return cleaned;
   }
@@ -1236,18 +1285,94 @@ Summary of key takeaways. Connections between concepts.`;
 
   /**
    * 辅助函数：检查是否需要图片
-   * v12.4: 通用平衡规则 + 历史/社科类专用规则
+   * v12.8.19: 学科自适应配图规则（平衡版）
    * 
-   * 策略：
-   * 1. 明确引用图表 → 必须标记
-   * 2. 历史/社科材料分析 → 必须标记（NEW）
-   * 3. 通用视觉概念模式 → Flashcard中标记
+   * 策略（优先级递减）：
+   * A. 结构密集型Topic规则 → 适度宽容，三重限制防止过度配图
+   *    - 适用学科：AP Psychology (神经)、AP Biology (细胞)、AP Chemistry (分子)
+   *    - 限制1: 必须是结构性Topic
+   *    - 限制2: 必须明确提到具体结构名称
+   *    - 限制3: 必须询问位置/结构/识别（纯功能问题不配图）
+   * B. 明确引用图表 → 必须标记（所有学科通用）
+   * C. 历史/社科材料分析 → 必须标记（APUSH, AP World, AP Gov等）
+   * D. 通用视觉概念模式 → Flashcard中标记（所有学科通用）
    */
-  private checkRequiresImage(type: 'flashcard' | 'quiz', front: string, back: string): boolean {
+  private checkRequiresImage(type: 'flashcard' | 'quiz', front: string, back: string, topicTitle?: string): boolean {
     const text = `${front} ${back}`.toLowerCase();
     const frontText = front.trim().toLowerCase();
+    const topicText = (topicTitle || '').toLowerCase();
     
-    // ========== 第一优先级：明确引用图表（所有题型，必须标记） ==========
+    // ========== 规则A：结构密集型Topic特殊规则（适度宽容） ==========
+    // 识别需要视觉辅助理解的结构性/解剖学内容
+    // 适用于：AP Psychology (神经科学)、AP Biology (细胞/器官)、AP Chemistry (分子结构) 等
+    
+    // A1. 识别Topic类型
+    const isStructuralTopic = [
+      // 神经科学/心理学
+      'brain', 'neuron', 'nervous system', 'cortex', 'lobe', 'limbic',
+      'biological bases', 'biopsychology', 'sensation', 'perception',
+      // 生物学
+      'cell', 'organelle', 'anatomy', 'organ system', 'tissue',
+      'photosynthesis', 'respiration', 'mitosis', 'meiosis',
+      // 化学
+      'molecular structure', 'atomic', 'electron configuration',
+      'bonding', 'lewis structure', 'orbital'
+    ].some(keyword => topicText.includes(keyword));
+    
+    if (isStructuralTopic) {
+      // A2. 仅对明确的结构名称配图（避免过度配图）
+      const specificStructures = [
+        // 大脑主要区域（仅主要结构）
+        'frontal lobe', 'parietal lobe', 'temporal lobe', 'occipital lobe',
+        'cerebral cortex', 'cerebellum', 'brain stem', 'limbic system',
+        'thalamus', 'hypothalamus', 'amygdala', 'hippocampus',
+        
+        // 神经元核心部分
+        'dendrite', 'axon', 'cell body', 'myelin sheath', 'synapse',
+        
+        // 感官器官主要部分
+        'retina', 'cochlea', 'optic nerve', 'rods and cones',
+        
+        // 生物学细胞器（仅Quiz题型，Flashcard不自动配图）
+        'nucleus', 'mitochondria', 'chloroplast', 'endoplasmic reticulum',
+        'golgi apparatus', 'ribosome', 'cell membrane', 'cell wall',
+        
+        // 化学结构（仅明确提到结构图的）
+        'lewis structure', 'electron dot structure', 'structural formula',
+        'molecular geometry', 'bond angle'
+      ];
+      
+      // 只有在内容明确提到这些结构时才配图
+      const hasSpecificStructure = specificStructures.some(structure => 
+        text.includes(structure)
+      );
+      
+      if (hasSpecificStructure) {
+        // A3. 进一步限制：仅对询问位置/结构/识别的问题配图
+        // 单纯询问功能/定义的不配图（可通过文字理解）
+        const needsVisualAid = [
+          // 位置相关
+          'location of', 'located in', 'where is', 'position of',
+          'part of the brain that', 'area of the brain',
+          
+          // 结构相关
+          'structure of', 'components of', 'parts of',
+          
+          // 识别相关（仅Flashcard）
+          type === 'flashcard' && (
+            frontText.includes('identify') || 
+            frontText.includes('label') ||
+            frontText.includes('what is this')
+          )
+        ].some(pattern => typeof pattern === 'string' ? text.includes(pattern) : pattern);
+        
+        if (needsVisualAid) {
+          return true;
+        }
+      }
+    }
+    
+    // ========== 规则B：明确引用图表（所有题型，必须标记） ==========
     const explicitReferences = [
       // 直接引用
       'refer to the diagram', 'refer to the figure', 'refer to the table',
@@ -1292,7 +1417,7 @@ Summary of key takeaways. Connections between concepts.`;
       return true;
     }
     
-    // ========== 第二优先级：历史/社科材料分析（NEW - v12.4） ==========
+    // ========== 规则C：历史/社科材料分析 ==========
     // 识别"stimulus-based questions"的关键模式
     const historicalSourcePatterns = [
       // 政治漫画分析
@@ -1331,7 +1456,7 @@ Summary of key takeaways. Connections between concepts.`;
       return true;
     }
     
-    // ========== 第三优先级：通用视觉概念模式（仅Flashcard） ==========
+    // ========== 规则D：通用视觉概念模式（仅Flashcard） ==========
     // Quiz需要明确引用才标记，保持严格性
     if (type === 'flashcard') {
       
@@ -1388,6 +1513,46 @@ Summary of key takeaways. Connections between concepts.`;
   }
 
   /**
+   * v12.8.19: 规范化 correct_answer，确保只包含字母 A/B/C/D
+   * AI 有时会返回完整的选项文本（如 "A variable"），需要转换为单字母
+   */
+  private normalizeCorrectAnswer(answer: string, options: { A: string; B: string; C: string; D: string }): string {
+    if (!answer) return 'A'; // 默认值
+    
+    // 如果已经是单字母，直接返回（大写）
+    const trimmed = answer.trim().toUpperCase();
+    if (['A', 'B', 'C', 'D'].includes(trimmed)) {
+      return trimmed;
+    }
+    
+    // 如果包含字母前缀（如 "A. variable" 或 "A) variable"）
+    const prefixMatch = answer.match(/^([A-D])[\.\)\:\s]/i);
+    if (prefixMatch) {
+      return prefixMatch[1].toUpperCase();
+    }
+    
+    // 如果是完整的选项文本，尝试匹配到对应的字母
+    const answerLower = answer.toLowerCase().trim();
+    for (const [letter, optionText] of Object.entries(options)) {
+      if (optionText.toLowerCase().trim() === answerLower) {
+        return letter;
+      }
+    }
+    
+    // 如果无法匹配，检查是否包含在某个选项中
+    for (const [letter, optionText] of Object.entries(options)) {
+      if (optionText.toLowerCase().includes(answerLower) || answerLower.includes(optionText.toLowerCase())) {
+        console.warn(`⚠️  Quiz correct_answer 格式错误: "${answer}" -> 自动匹配为 "${letter}"`);
+        return letter;
+      }
+    }
+    
+    // 无法识别，返回默认值并警告
+    console.warn(`⚠️  无法识别 correct_answer: "${answer}"，默认使用 "A"`);
+    return 'A';
+  }
+
+  /**
    * v12.8: 生成单元测试描述
    * 基于unit的topics生成一段简短的测试描述
    */
@@ -1401,29 +1566,57 @@ Summary of key takeaways. Connections between concepts.`;
   }
 
   /**
-   * v12.8: 计算题目难度等级（1-10）
-   * 基于题目长度、选项复杂度等启发式规则估算
+   * v12.8.19: 计算题目难度等级（1-5）
+   * 基于认知复杂度的启发式规则估算（用作AI未返回difficulty_level时的fallback）
    */
   private calculateDifficultyLevel(question: any): number {
-    let difficulty = 5; // 基础难度
+    const questionText = (question.question || question.question_text || '').toLowerCase();
+    let difficulty = 2; // 默认Level 2（基础回忆）
     
-    // 题目长度：越长越难
-    const questionLength = question.question ? question.question.length : 0;
-    if (questionLength > 200) difficulty += 1;
-    if (questionLength > 300) difficulty += 1;
-    
-    // 选项长度：平均选项越长越难（仅对有选项的题目）
-    if (question.options && question.options.length > 0) {
-      const avgOptionLength = question.options.reduce((sum: number, opt: string) => 
-        sum + opt.length, 0) / question.options.length;
-      if (avgOptionLength > 100) difficulty += 1;
+    // Level 1-2: 记忆/识别关键词
+    const recallKeywords = ['define', 'what is', 'which of the following is the definition', 
+                           'refers to', 'is defined as', 'means', 'term for'];
+    if (recallKeywords.some(kw => questionText.includes(kw))) {
+      difficulty = 2;
     }
     
-    // 解释长度：需要长解释说明通常较难
-    if (question.explanation && question.explanation.length > 200) difficulty += 1;
+    // Level 3: 应用关键词
+    const applicationKeywords = ['in this scenario', 'example of', 'demonstrates', 
+                                'illustrates', 'if', 'when', 'which would'];
+    if (applicationKeywords.some(kw => questionText.includes(kw))) {
+      difficulty = 3;
+    }
     
-    // 限制在1-10范围内
-    return Math.max(1, Math.min(10, difficulty));
+    // Level 4: 分析/比较关键词
+    const analysisKeywords = ['difference between', 'distinguish', 'compare', 
+                             'contrast', 'why', 'best explains', 'most likely'];
+    if (analysisKeywords.some(kw => questionText.includes(kw))) {
+      difficulty = 4;
+    }
+    
+    // Level 5: 综合/评估关键词
+    const synthesisKeywords = ['evaluate', 'best research method', 'would best', 
+                              'most appropriate approach', 'synthesize', 'critique'];
+    if (synthesisKeywords.some(kw => questionText.includes(kw))) {
+      difficulty = 5;
+    }
+    
+    // 题目长度修正（长题目通常更复杂）
+    const questionLength = questionText.length;
+    if (questionLength > 250 && difficulty < 4) difficulty += 1;
+    
+    // 选项复杂度修正（选项很长通常需要更深入分析）
+    if (question.options) {
+      const options = Array.isArray(question.options) 
+        ? question.options 
+        : Object.values(question.options);
+      const avgOptionLength = options.reduce((sum: number, opt: string) => 
+        sum + (opt?.length || 0), 0) / options.length;
+      if (avgOptionLength > 120 && difficulty < 5) difficulty += 1;
+    }
+    
+    // 限制在1-5范围内
+    return Math.max(1, Math.min(5, difficulty));
   }
 
   /**

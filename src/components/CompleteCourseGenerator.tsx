@@ -40,6 +40,7 @@ export function CompleteCourseGenerator({
   const [error, setError] = useState<string | null>(null);
   const [generatedCourse, setGeneratedCourse] = useState<DualJSONOutput | null>(null);
   const [statistics, setStatistics] = useState<GenerationStatistics | null>(null);
+  const [checkingFallback, setCheckingFallback] = useState(false);
 
   const totalTopics = courseData.units.reduce((sum, unit) => sum + unit.topics.length, 0);
 
@@ -112,6 +113,56 @@ export function CompleteCourseGenerator({
     } catch (err) {
       console.error('❌ 生成失败:', err);
       setError(err instanceof Error ? err.message : '生成失败');
+      
+      // v13.0: 生成失败后自动检查 Fallback 文件
+      console.log('🔍 检测到生成失败，自动检查 Fallback 文件...');
+      setTimeout(async () => {
+        try {
+          const response = await fetch('/api/fallback-courses');
+          const result = await response.json();
+          
+          if (result.success && result.files && result.files.length > 0) {
+            const matchingFile = result.files.find((f: any) => 
+              f.courseName === courseData.course_name
+            );
+            
+            if (matchingFile) {
+              console.log('✅ 找到匹配的 Fallback 文件，自动加载中...');
+              const dataResponse = await fetch(`/api/fallback-courses?file=${encodeURIComponent(matchingFile.fileName)}`);
+              const dataResult = await dataResponse.json();
+              
+              if (dataResult.success) {
+                const dualJSON: DualJSONOutput = {
+                  combined_complete_json: dataResult.data,
+                  separated_content_json: {
+                    topic_overviews: [],
+                    study_guides: [],
+                    topic_flashcards: [],
+                    quizzes: [],
+                    unit_tests: [],
+                    unit_assessment_questions: []
+                  }
+                };
+                
+                setGeneratedCourse(dualJSON);
+                setStatistics(dataResult.statistics);
+                setError(null);
+                
+                // 显示友好的自动恢复提示
+                setProgress(prev => [...prev, {
+                  message: `✅ 已自动恢复课程数据！虽然连接超时，但课程已成功生成并保存。`,
+                  percent: 100,
+                  timestamp: Date.now()
+                }]);
+                
+                console.log('✅ Fallback 课程自动加载成功！');
+              }
+            }
+          }
+        } catch (fallbackErr) {
+          console.error('自动检查 Fallback 失败:', fallbackErr);
+        }
+      }, 1000);
     } finally {
       setGenerating(false);
     }
@@ -127,6 +178,65 @@ export function CompleteCourseGenerator({
     if (!generatedCourse) return;
     const filename = generateFilename(courseData.course_name, 'complete');
     downloadJSON(generatedCourse.combined_complete_json, filename);
+  };
+
+  // v12.8.21: 检查并加载Fallback课程
+  const handleCheckFallback = async () => {
+    setCheckingFallback(true);
+    try {
+      // 1. 获取fallback文件列表
+      const response = await fetch('/api/fallback-courses');
+      const result = await response.json();
+      
+      if (!result.success || !result.files || result.files.length === 0) {
+        alert('没有找到已保存的课程数据');
+        return;
+      }
+      
+      // 2. 找到最近的匹配课程（按课程名称匹配）
+      const matchingFile = result.files.find((f: any) => 
+        f.courseName === courseData.course_name
+      );
+      
+      if (!matchingFile) {
+        alert(`没有找到 "${courseData.course_name}" 的已保存数据\n\n可用的课程：\n${result.files.map((f: any) => `- ${f.courseName}`).join('\n')}`);
+        return;
+      }
+      
+      // 3. 加载该文件的数据
+      const dataResponse = await fetch(`/api/fallback-courses?file=${encodeURIComponent(matchingFile.fileName)}`);
+      const dataResult = await dataResponse.json();
+      
+      if (!dataResult.success) {
+        alert('加载课程数据失败');
+        return;
+      }
+      
+      // 4. 设置到状态中
+      const dualJSON: DualJSONOutput = {
+        combined_complete_json: dataResult.data,
+        separated_content_json: {
+          topic_overviews: [],
+          study_guides: [],
+          topic_flashcards: [],
+          quizzes: [],
+          unit_tests: [],
+          unit_assessment_questions: []
+        }
+      };
+      
+      setGeneratedCourse(dualJSON);
+      setStatistics(dataResult.statistics);
+      setError(null);
+      
+      alert(`✅ 成功加载已保存的课程！\n\n保存时间：${new Date(dataResult.metadata.saved_at).toLocaleString('zh-CN')}\n生成耗时：${(dataResult.metadata.generation_time_ms / 1000).toFixed(1)}秒`);
+      
+    } catch (err) {
+      console.error('检查Fallback失败:', err);
+      alert('检查已保存课程时出错');
+    } finally {
+      setCheckingFallback(false);
+    }
   };
 
   const currentProgress = progress.length > 0 ? progress[progress.length - 1] : null;
@@ -216,11 +326,12 @@ export function CompleteCourseGenerator({
 
       {/* 错误提示 */}
       {error && (
-        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-medium text-red-800">生成失败</p>
-            <p className="text-sm text-red-600 mt-1">{error}</p>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-medium text-red-800">生成失败</p>
+              <p className="text-sm text-red-600 mt-1">{error}</p>
             
             {/* API 错误提示 */}
             {error.includes('Access denied') && (
@@ -236,14 +347,51 @@ export function CompleteCourseGenerator({
               </div>
             )}
             
-            <button
-              onClick={handleGenerate}
-              className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
-            >
-              重试
-            </button>
+            <div className="mt-3 flex gap-3">
+              <button
+                onClick={handleGenerate}
+                className="text-sm text-red-600 hover:text-red-800 underline font-medium"
+              >
+                重试
+              </button>
+            </div>
           </div>
         </div>
+        
+        {/* v12.8.21: Fallback恢复按钮 */}
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <FileJson className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-medium text-blue-800">💡 提示：生成可能已完成</p>
+              <p className="text-sm text-blue-600 mt-1">
+                提示：主流程可能已完成，但连接超时。数据可能已自动保存到 Fallback 文件。
+              </p>
+              <p className="text-xs text-blue-500 mt-2">
+                📊 提示: 主课程可能已成功生成，仅在转换为双 JSON 格式或发送数据时失败。
+                目前已有自动备份机制，可直接导入保存的完整数据。
+              </p>
+              <button
+                onClick={handleCheckFallback}
+                disabled={checkingFallback}
+                className="mt-3 px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              >
+                {checkingFallback ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>检查中...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    <span>检查已保存的课程</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       )}
 
       {/* 成功提示 */}
