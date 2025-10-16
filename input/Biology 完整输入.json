@@ -74,7 +74,7 @@
         {
           "topic_number": "1.3",
           "topic_title": "Introduction to Macromolecules",
-          "ced_topic_title": "Introduction to Biological Macromolecules",
+          "ced_topic_title": "Introduction to Macromolecules",
           "topic_overview": "Here, we'll establish the fundamental principles of building and breaking down the large polymers of life. This topic introduces the 'big four': carbohydrates, lipids, proteins, and nucleic acids. You'll learn the universal processes of dehydration synthesis (building polymers from monomers by removing water) and hydrolysis (breaking polymers down by adding water). This core mechanism of molecular construction and deconstruction is essential, as it provides the framework for how organisms build their structures and obtain energy from food. It is the chemical grammar for the language of life.",
           "prepgo_plan": {
             "total_estimated_minutes": 27,
@@ -431,7 +431,7 @@
         {
           "topic_number": "2.5",
           "topic_title": "Membrane Transport",
-          "ced_topic_title": "Facilitated Diffusion",
+          "ced_topic_title": "Membrane Transport",
           "topic_overview": "This topic is a deep dive into a specific type of passive transport: facilitated diffusion. While simple diffusion allows small, nonpolar molecules to slip through the membrane, larger or charged molecules need help. You'll learn about the role of channel proteins and carrier proteins in 'facilitating' this movement. These proteins are highly specific, only allowing certain molecules to pass through. Importantly, even with protein assistance, this is still a passive process. The movement is always down the concentration gradient, from high to low concentration, and does not require the cell to expend any energy.",
           "prepgo_plan": {
             "total_estimated_minutes": 22,
@@ -474,7 +474,7 @@
         {
           "topic_number": "2.6",
           "topic_title": "Facilitated Diffusion",
-          "ced_topic_title": "Tonicity and Osmoregulation",
+          "ced_topic_title": "Facilitated Diffusion",
           "topic_overview": "Get ready to master one of the most important concepts in cell biology: osmosis! This topic focuses exclusively on the movement of water across a selectively permeable membrane. You'll learn about water potential and tonicity (hypertonic, hypotonic, isotonic) to predict the direction of water flow. We'll also explore osmoregulation, the strategies organisms use to control water balance and maintain homeostasis in different environments. Understanding this is critical for explaining everything from how plants stand upright to why you can't drink saltwater.",
           "prepgo_plan": {
             "total_estimated_minutes": 38,
@@ -509,7 +509,7 @@
         {
           "topic_number": "2.7",
           "topic_title": "Tonicity and Osmoregulation",
-          "ced_topic_title": "Mechanisms of Transport",
+          "ced_topic_title": "Tonicity and Osmoregulation",
           "topic_overview": "In this topic, we'll cover both passive and active transport to provide a complete picture of how cells move materials. We'll review passive transport (diffusion, facilitated diffusion) which requires no energy, and then focus on active transport. You'll learn how cells use energy, usually in the form of ATP, to power protein pumps that move molecules against their concentration gradient, from low to high concentration. This process is essential for maintaining specific internal environments, like nerve gradients, and is a fundamental process of life.",
           "prepgo_plan": {
             "total_estimated_minutes": 32,
@@ -548,7 +548,7 @@
         {
           "topic_number": "2.8",
           "topic_title": "Mechanisms of Transport",
-          "ced_topic_title": "Cell Compartmentalization",
+          "ced_topic_title": "Mechanisms of Transport",
           "topic_overview": "Why are eukaryotic cells full of organelles? The answer is compartmentalization. This topic explores how membrane-bound organelles create specialized local environments within the cell. These compartments allow different, and often incompatible, metabolic processes to occur simultaneously without interfering with each other. For example, the acidic environment needed for digestion inside a lysosome is kept separate from the rest of the cell. You'll learn how this internal organization increases the efficiency of cellular processes, a key advantage of eukaryotes over prokaryotes.",
           "prepgo_plan": {
             "total_estimated_minutes": 25,
@@ -2014,7 +2014,7 @@
         {
           "topic_number": "7.10",
           "topic_title": "Introduction to Natural Selection",
-          "ced_topic_title": "Speciation",
+          "ced_topic_title": "Introduction to Natural Selection",
           "topic_overview": "This topic addresses one of evolution's biggest questions: how do new species form? Speciation is the evolutionary process by which one species splits into two or more distinct species. You'll learn that the key to speciation is the evolution of reproductive isolation, which prevents gene flow between populations. We will explore different types of reproductive barriers (prezygotic and postzygotic) and the main modes of speciation: allopatric (geographic barrier) and sympatric (no geographic barrier). This topic helps explain the vast diversity of life on our planet.",
           "prepgo_plan": {
             "total_estimated_minutes": 38,
@@ -2407,7 +2407,7 @@
         {
           "topic_number": "8.7",
           "topic_title": "Disruptions in Ecosystems",
-          "ced_topic_title": "Disruptions to Ecosystems",
+          "ced_topic_title": "Disruptions in Ecosystems",
           "topic_overview": "Ecosystems are constantly changing. This topic examines how natural and human-caused disruptions can affect the dynamics and stability of an ecosystem. You'll learn how events like climate change or the introduction of invasive species can alter resource availability and species interactions. The focus will be on understanding that when a disruption occurs, it can have cascading effects throughout the food web, potentially leading to a decrease in biodiversity and overall ecosystem health. Resilience is a key concept here - how well can an ecosystem bounce back?",
           "prepgo_plan": {
             "total_estimated_minutes": 29,
